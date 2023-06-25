@@ -1,2 +1,5 @@
 .DS_Store
 ferret.jar
+*.pdf
+basic_interop.cpp
+basic_interop
