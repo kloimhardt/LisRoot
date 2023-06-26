@@ -28,7 +28,7 @@
 (println (ha 5 6 7))
 
 (defn c_string [s]
-  (l/str "string::to<std::string>(" s ").c_str()"))
+  (l/add-strs "string::to<std::string>(" s ").c_str()"))
 
 (println (c_string "i"))
 
