@@ -170,3 +170,21 @@
 
 (println (nf5)) ;;gives a string :-(
 
+(defmacro uuu [] (identity "__result = obj<number>(3 + 18);"))
+
+(defmacro tru6 [name] `(defn ~name [] (uuu)))
+
+(tru6 nf6)
+
+(println (nf6)) ;;number 21 !!
+
+(defn hiu [x y] x)
+
+(defmacro cdef7 []
+  (str "__result = " "obj<number>(4 + 19);")) ;; that is Clojure
+
+(defmacro tru7 [name] `(defn ~name [] (cdef7)))
+
+(tru7 nf7)
+
+(println (nf7))
