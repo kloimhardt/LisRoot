@@ -178,8 +178,6 @@
 
 (println (nf6)) ;;number 21 !!
 
-(defn hiu [x y] x)
-
 (defmacro cdef7 []
   (str "__result = " "obj<number>(4 + 19);")) ;; that is Clojure
 
@@ -188,3 +186,20 @@
 (tru7 nf7)
 
 (println (nf7))
+
+(defmacro cdef8 []
+  (str "__result = " "obj<number>(6 + 19);")) ;; that is Clojure
+
+(defmacro tru8 [] `(fn [] (cdef8)))
+
+(println ((tru8)))
+
+(comment 
+  (defmacro types9 [] '{:myobj ["TCanvas" :string :int]})
+
+  (println (types9)) ;; cannot print these
+
+  (defmacro hi [t] `(str (first (get ~t :myobj))))
+
+  (println (hi (types9))))
+
