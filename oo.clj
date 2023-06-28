@@ -194,12 +194,16 @@
 
 (println ((tru8)))
 
-(comment 
-  (defmacro types9 [] '{:myobj ["TCanvas" :string :int]})
+(defmacro datax [j] [1 2])
 
-  (println (types9)) ;; cannot print these
+(defmacro par [i] (str (datax i) "ha"))
 
-  (defmacro hi [t] `(str (first (get ~t :myobj))))
+(println (par 5))
 
-  (println (hi (types9))))
+(defmacro datax2 [] '(list 3 4))
 
+(datax2)
+
+(defmacro par2 [mm] (str (eval (list mm)) "hu"))
+
+(println (par2 datax2))
