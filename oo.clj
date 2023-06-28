@@ -228,13 +228,11 @@
   (let [d (eval (list mm 0))
         wrap-fun (fn [s] (list 'fn '[x y] s))
         wrap-result (fn [s] (str "__result = " "obj<number>(" s ");"))
-        codestr (str "7 " (first d) " 19")]
+        conv-int (fn [sy] (str " number::to<std::int8_t>(" sy ") "))
+        codestr (str (conv-int 'x) (first d) (conv-int 'y))]
     (->> codestr
          wrap-result
          wrap-fun
          identity)))
 
-(println ((par5 datax3) 4 5))
-
-;;(defn aa [vn] (str "number::to<std::int8_t>(" vn ")"))
-;;(aa 'x)
+(println ((par5 datax3) 40 5))
