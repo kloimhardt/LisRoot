@@ -200,10 +200,41 @@
 
 (println (par 5))
 
-(defmacro datax2 [] '(list 3 4))
+;; (defmacro datax2 [] [3 4]) ;;not ok
 
-(datax2)
+(defmacro datax2 [_] [3 4])
 
-(defmacro par2 [mm] (str (eval (list mm)) "hu"))
+(defmacro par2 [mm] (str (eval (list mm 0)) "hu"))
 
 (println (par2 datax2))
+
+(defmacro datax3 [_] ["+" 3 4])
+
+(defmacro par3 [mm]
+  (let [d (eval (list mm 0))]
+    (str 1 (first d) 2)))
+
+(println (par3 datax3))
+
+(defmacro par4 [mm]
+  (let [d (eval (list mm 0))
+        wrapfun (fn [s] (list 'fn [] s))
+        codestr (str "__result = " "obj<number>(7 " (first d) " 19);")]
+    (wrapfun codestr)))
+
+(println ((par4 datax3)))
+
+(defmacro par5 [mm]
+  (let [d (eval (list mm 0))
+        wrap-fun (fn [s] (list 'fn '[x y] s))
+        wrap-result (fn [s] (str "__result = " "obj<number>(" s ");"))
+        codestr (str "7 " (first d) " 19")]
+    (->> codestr
+         wrap-result
+         wrap-fun
+         identity)))
+
+(println ((par5 datax3) 4 5))
+
+;;(defn aa [vn] (str "number::to<std::int8_t>(" vn ")"))
+;;(aa 'x)
