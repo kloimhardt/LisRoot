@@ -238,11 +238,16 @@
 (println ((par5 datax3) 40 5))
 
 (defmacro initfn []
+  (def root-types (hash-map))
+
   (defn wrap-fun [args s]
     (list 'fn args s))
 
   (defn wrap-result [s]
     (str "__result = " "obj<number>(" s ");"))
+
+  (defn stringify-result [s]
+    (list 'new-string s))
 
   (defn conv-int [sy]
     (str " number::to<std::int8_t>(" sy ") "))
@@ -251,15 +256,32 @@
 
 (initfn)
 
-(defmacro deftypes [t]
-  (def root-types t)
+(defmacro load-types [filename]
+  (alter-var-root (var root-types)
+                  (->> filename slurp read-string (apply hash-map) constantly))
   nil)
 
-(deftypes ["+" :a :b])
+(defmacro add-types [t]
+  (alter-var-root (var root-types) merge (apply hash-map t))
+  nil)
+
+(comment
+
+(def new-string str)
+
+  )
 
 (defmacro par6 [kw]
-  (->> (str (conv-int 'x) (first root-types) (conv-int 'y))
+  (->> (str (conv-int 'x) (first (get root-types kw)) (conv-int 'y))
        wrap-result
+       ;;stringify-result
        (wrap-fun '[x y])))
 
-(println ((par6 "myClass") 40 10))
+(add-types [:p ["-" :a :b]])
+(println ((par6 :p) 40 10))
+
+(load-types "root_types.edn")
+(println ((par6 :myClass) 40 10))
+
+(add-types [:q ["-" :a :b]])
+(println ((par6 :q) 41 10))
