@@ -238,8 +238,15 @@
 (println ((par5 datax3) 40 5))
 
 (defmacro initfn []
-  (defn wrap-fun1 [s]
-    (list 'fn '[x y] s))
+  (defn wrap-fun [args s]
+    (list 'fn args s))
+
+  (defn wrap-result [s]
+    (str "__result = " "obj<number>(" s ");"))
+
+  (defn conv-int [sy]
+    (str " number::to<std::int8_t>(" sy ") "))
+
   nil)
 
 (initfn)
@@ -250,14 +257,9 @@
 
 (deftypes ["+" :a :b])
 
-(defmacro par6 []
-  (let [d root-types
-        wrap-result (fn [s] (str "__result = " "obj<number>(" s ");"))
-        conv-int (fn [sy] (str " number::to<std::int8_t>(" sy ") "))
-        codestr (str (conv-int 'x) (first d) (conv-int 'y))]
-    (->> codestr
-         wrap-result
-         wrap-fun1
-         identity)))
+(defmacro par6 [kw]
+  (->> (str (conv-int 'x) (first root-types) (conv-int 'y))
+       wrap-result
+       (wrap-fun '[x y])))
 
-(println ((par6) 40 9))
+(println ((par6 "myClass") 40 10))
