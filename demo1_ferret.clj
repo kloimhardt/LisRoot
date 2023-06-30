@@ -52,7 +52,7 @@
 (defmacro draw []
   (wrap-fun '[ff] "pointer::to_pointer<TF1>(ff)->Draw()"))
 
-(println ((draw) pf))
+;;(println ((draw) pf))
 
 (defmacro print []
   (wrap-fun '[cc]
@@ -78,16 +78,16 @@
                     [:A :string :string :int :int :int :int]
                     [:B :int]
                     [:Print
-                     [:A :string]
-                     [:B :int]]
+                     [:A :null :string]
+                     [:B :null :int]]
                     [:TCanvasMethod2
                      [:A :int]
                      [:B :string]]]
                    [:TF1
                     [:A :string]
                     [:B :int]
-                    [:Darw
-                     [:A]]]])
+                    [:Draw
+                     [:A :null]]]])
 
   (defn wrap-result [s]
     (str "__result = " "obj<number>(" s ");"))
@@ -105,30 +105,40 @@
   (defn make-syms [n]
     (mapv #(symbol (str "a_" %))  (range n)))
 
-  (defn cvt [t v]
+  (defn cvt-to-c [t v]
     (case t
       :string (str "string::to<std::string>(" v ").c_str()")))
 
+  (defn cvt-from-c [t v]
+    (case t
+      :string (str "obj<string>(" v ")")))
+
   (defn argslist [strs]
     (str "(" (apply str (interpose ", " strs)) ")"))
+
+  (defn wrap-result [t s]
+    (str "__result = " (cvt-from-c t s)))
 
   nil)
 
 (some-fns)
 
-(defmacro cpp [class-kw method-kw m-sub]
-  (let [funargs (-> types
-                    (get-in [:Classes class-kw method-kw m-sub])
-                    count
-                    inc
-                    make-syms)]
+(defmacro cpp
+  [class-kw method-kw & args]
+  (let [m-sub (or (first args) :A)
+        funtypes (-> types (get-in [:Classes class-kw method-kw m-sub]))
+        funargs (-> funtypes count make-syms)
+        codestr (str "pointer::to_pointer<"
+                     (name class-kw)
+                     ">("
+                     (first funargs)
+                     ")->"
+                     (name method-kw)
+                     (argslist (map cvt-to-c (rest funtypes) (rest funargs))))]
     (list 'fn funargs
-          (str "pointer::to_pointer<"
-               (name class-kw)
-               ">("
-               (first funargs)
-               ")->"
-               (name method-kw)
-               (argslist (map cvt [:string] (rest funargs)))))))
+         (if (= (first funtypes) :null)
+           codestr
+           (wrap-result (first funtypes) codestr)))))
 
-((cpp :TCanvas :Print :A) pc "demo1_ferret_4.pdf")
+(println ((cpp :TF1 :Draw) pf))
+(println ((cpp :TCanvas :Print) pc "demo1_ferret_5.pdf"))
