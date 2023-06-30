@@ -50,17 +50,85 @@
 (def pf ((make_FN1)))
 
 (defmacro draw []
-  (wrap-fun '[ff]
-            "TF1 *fff = pointer::to_pointer<TF1>(ff);
-fff->Draw();
-__result = obj<number>(0)")
+  (wrap-fun '[ff] "pointer::to_pointer<TF1>(ff)->Draw()"))
 
-((draw) pf)
+(println ((draw) pf))
 
 (defmacro print []
   (wrap-fun '[cc]
-            "TCanvas *ccc = pointer::to_pointer<TCanvas>(cc);
-ccc->Print(\"demo1_ferret_2.pdf\");
-__result = obj<number>(0)"))
+            "pointer::to_pointer<TCanvas>(cc)->Print(\"demo1_ferret_2.pdf\")"))
 
-((print) pc)
+;;(println ((print) pc))
+
+(defmacro a.. [kw]
+  (wrap-fun '[cc]
+            (str "pointer::to_pointer<" (name kw) ">(cc)->Print(\"demo1_ferret_3.pdf\")")))
+
+;;((a.. :TCanvas) pc)
+
+(defmacro b.. [& macro_args]
+  (wrap-fun '[ptrObj]
+            (str "pointer::to_pointer<" (name (first macro_args)) ">(ptrObj)->" (name (second macro_args)) "(\"demo1_ferret_3.pdf\")")))
+
+;;((b.. :TCanvas :Print) pc)
+
+(defmacro some-fns []
+  (def typevector [:Classes
+                   [:TCanvas
+                    [:A :string :string :int :int :int :int]
+                    [:B :int]
+                    [:Print
+                     [:A :string]
+                     [:B :int]]
+                    [:TCanvasMethod2
+                     [:A :int]
+                     [:B :string]]]
+                   [:TF1
+                    [:A :string]
+                    [:B :int]
+                    [:Darw
+                     [:A]]]])
+
+  (defn wrap-result [s]
+    (str "__result = " "obj<number>(" s ");"))
+
+  (defn make-types-1 [v]
+    (if-not (vector? (second v))
+      [(first v) (rest v)]
+      [(first v) (into (hash-map) (map make-types-1 (rest v)))]))
+
+  (defn make-types [v]
+    (apply hash-map (make-types-1 typevector)))
+
+  (def types (make-types typevector))
+
+  (defn make-syms [n]
+    (mapv #(symbol (str "a_" %))  (range n)))
+
+  (defn cvt [t v]
+    (case t
+      :string (str "string::to<std::string>(" v ").c_str()")))
+
+  (defn argslist [strs]
+    (str "(" (apply str (interpose ", " strs)) ")"))
+
+  nil)
+
+(some-fns)
+
+(defmacro cpp [class-kw method-kw m-sub]
+  (let [funargs (-> types
+                    (get-in [:Classes class-kw method-kw m-sub])
+                    count
+                    inc
+                    make-syms)]
+    (list 'fn funargs
+          (str "pointer::to_pointer<"
+               (name class-kw)
+               ">("
+               (first funargs)
+               ")->"
+               (name method-kw)
+               (argslist (map cvt [:string] (rest funargs)))))))
+
+((cpp :TCanvas :Print :A) pc "demo1_ferret_4.pdf")
