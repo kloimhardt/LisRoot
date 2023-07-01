@@ -75,10 +75,19 @@
 
 
 (defmacro some-fns []
+  (defn form-arrays [v]
+    (->> v
+         (partition 2 1)
+         (remove #(vector? (first %)))
+         (map (fn[[one two]]
+                (if (vector? two)
+                  [one (first two)]
+                  one)))))
+
   (defn make-types-1 [v]
-    (if-not (vector? (second v))
-      [(first v) (rest v)]
-      [(first v) (into (hash-map) (map make-types-1 (rest v)))]))
+    (if (every? vector? (rest v))
+      [(first v) (into (hash-map) (map make-types-1 (rest v)))]
+      [(first v) (form-arrays (rest v))]))
 
   (defn make-types [v]
     (apply hash-map (make-types-1 v)))
@@ -223,4 +232,3 @@ number::to<double>(a_4)))"))
 
 ((c-call TF1 Draw) pf8)
 ((c-call TCanvas Print) pc6 "demo1_ferret_8.pdf")
-
