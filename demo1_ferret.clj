@@ -112,25 +112,28 @@
   (alter-var-root (var root-types) merge (make-types t))
   nil)
 
-(add-types [:Classes
-            [TCanvas
-             [:A string string int int int int]
-             [:B int]
-             [Print
-              [:A null string]
-              [:B null int]]
-             [TCanvasMethod2
-              [:A int]
-              [:B string]]]
-            [TF1
-             [:A string string int int]
-             [:B int]
-             [Draw
-              [:A null]]]])
+(add-types [:Types
+            [:Classes
+             [TCanvas
+              [:A string string int int int int]
+              [:B int]
+              [Print
+               [:A null string]
+               [:B null int]]
+              [TCanvasMethod2
+               [:A int]
+               [:B string]]]
+             [TF1
+              [:A string string int int]
+              [:B string :plot-function double double double]
+              [Draw
+               [:A null]]]]
+            [:Functions
+             [:plot-function double double[1] double[1]]]])
 
 (defmacro c-new [class & args]
   (let [c-sub (or (first args) :A)
-        contypes (get-in root-types [:Classes class c-sub])
+        contypes (get-in root-types [:Types :Classes class c-sub])
         funargs (-> contypes count make-syms)
         codestr (str "new "
                      (name class)
@@ -142,7 +145,7 @@
 
 (defmacro c-call [class method & args]
   (let [m-sub (or (first args) :A)
-        funtypes (get-in root-types [:Classes class method m-sub])
+        funtypes (get-in root-types [:Types :Classes class method m-sub])
         funargs (-> funtypes count make-syms)
         codestr (str "pointer::to_pointer<"
                      (name class)
@@ -220,3 +223,4 @@ number::to<double>(a_4)))"))
 
 ((c-call TF1 Draw) pf8)
 ((c-call TCanvas Print) pc6 "demo1_ferret_8.pdf")
+
