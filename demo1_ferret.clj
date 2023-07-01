@@ -159,3 +159,31 @@
 ((c-call TF1 Draw) pf6)
 (def pdfname "demo1_ferret_6.pdf")
 ((c-call TCanvas Print) pc6 pdfname)
+
+((c-new TF1) "f6" "cos(x)" -5 5)
+
+(defn mfunone [[x] [par]] (* 2 x))
+
+(defn new-fun [a_0 a_1 a_2 a_3 a_4]
+  "auto cfun = [a_1]
+(double* vals, double* pars) -> double
+
+{ auto valsl = obj<array_seq<double, number>>(vals, size_t(1));
+auto parsl = obj<array_seq<double, number>>(pars, size_t(1));
+double res = number::to<double>(run(a_1, valsl, parsl));
+return res; };
+
+__result =
+obj<pointer>(new TF1(
+string::to<std::string>(a_0).c_str(),
+
+cfun,
+
+number::to<double>(a_2),
+number::to<double>(a_3),
+number::to<double>(a_4)))")
+
+(def pf7 (new-fun "f6" mfunone -5.001 5.0 2))
+
+((c-call TF1 Draw) pf7)
+((c-call TCanvas Print) pc6 pdfname)
