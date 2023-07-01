@@ -73,6 +73,7 @@
 ;;((b.. :TCanvas :Print) pc)
 
 
+
 (defmacro some-fns []
   (defn make-types-1 [v]
     (if-not (vector? (second v))
@@ -87,11 +88,13 @@
 
   (defn cvt-to-c [t v]
     (case t
-      'string (str "string::to<std::string>(" v ").c_str()")))
+      string (str "string::to<std::string>(" v ").c_str()")
+      int (str "number::to<std::int32_t>(" v ")")))
 
   (defn cvt-from-c [t v]
     (case t
-      'string (str "obj<string>(" v ")")))
+      string (str "obj<string>(" v ")")
+      pointer (str "obj<pointer>(" v ")")))
 
   (defn argslist [strs]
     (str "(" (apply str (interpose ", " strs)) ")"))
@@ -99,7 +102,7 @@
   (defn wrap-result [t s]
     (str "__result = " (cvt-from-c t s)))
 
-  (def root-types {})
+  (def root-types (hash-map))
 
   nil)
 
@@ -120,15 +123,14 @@
               [:A int]
               [:B string]]]
             [TF1
-             [:A string]
+             [:A string string int int]
              [:B int]
              [Draw
               [:A null]]]])
 
-(defmacro cpp
-  [class method & args]
+(defmacro cpp [class method & args]
   (let [m-sub (or (first args) :A)
-        funtypes (-> root-types (get-in [:Classes class method m-sub]))
+        funtypes (get-in root-types [:Classes class method m-sub])
         funargs (-> funtypes count make-syms)
         codestr (str "pointer::to_pointer<"
                      (name class)
@@ -138,13 +140,26 @@
                      (name method)
                      (argslist (map cvt-to-c (rest funtypes) (rest funargs))))]
     (list 'fn funargs
-         (if (= (first funtypes) 'null)
-           codestr
-           (wrap-result (first funtypes) codestr)))))
+          (if (= (first funtypes) 'null)
+            codestr
+            (wrap-result (first funtypes) codestr)))))
 
 (println ((cpp TF1 Draw) pf))
 (println ((cpp TCanvas Print) pc "demo1_ferret_5.pdf"))
 
 
-;; macro for constructors
+(defmacro ccon [class & args]
+  (let [c-sub (or (first args) :A)
+        contypes (get-in root-types [:Classes class c-sub])
+        funargs (-> contypes count make-syms)
+        codestr (str "new "
+                     (name class)
+                     (argslist (map cvt-to-c contypes funargs)))]
+    (list 'fn funargs (wrap-result 'pointer codestr))))
+
+(def pc6 ((ccon TCanvas) "c6" "Something" 0 0 800 600))
+(def pf6 ((ccon TF1) "f6" "cos(x)" -5 5))
+((cpp TF1 Draw) pf6)
+((cpp TCanvas Print) pc6 "demo1_ferret_6.pdf")
+
 ;; table for symbols for created classes
