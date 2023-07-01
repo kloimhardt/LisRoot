@@ -187,3 +187,36 @@ number::to<double>(a_4)))")
 
 ((c-call TF1 Draw) pf7)
 ((c-call TCanvas Print) pc6 pdfname)
+
+(defmacro mafun [h]
+  (list 'fn '[a_0 a_1 a_2 a_3 a_4]
+    "auto cfun = [a_1]
+(double* vals, double* pars) -> double
+
+{ auto valsl = obj<array_seq<double, number>>(vals, size_t(1));
+auto parsl = obj<array_seq<double, number>>(pars, size_t(1));
+double res = number::to<double>(run(a_1, valsl, parsl));
+return res; };
+
+__result =
+obj<pointer>(new TF1(
+string::to<std::string>(a_0).c_str(),
+
+cfun,
+
+number::to<double>(a_2),
+number::to<double>(a_3),
+number::to<double>(a_4)))"))
+
+
+;; (def pf8 ((mafun 0) "f8" mfunone -5.001 5.0 2)) ;; does not work
+
+(defn aaf [i] (fn [[x]] (* i x)))
+(def pf8 ((mafun 0) "f8" (aaf 10) -5.001 5.0 2))
+
+;; works also
+;; (defn abf [i] (fn [[x] [par]] (* i x)))
+;; (def pf8 ((mafun 0) "f8" (abf 8) -5.001 5.0 2))
+
+((c-call TF1 Draw) pf8)
+((c-call TCanvas Print) pc6 "demo1_ferret_8.pdf")
