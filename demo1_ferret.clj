@@ -128,7 +128,19 @@
              [Draw
               [:A null]]]])
 
-(defmacro cpp [class method & args]
+(defmacro c-new [class & args]
+  (let [c-sub (or (first args) :A)
+        contypes (get-in root-types [:Classes class c-sub])
+        funargs (-> contypes count make-syms)
+        codestr (str "new "
+                     (name class)
+                     (argslist (map cvt-to-c contypes funargs)))]
+    (list 'fn funargs (wrap-result 'pointer codestr))))
+
+(def pc6 ((c-new TCanvas) "c6" "Something" 0 0 800 600))
+(def pf6 ((c-new TF1) "f6" "cos(x)" -5 5))
+
+(defmacro c-call [class method & args]
   (let [m-sub (or (first args) :A)
         funtypes (get-in root-types [:Classes class method m-sub])
         funargs (-> funtypes count make-syms)
@@ -144,22 +156,6 @@
             codestr
             (wrap-result (first funtypes) codestr)))))
 
-(println ((cpp TF1 Draw) pf))
-(println ((cpp TCanvas Print) pc "demo1_ferret_5.pdf"))
-
-
-(defmacro ccon [class & args]
-  (let [c-sub (or (first args) :A)
-        contypes (get-in root-types [:Classes class c-sub])
-        funargs (-> contypes count make-syms)
-        codestr (str "new "
-                     (name class)
-                     (argslist (map cvt-to-c contypes funargs)))]
-    (list 'fn funargs (wrap-result 'pointer codestr))))
-
-(def pc6 ((ccon TCanvas) "c6" "Something" 0 0 800 600))
-(def pf6 ((ccon TF1) "f6" "cos(x)" -5 5))
-((cpp TF1 Draw) pf6)
-((cpp TCanvas Print) pc6 "demo1_ferret_6.pdf")
-
-;; table for symbols for created classes
+((c-call TF1 Draw) pf6)
+(def pdfname "demo1_ferret_6.pdf")
+((c-call TCanvas Print) pc6 pdfname)
