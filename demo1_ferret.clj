@@ -72,46 +72,26 @@
 
 ;;((b.. :TCanvas :Print) pc)
 
+
 (defmacro some-fns []
-  (def typevector [:Classes
-                   [:TCanvas
-                    [:A :string :string :int :int :int :int]
-                    [:B :int]
-                    [:Print
-                     [:A :null :string]
-                     [:B :null :int]]
-                    [:TCanvasMethod2
-                     [:A :int]
-                     [:B :string]]]
-                   [:TF1
-                    [:A :string]
-                    [:B :int]
-                    [:Draw
-                     [:A :null]]]])
-
-  (defn wrap-result [s]
-    (str "__result = " "obj<number>(" s ");"))
-
   (defn make-types-1 [v]
     (if-not (vector? (second v))
       [(first v) (rest v)]
       [(first v) (into (hash-map) (map make-types-1 (rest v)))]))
 
   (defn make-types [v]
-    (apply hash-map (make-types-1 typevector)))
-
-  (def types (make-types typevector))
+    (apply hash-map (make-types-1 v)))
 
   (defn make-syms [n]
     (mapv #(symbol (str "a_" %))  (range n)))
 
   (defn cvt-to-c [t v]
     (case t
-      :string (str "string::to<std::string>(" v ").c_str()")))
+      'string (str "string::to<std::string>(" v ").c_str()")))
 
   (defn cvt-from-c [t v]
     (case t
-      :string (str "obj<string>(" v ")")))
+      'string (str "obj<string>(" v ")")))
 
   (defn argslist [strs]
     (str "(" (apply str (interpose ", " strs)) ")"))
@@ -119,26 +99,52 @@
   (defn wrap-result [t s]
     (str "__result = " (cvt-from-c t s)))
 
+  (def root-types {})
+
   nil)
 
 (some-fns)
 
+(defmacro add-types [t]
+  (alter-var-root (var root-types) merge (make-types t))
+  nil)
+
+(add-types [:Classes
+            [TCanvas
+             [:A string string int int int int]
+             [:B int]
+             [Print
+              [:A null string]
+              [:B null int]]
+             [TCanvasMethod2
+              [:A int]
+              [:B string]]]
+            [TF1
+             [:A string]
+             [:B int]
+             [Draw
+              [:A null]]]])
+
 (defmacro cpp
-  [class-kw method-kw & args]
+  [class method & args]
   (let [m-sub (or (first args) :A)
-        funtypes (-> types (get-in [:Classes class-kw method-kw m-sub]))
+        funtypes (-> root-types (get-in [:Classes class method m-sub]))
         funargs (-> funtypes count make-syms)
         codestr (str "pointer::to_pointer<"
-                     (name class-kw)
+                     (name class)
                      ">("
                      (first funargs)
                      ")->"
-                     (name method-kw)
+                     (name method)
                      (argslist (map cvt-to-c (rest funtypes) (rest funargs))))]
     (list 'fn funargs
-         (if (= (first funtypes) :null)
+         (if (= (first funtypes) 'null)
            codestr
            (wrap-result (first funtypes) codestr)))))
 
-(println ((cpp :TF1 :Draw) pf))
-(println ((cpp :TCanvas :Print) pc "demo1_ferret_5.pdf"))
+(println ((cpp TF1 Draw) pf))
+(println ((cpp TCanvas Print) pc "demo1_ferret_5.pdf"))
+
+
+;; macro for constructors
+;; table for symbols for created classes
