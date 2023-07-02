@@ -72,17 +72,17 @@
 
 ;;((b.. :TCanvas :Print) pc)
 
-
-
 (defmacro some-fns []
   (defn form-arrays [v]
     (->> v
-         (partition 2 1)
+         (partition-all 2 1)
          (remove #(vector? (first %)))
-         (map (fn[[one two]]
-                (if (vector? two)
-                  [one (first two)]
-                  one)))))
+         (map (fn [v]
+                (let [o (first v)
+                      t (second v)]
+                  (if (vector? t)
+                    (vector o (first t))
+                    o))))))
 
   (defn make-types-1 [v]
     (if (every? vector? (rest v))
@@ -232,3 +232,25 @@ number::to<double>(a_4)))"))
 
 ((c-call TF1 Draw) pf8)
 ((c-call TCanvas Print) pc6 "demo1_ferret_8.pdf")
+
+(comment
+
+  (defn cvt-from-c [t v]
+    (cond
+      (= t 'string) (str "obj<string>(" v ")")
+      (= t 'pointer) (str "obj<pointer>(" v ")")
+      (vector? t) (str "obj<array_seq<"
+                       (first t)
+                       ", number>>("
+                       v
+                       ", size_t("
+                       (second t)
+                       "))")))
+
+  (defn make-syms
+    ([n]
+     (make-syms "a" n))
+    ([s n]
+     (mapv #(symbol (str s "_" %))  (range n))))
+
+  )
