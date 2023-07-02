@@ -92,18 +92,26 @@
   (defn make-types [v]
     (apply hash-map (make-types-1 v)))
 
-  (defn make-syms [n]
-    (mapv #(symbol (str "a_" %))  (range n)))
+  (defn make-syms [s n]
+    (mapv #(symbol (str s "_" %)) (range n)))
 
   (defn cvt-to-c [t v]
     (case t
       string (str "string::to<std::string>(" v ").c_str()")
-      int (str "number::to<std::int32_t>(" v ")")))
+      int (str "number::to<std::int32_t>(" v ")")
+      double (str "number::to<double>(" v ")")))
 
   (defn cvt-from-c [t v]
-    (case t
-      string (str "obj<string>(" v ")")
-      pointer (str "obj<pointer>(" v ")")))
+    (cond
+      (= t 'string) (str "obj<string>(" v ")")
+      (= t 'pointer) (str "obj<pointer>(" v ")")
+      (vector? t) (str "obj<array_seq<"
+                       (first t)
+                       ", number>>("
+                       v
+                       ", size_t("
+                       (second t)
+                       "))")))
 
   (defn argslist [strs]
     (str "(" (apply str (interpose ", " strs)) ")"))
@@ -143,7 +151,7 @@
 (defmacro c-new [class & args]
   (let [c-sub (or (first args) :A)
         contypes (get-in root-types [:Types :Classes class c-sub])
-        funargs (-> contypes count make-syms)
+        funargs (->> contypes count (make-syms "a"))
         codestr (str "new "
                      (name class)
                      (argslist (map cvt-to-c contypes funargs)))]
@@ -155,7 +163,7 @@
 (defmacro c-call [class method & args]
   (let [m-sub (or (first args) :A)
         funtypes (get-in root-types [:Types :Classes class method m-sub])
-        funargs (-> funtypes count make-syms)
+        funargs (->> funtypes count (make-syms "a"))
         codestr (str "pointer::to_pointer<"
                      (name class)
                      ">("
@@ -177,19 +185,15 @@
 (defn mfunone [[x] [par]] (* 2 x))
 
 (defn new-fun [a_0 a_1 a_2 a_3 a_4]
-  "auto cfun = [a_1]
-(double* vals, double* pars) -> double
-
-{ auto valsl = obj<array_seq<double, number>>(vals, size_t(1));
-auto parsl = obj<array_seq<double, number>>(pars, size_t(1));
-double res = number::to<double>(run(a_1, valsl, parsl));
-return res; };
-
-__result =
+  "__result =
 obj<pointer>(new TF1(
 string::to<std::string>(a_0).c_str(),
 
-cfun,
+[a_1] (double* vals, double* pars) -> double
+{ auto valsl = obj<array_seq<double, number>>(vals, size_t(1));
+auto parsl = obj<array_seq<double, number>>(pars, size_t(1));
+double res = number::to<double>(run(a_1, valsl, parsl));
+return res; },
 
 number::to<double>(a_2),
 number::to<double>(a_3),
@@ -224,7 +228,7 @@ number::to<double>(a_4)))"))
 ;; (def pf8 ((mafun 0) "f8" mfunone -5.001 5.0 2)) ;; does not work
 
 (defn aaf [i] (fn [[x]] (* i x)))
-(def pf8 ((mafun 0) "f8" (aaf 10) -5.001 5.0 2))
+(def pf8 ((mafun 0) "f8" (aaf 2) -5.001 5.0 2))
 
 ;; works also
 ;; (defn abf [i] (fn [[x] [par]] (* i x)))
@@ -233,24 +237,47 @@ number::to<double>(a_4)))"))
 ((c-call TF1 Draw) pf8)
 ((c-call TCanvas Print) pc6 "demo1_ferret_8.pdf")
 
+(defmacro morefun []
+
+  (defn c-lambda [varname signature]
+    (let [funargs (make-syms "b" (dec (count signature)))
+          argstypes (map (fn [e] (if (vector? e) (str (first e) "*") e))
+                         (rest signature))
+          combined (map (fn [t v] (str t " " v)) argstypes funargs)]
+      (str "[" varname "] " (argslist combined) " -> " (first signature) " {}")))
+
+  (str (c-lambda "a_1" (get-in root-types [:Types :Functions :plot-function])))
+  ;;
+)
+
+(println (morefun))
+
 (comment
 
-  (defn cvt-from-c [t v]
-    (cond
-      (= t 'string) (str "obj<string>(" v ")")
-      (= t 'pointer) (str "obj<pointer>(" v ")")
-      (vector? t) (str "obj<array_seq<"
-                       (first t)
-                       ", number>>("
-                       v
-                       ", size_t("
-                       (second t)
-                       "))")))
+  (def uu (get-in root-types [:Types :Functions :plot-function]))
+;; => (double [double 1] [double 1])
 
-  (defn make-syms
-    ([n]
-     (make-syms "a" n))
-    ([s n]
-     (mapv #(symbol (str s "_" %))  (range n))))
+  (c-lambda "a_1" uu)
+;; => "[a_1] (double* b_0, double* b_1) -> double {}"
 
+  (def aa (get-in root-types [:Types :Classes 'TF1 :B]))
+;; => (string :plot-function double double double)
+
+  (defn c-lambda1 [varname signature]
+    (let [funargs (make-syms "b" (dec (count signature)))
+          argstypes (map (fn [e] (if (vector? e) (str (first e) "*") e))
+                         (rest signature))
+          combined (map (fn [t v] (str t " " v)) argstypes funargs)]
+      (str "[" varname "] " (argslist combined) " -> " (first signature) " {}")))
+
+  (map (fn [t varname]
+         (if (keyword? t)
+           (c-lambda varname
+                     (get-in root-types [:Types :Functions t]))
+           (cvt-to-c t varname)))
+       aa (make-syms "a" (count aa)))
+
+  ;; statt {} in c-lambda1:
+  ;; double res = cvt-to-c(double)(run(a_1, (cvt-to-c valsl), (cvt-to-cl parsl)));
   )
+
