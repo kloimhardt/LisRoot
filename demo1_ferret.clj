@@ -264,24 +264,40 @@ number::to<double>(a_4)))"))
                                  (make-syms "b" (dec (count signature))))))))
          ";"))
 
-  (str (c-lambdabody "a_1"
-                      (get-in root-types [:Types :Functions :plot-function])))
-;;
-  )
+  (defn c-lambda-1 [varname signature]
+    (let [funargs (make-syms "b" (dec (count signature)))
+          argstypes (map (fn [e] (if (vector? e) (str (first e) "*") e))
+                         (rest signature))
+          combined (map (fn [t v] (str t " " v)) argstypes funargs)]
+      (str "[" varname "] " (argslist combined) " -> " (first signature)
+           " {" (c-lambdabody varname signature) "}")))
 
-(println (evenmorefun))
+  (defn cvt-to-c-1 [t v]
+    (cond
+      (= t 'string) (str "string::to<std::string>(" v ").c_str()")
+      (= t 'int) (str "number::to<std::int32_t>(" v ")")
+      (= t 'double) (str "number::to<double>(" v ")")
+      (keyword? t) (c-lambda-1 v (get-in root-types [:Types :Functions t]))))
 
-(defmacro eemfun []
-  (defn cvt-aug [t varname]
-    (if (keyword? t)
-      (c-lambda varname
-                (get-in root-types [:Types :Functions t]))
-      (cvt-to-c t varname)))
+nil)
 
-  nil
-  )
+(evenmorefun)
 
-(eemfun)
+(defmacro c-new-1 [class & args]
+  (let [c-sub (or (first args) :A)
+        contypes (get-in root-types [:Types :Classes class c-sub])
+        funargs (->> contypes count (make-syms "a"))
+        codestr (str "new "
+                     (name class)
+                     (argslist (map cvt-to-c-1 contypes funargs)))]
+    (list 'fn funargs (wrap-result 'pointer codestr))))
+
+(defn aaff [i] (fn [[x]] (* i x)))
+
+(def pf9 ((c-new-1 TF1 :B) "f9" (aaff 5) -5.001 5.0 2))
+
+((c-call TF1 Draw) pf9)
+((c-call TCanvas Print) pc6 "demo1_ferret_8.pdf")
 
 (comment
 
@@ -299,13 +315,15 @@ number::to<double>(a_4)))"))
           argstypes (map (fn [e] (if (vector? e) (str (first e) "*") e))
                          (rest signature))
           combined (map (fn [t v] (str t " " v)) argstypes funargs)]
-      (str "[" varname "] " (argslist combined) " -> " (first signature) " {}")))
+      (str "[" varname "] " (argslist combined) " -> " (first signature)
+           " {" (c-lambdabody varname signature) "}")))
 
-  (defn cvt-aug [t varname]
-    (if (keyword? t)
-      (c-lambda-1 varname
-                (get-in root-types [:Types :Functions t]))
-      (cvt-to-c t varname)))
+  (defn cvt-to-c-1 [t v]
+    (cond
+      (= t 'string) (str "string::to<std::string>(" v ").c_str()")
+      (= t 'int) (str "number::to<std::int32_t>(" v ")")
+      (= t 'double) (str "number::to<double>(" v ")")
+      (keyword? t) (c-lambda-1 v (get-in root-types [:Types :Functions t]))))
 
   (defmacro c-new-1 [class & args]
     (let [c-sub (or (first args) :A)
@@ -313,7 +331,7 @@ number::to<double>(a_4)))"))
           funargs (->> contypes count (make-syms "a"))
           codestr (str "new "
                        (name class)
-                       (argslist (map cvt-aug contypes funargs)))]
+                       (argslist (map cvt-to-c-1 contypes funargs)))]
       (list 'fn funargs (wrap-result 'pointer codestr))))
 
   (defn aaff [i] (fn [[x]] (* i x)))
