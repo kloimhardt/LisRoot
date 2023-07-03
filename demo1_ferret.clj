@@ -96,10 +96,10 @@
     (mapv #(symbol (str s "_" %)) (range n)))
 
   (defn cvt-to-c [t v]
-    (case t
-      string (str "string::to<std::string>(" v ").c_str()")
-      int (str "number::to<std::int32_t>(" v ")")
-      double (str "number::to<double>(" v ")")))
+    (cond
+      (= t 'string) (str "string::to<std::string>(" v ").c_str()")
+      (= t 'int) (str "number::to<std::int32_t>(" v ")")
+      (= t 'double) (str "number::to<double>(" v ")")))
 
   (defn cvt-from-c [t v]
     (cond
@@ -271,6 +271,18 @@ number::to<double>(a_4)))"))
 
 (println (evenmorefun))
 
+(defmacro eemfun []
+  (defn cvt-aug [t varname]
+    (if (keyword? t)
+      (c-lambda varname
+                (get-in root-types [:Types :Functions t]))
+      (cvt-to-c t varname)))
+
+  nil
+  )
+
+(eemfun)
+
 (comment
 
   (def uu (get-in root-types [:Types :Functions :plot-function]))
@@ -282,38 +294,31 @@ number::to<double>(a_4)))"))
   (def aa (get-in root-types [:Types :Classes 'TF1 :B]))
 ;; => (string :plot-function double double double)
 
-  (defn c-lambda1 [varname signature]
+  (defn c-lambda-1 [varname signature]
     (let [funargs (make-syms "b" (dec (count signature)))
           argstypes (map (fn [e] (if (vector? e) (str (first e) "*") e))
                          (rest signature))
           combined (map (fn [t v] (str t " " v)) argstypes funargs)]
       (str "[" varname "] " (argslist combined) " -> " (first signature) " {}")))
 
-  (map (fn [t varname]
-         (if (keyword? t)
-           (c-lambda varname
-                     (get-in root-types [:Types :Functions t]))
-           (cvt-to-c t varname)))
-       aa (make-syms "a" (count aa)))
+  (defn cvt-aug [t varname]
+    (if (keyword? t)
+      (c-lambda-1 varname
+                (get-in root-types [:Types :Functions t]))
+      (cvt-to-c t varname)))
 
-  ;; statt {} in c-lambda1:
-  ;; double res = cvt-to-c(double)(run(a_1, (cvt-to-c valsl), (cvt-to-cl parsl)));
+  (defmacro c-new-1 [class & args]
+    (let [c-sub (or (first args) :A)
+          contypes (get-in root-types [:Types :Classes class c-sub])
+          funargs (->> contypes count (make-syms "a"))
+          codestr (str "new "
+                       (name class)
+                       (argslist (map cvt-aug contypes funargs)))]
+      (list 'fn funargs (wrap-result 'pointer codestr))))
 
-  (defn c-lambdabody [funname signature]
-    (str "return "
-         (cvt-to-c (first signature)
-                   (str "run"
-                        (argslist
-                          (cons
-                            funname
-                            (map cvt-from-c
-                                 (rest signature)
-                                 (make-syms "b" (dec (count signature))))))))
-         ";"))
+  (defn aaff [i] (fn [[x]] (* i x)))
 
-  (c-lambdabody "a_1" uu)
-
-
+  ((c-new-1 TF1 :B) "f8" (aaff 2) -5.001 5.0 2)
 
   )
 
