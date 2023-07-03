@@ -27,14 +27,20 @@
 
 (type-fns)
 
+(defmacro set-types [t]
+  (alter-var-root (var root-types) (constantly (make-types t)))
+  nil)
+
 (defmacro load-types [filename]
   (alter-var-root (var root-types)
                   (->> filename slurp read-string make-types constantly))
   nil)
 
-(defmacro add-types [t]
-  (alter-var-root (var root-types) merge (make-types t))
-
+(defmacro add-type [path t]
+  (alter-var-root (var root-types)
+                  assoc-in
+                  (concat (list :Types) path (list (first t)))
+                  (rest t))
   nil)
 
 (defmacro class-fns []
