@@ -27,6 +27,11 @@
 
 (type-fns)
 
+(defmacro load-types [filename]
+  (alter-var-root (var root-types)
+                  (->> filename slurp read-string make-types constantly))
+  nil)
+
 (defmacro add-types [t]
   (alter-var-root (var root-types) merge (make-types t))
 
@@ -97,7 +102,7 @@
 
 (class-fns)
 
-(defmacro c-new [class & args]
+(defmacro new [class & args]
   (let [c-sub (or (first args) :A)
         contypes (get-in root-types [:Types :Classes class c-sub])
         funargs (->> contypes count (make-syms "a"))
@@ -106,7 +111,7 @@
                      (argslist (map cvt-to-c contypes funargs)))]
     (list 'fn funargs (wrap-result 'pointer codestr))))
 
-(defmacro c-call [class method & args]
+(defmacro call [class method & args]
   (let [m-sub (or (first args) :A)
         funtypes (get-in root-types [:Types :Classes class method m-sub])
         funargs (->> funtypes count (make-syms "a"))

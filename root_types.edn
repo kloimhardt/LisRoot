@@ -1,1 +1,13 @@
-[:myClass ["+" 2 3]]
+[:Types
+ [:Classes
+  [TCanvas
+   [:A string string int int int int]
+   [Print
+    [:A null string]]]
+  [TF1
+   [:A string string int int]
+   [:B string :plot-function double double double]
+   [Draw
+    [:A null]]]]
+ [:Functions
+  [:plot-function double double[1] double[1]]]]

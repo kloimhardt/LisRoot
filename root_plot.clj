@@ -3,26 +3,18 @@
 
 (require '[c_interop :as c])
 
-(c/add-types [:Types
-            [:Classes
-             [TCanvas
-              [:A string string int int int int]
-              [:B int]
-              [Print
-               [:A null string]
-               [:B null int]]
-              [TCanvasMethod2
-               [:A int]
-               [:B string]]]
-             [TF1
-              [:A string string int int]
-              [:B string :plot-function double double double]
-              [Draw
-               [:A null]]]]
-            [:Functions
-             [:plot-function double double[1] double[1]]]])
+(c/load-types "root_types.edn")
 
-(def pc1 ((c/c-new TCanvas) "c1" "Something" 0 0 800 600))
-(def pf1 ((c/c-new TF1) "f1" "sin(x)" -5 5))
-((c/c-call TF1 Draw) pf1)
-((c/c-call TCanvas Print) pc1 "c_interop_1.pdf")
+(def pc1 ((c/new TCanvas) "c1" "Something" 0 0 800 600))
+(def pf1 ((c/new TF1) "f1" "sin(x)" -5 5))
+((c/call TF1 Draw) pf1)
+((c/call TCanvas Print) pc1 "c_interop_1.pdf")
+
+(defn plot-function [i]
+  (fn [[x]] (* i x)))
+
+(def pc2 ((c/new TCanvas) "c2" "Something" 0 0 800 600))
+(def pf2 ((c/new TF1 :B) "f2" (plot-function 3) -5.001 5.0 2))
+
+((c/call TF1 Draw) pf2)
+((c/call TCanvas Print) pc2 "c_interop_2.pdf")
