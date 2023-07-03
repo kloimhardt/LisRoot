@@ -1,25 +1,25 @@
-(native-header "TF1.h")
-(native-header "TCanvas.h")
-
 (defmacro type-fns []
-  (defn form-arrays [v]
-    (->> v
-         (partition-all 2 1)
-         (remove #(vector? (first %)))
-         (map (fn [v]
-                (let [o (first v)
-                      t (second v)]
-                  (if (vector? t)
-                    (vector o (first t))
-                    o))))))
+  (def form-arrays
+    (fn [v]
+      (->> v
+           (partition-all 2 1)
+           (remove #(vector? (first %)))
+           (map (fn [v]
+                  (let [o (first v)
+                        t (second v)]
+                    (if (vector? t)
+                      (vector o (first t))
+                      o)))))))
 
-  (defn make-types-1 [v]
-    (if (every? vector? (rest v))
-      [(first v) (into (hash-map) (map make-types-1 (rest v)))]
-      [(first v) (form-arrays (rest v))]))
+  (def make-types-1
+    (fn [v]
+      (if (every? vector? (rest v))
+        [(first v) (into (hash-map) (map make-types-1 (rest v)))]
+        [(first v) (form-arrays (rest v))])))
 
-  (defn make-types [v]
-    (apply hash-map (make-types-1 v)))
+  (def make-types
+    (fn [v]
+      (apply hash-map (make-types-1 v))))
 
   (def root-types (hash-map))
 
@@ -33,57 +33,65 @@
   nil)
 
 (defmacro class-fns []
-  (defn make-syms [s n]
-    (mapv #(symbol (str s "_" %)) (range n)))
+  (def make-syms
+    (fn [s n]
+      (mapv #(symbol (str s "_" %)) (range n))))
 
-  (defn cvt-from-c [t v]
-    (cond
-      (= t 'string) (str "obj<string>(" v ")")
-      (= t 'pointer) (str "obj<pointer>(" v ")")
-      (vector? t) (str "obj<array_seq<"
-                       (first t)
-                       ", number>>("
-                       v
-                       ", size_t("
-                       (second t)
+  (def cvt-from-c
+    (fn [t v]
+      (cond
+        (= t 'string) (str "obj<string>(" v ")")
+        (= t 'pointer) (str "obj<pointer>(" v ")")
+        (vector? t) (str "obj<array_seq<"
+                         (first t)
+                         ", number>>("
+                         v
+                         ", size_t("
+                         (second t)
 
-                       "))")))
-  (defn argslist [strs]
-    (str "(" (apply str (interpose ", " strs)) ")"))
+                         "))"))))
+  (def argslist
+    (fn [strs]
+      (str "(" (apply str (interpose ", " strs)) ")")))
 
-  (defn cvts-to-c [t v]
-    (cond
-      (= t 'string) (str "string::to<std::string>(" v ").c_str()")
-      (= t 'int) (str "number::to<std::int32_t>(" v ")")
-      (= t 'double) (str "number::to<double>(" v ")")))
+  (def cvts-to-c
+    (fn [t v]
+      (cond
+        (= t 'string) (str "string::to<std::string>(" v ").c_str()")
+        (= t 'int) (str "number::to<std::int32_t>(" v ")")
+        (= t 'double) (str "number::to<double>(" v ")"))))
 
-  (defn c-lambdabody [funname signature]
-    (str "return "
-         (cvts-to-c (first signature)
-                    (str "run"
-                         (argslist
-                           (cons
-                             funname
-                             (map cvt-from-c
-                                  (rest signature)
-                                  (make-syms "b" (dec (count signature))))))))
-         ";"))
+  (def c-lambdabody
+    (fn [funname signature]
+      (str "return "
+           (cvts-to-c (first signature)
+                      (str "run"
+                           (argslist
+                             (cons
+                               funname
+                               (map cvt-from-c
+                                    (rest signature)
+                                    (make-syms "b" (dec (count signature))))))))
+           ";")))
 
-  (defn c-lambda [varname signature]
-    (let [funargs (make-syms "b" (dec (count signature)))
-          argstypes (map (fn [e] (if (vector? e) (str (first e) "*") e))
-                         (rest signature))
-          combined (map (fn [t v] (str t " " v)) argstypes funargs)]
-      (str "[" varname "] " (argslist combined) " -> " (first signature)
-           " {" (c-lambdabody varname signature) "}")))
+  (def c-lambda
+    (fn [varname signature]
+      (let [funargs (make-syms "b" (dec (count signature)))
+            argstypes (map (fn [e] (if (vector? e) (str (first e) "*") e))
+                           (rest signature))
+            combined (map (fn [t v] (str t " " v)) argstypes funargs)]
+        (str "[" varname "] " (argslist combined) " -> " (first signature)
+             " {" (c-lambdabody varname signature) "}"))))
 
-  (defn cvt-to-c [t v]
-    (cond
-      (keyword? t) (c-lambda v (get-in root-types [:Types :Functions t]))
-      :else (cvts-to-c t v)))
+  (def cvt-to-c
+    (fn [t v]
+      (cond
+        (keyword? t) (c-lambda v (get-in root-types [:Types :Functions t]))
+        :else (cvts-to-c t v))))
 
-  (defn wrap-result [t s]
-    (str "__result = " (cvt-from-c t s)))
+  (def wrap-result
+    (fn [t s]
+      (str "__result = " (cvt-from-c t s))))
 
   nil)
 
@@ -114,26 +122,3 @@
             codestr
             (wrap-result (first funtypes) codestr)))))
 
-(add-types [:Types
-            [:Classes
-             [TCanvas
-              [:A string string int int int int]
-              [:B int]
-              [Print
-               [:A null string]
-               [:B null int]]
-              [TCanvasMethod2
-               [:A int]
-               [:B string]]]
-             [TF1
-              [:A string string int int]
-              [:B string :plot-function double double double]
-              [Draw
-               [:A null]]]]
-            [:Functions
-             [:plot-function double double[1] double[1]]]])
-
-(def pc1 ((c-new TCanvas) "c1" "Something" 0 0 800 600))
-(def pf1 ((c-new TF1) "f1" "cos(x)" -5 5))
-((c-call TF1 Draw) pf1)
-((c-call TCanvas Print) pc1 "c_interop_1.pdf")
