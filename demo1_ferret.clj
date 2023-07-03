@@ -206,19 +206,17 @@ number::to<double>(a_4)))")
 
 (defmacro mafun [h]
   (list 'fn '[a_0 a_1 a_2 a_3 a_4]
-    "auto cfun = [a_1]
-(double* vals, double* pars) -> double
-
-{ auto valsl = obj<array_seq<double, number>>(vals, size_t(1));
-auto parsl = obj<array_seq<double, number>>(pars, size_t(1));
-double res = number::to<double>(run(a_1, valsl, parsl));
-return res; };
-
-__result =
+    "__result =
 obj<pointer>(new TF1(
 string::to<std::string>(a_0).c_str(),
 
-cfun,
+[a_1] (double* vals, double* pars) -> double
+{
+return number::to<double>(run(
+a_1,
+obj<array_seq<double, number>>(vals, size_t(1)),
+obj<array_seq<double, number>>(pars, size_t(1))));
+},
 
 number::to<double>(a_2),
 number::to<double>(a_3),
@@ -252,6 +250,27 @@ number::to<double>(a_4)))"))
 
 (println (morefun))
 
+(defmacro evenmorefun []
+
+  (defn c-lambdabody [funname signature]
+    (str "return "
+         (cvt-to-c (first signature)
+                   (str "run"
+                        (argslist
+                          (cons
+                            funname
+                            (map cvt-from-c
+                                 (rest signature)
+                                 (make-syms "b" (dec (count signature))))))))
+         ";"))
+
+  (str (c-lambdabody "a_1"
+                      (get-in root-types [:Types :Functions :plot-function])))
+;;
+  )
+
+(println (evenmorefun))
+
 (comment
 
   (def uu (get-in root-types [:Types :Functions :plot-function]))
@@ -279,5 +298,22 @@ number::to<double>(a_4)))"))
 
   ;; statt {} in c-lambda1:
   ;; double res = cvt-to-c(double)(run(a_1, (cvt-to-c valsl), (cvt-to-cl parsl)));
+
+  (defn c-lambdabody [funname signature]
+    (str "return "
+         (cvt-to-c (first signature)
+                   (str "run"
+                        (argslist
+                          (cons
+                            funname
+                            (map cvt-from-c
+                                 (rest signature)
+                                 (make-syms "b" (dec (count signature))))))))
+         ";"))
+
+  (c-lambdabody "a_1" uu)
+
+
+
   )
 
