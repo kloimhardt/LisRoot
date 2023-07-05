@@ -20,7 +20,7 @@
 
 ;; Example 2
 
-(def linear [par0 par1]
+(defn linear [par0 par1]
   (fn [[x]]
     (+ par0 (* x par1))))
 
