@@ -170,6 +170,8 @@
       (list 'fn funargs (wrap-result 'pointer codestr))))
 
   (user/new1 'TCanvas :B)
+
+  ((user/new TCanvas :B))
   ;;
   )
 

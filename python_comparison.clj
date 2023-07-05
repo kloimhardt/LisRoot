@@ -4,16 +4,14 @@
 
 (c/load-types "root_types.edn")
 
-(def f ((c/new TF1)
-        "pyf2"
+(def f ((c/new TF1) "pyf2"
         (fn [[x] [par0 par1]]
           (+ par0 (* x par1)))
-        -1.
-        1. 2))
+        -1. 1. 2))
 
 ((c/call TF1 SetParameters) f 5. 2.)
 
-(def c ((c/new TCanvas) "c1" "Something" 0 0 800 600))
+(def c ((c/new TCanvas)))
 
 ((c/call TF1 Draw) f)
 ((c/call TCanvas Print) c "python_comparison.pdf")

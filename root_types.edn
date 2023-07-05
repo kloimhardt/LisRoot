@@ -3,7 +3,8 @@
   [:plot-function double double[10] double[11]]]
  [:Classes
   [TCanvas
-   [:A string string int int int int]
+   [:A]
+   [:B string string int int int int]
    [Print
     [:A null string]]]
   [TF1
