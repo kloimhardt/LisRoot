@@ -32,3 +32,8 @@
 
 (println (c_string "i"))
 
+(defn hai [lst]
+  "auto i= sequence::to<std_vector>(lst);
+__result = obj<number>(i.data()[0]);")
+
+(println (hai (list 6 4)))

@@ -69,6 +69,7 @@
     (fn [t v]
       (cond
         (= t 'string) (str "string::to<std::string>(" v ").c_str()")
+   ;;TODO maybe "string::c_str(" name "_packed)"
         (= t 'int) (str "number::to<std::int32_t>(" v ")")
         (= t 'double) (str "number::to<double>(" v ")"))))
 
@@ -133,3 +134,30 @@
             codestr
             (wrap-result (first funtypes) codestr)))))
 
+
+(comment 
+  (load-types "root_types.edn")
+
+  (defmacro call1 [class method & args]
+    (let [m-sub (or (first args) :A)
+          funtypes (get-in root-types [:Types :Classes class method m-sub])
+          funargs (->> funtypes count (make-syms "a"))
+          codestr (str "pointer::to_pointer<"
+                       (name class)
+                       ">("
+                       (first funargs)
+                       ")->"
+                       (name method)
+                       (argslist (map cvt-to-c (rest funtypes) (rest funargs))))]
+      (list 'fn funargs
+            (if (= (first funtypes) 'null)
+              codestr
+              (wrap-result (first funtypes) codestr)))))
+
+  ((call1 TF1 SetParameters) 'p 2.0)
+
+  (def a (get-in root-types [:Types :Classes 'TF1 ' SetParameters :A]))
+
+  (map cvts-to-c (rest a) (rest (make-syms "a"(count a))))
+;;
+  )

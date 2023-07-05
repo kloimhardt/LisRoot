@@ -1,6 +1,6 @@
 [:Types
  [:Functions
-  [:plot-function double double[1] double[1]]]
+  [:plot-function double double[10] double[11]]]
  [:Classes
   [TCanvas
    [:A string string int int int int]
@@ -9,4 +9,6 @@
   [TF1
    [:A string :plot-function double double double]
    [Draw
-    [:A null]]]]]
+    [:A null]]
+   [SetParameters
+    [:A null double double]]]]]
