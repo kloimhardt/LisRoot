@@ -4,11 +4,11 @@
 (require '[c_interop :as c])
 (c/load-types "root_types.edn")
 
-(defn l []
+(defn Linear []
   (fn [[x] [par0 par1]]
     (+ par0 (* x par1))))
 
-(def f ((c/new TF1) "pyf2" (l) -1. 1. 2))
+(def f ((c/new TF1) "pyf2" (Linear) -1. 1. 2))
 
 ((c/call TF1 SetParameters) f 5. 2.)
 
@@ -20,11 +20,11 @@
 
 ;; Example 2
 
-(defn linear [par0 par1]
+(defn LinearB [k d]
   (fn [[x]]
-    (+ par0 (* x par1))))
+    (+ d (* k x))))
 
 ((c/call TF1 Draw)
- ((c/new TF1) "pyf3" (linear 5. 2.) -1. 1. 2))
+ ((c/new TF1) "pyf3" (LinearB 2. 5.) -1. 1. 2))
 
 ((c/call TCanvas Print) c "pyf3.pdf")
