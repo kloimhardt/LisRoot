@@ -160,4 +160,16 @@
 
   (map cvts-to-c (rest a) (rest (make-syms "a"(count a))))
 ;;
+  (defn new1 [class & args]
+    (let [c-sub (or (first args) :A)
+          contypes (get-in root-types [:Types :Classes class c-sub])
+          funargs (->> contypes count (make-syms "a"))
+          codestr (str "new "
+                       (name class)
+                       (argslist (map cvt-to-c contypes funargs)))]
+      (list 'fn funargs (wrap-result 'pointer codestr))))
+
+  (user/new1 'TCanvas :B)
+  ;;
   )
+
