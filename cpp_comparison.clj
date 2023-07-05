@@ -32,3 +32,17 @@
 ((c/call TF1 Draw) Fnslit)
 ((c/call TCanvas Print) c "nslit.pdf")
 
+;; Example 2
+
+(defn fmul [f g]
+  (fn [& args]
+    (* (apply f args)
+       (apply g args))))
+
+(def Fnslits ((c/new TF1) "Fnslits" (fmul single nslit0) -5.001 5. 2))
+
+((c/call TF1 SetNpx) Fnslits 500)
+((c/call TF1 SetParameters) Fnslits 0.2 2)
+
+((c/call TF1 Draw) Fnslits)
+((c/call TCanvas Print) c "nslits.pdf")
