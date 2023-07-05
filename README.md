@@ -6,13 +6,13 @@ Install https://root.cern.ch
 Download ferret.jar from https://github.com/nakkaya/ferret
 
 ```
-java -jar ferret.jar -i basic_interop.clj
+java -jar ferret.jar -i root_plot.clj
 ```
 
 ```
-clang++ basic_interop.cpp $(root-config --glibs --cflags --libs) -o basic_interop
+clang++ root_plot.cpp $(root-config --glibs --cflags --libs) -o root_plot
 ```
 
 ```
-./basic_interop
+./root_plot
 ```
