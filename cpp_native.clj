@@ -42,3 +42,34 @@
 
 ((c/call TF1 Draw) Fnslits)
 ((c/call TCanvas Print) c "nslits_native.pdf")
+
+(c/add-type [:Classes TF1 Eval]
+            [:A null double])
+
+(def now1 (micros))
+(def erg ((c/call TF1 Eval) Fnslits 0.4))
+(println "Basetime: " (- (micros) now1))
+
+(c/add-type [:Classes TF1 GetX]
+            [:A null double double double double int])
+
+(def now (micros))
+(def erg ((c/call TF1 GetX) Fnslits 3.6 -5.0 0.3 1.E-14 1000000000))
+(println "Calctime: " (- (micros) now))
+
+;;Basetime:  15 +-3
+;;Calctime:  125 +-10
+
+(native-declare
+  "double nslitfun(double* x, double* par){
+  return pow(sin((3.1415*0.2*x[0]))/(3.1415*0.2*x[0]),2)*pow(sin((3.1415*2*x[0]))/sin((3.1415*x[0])),2);
+}")
+
+
+(defn hu []
+  "double x[1] = {3.0};
+   double p[1] = {2.0};
+
+__result = obj<number>(nslitfun(x, p))")
+
+(println (hu))
