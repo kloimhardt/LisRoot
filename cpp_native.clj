@@ -13,7 +13,7 @@
 
 (overload)
 
-(defmacro infix [x r ns]
+(defmacro nslit-string [x r ns]
   (def pi 3.1415)
 
   (defn single [x]
@@ -28,12 +28,17 @@
 
   (* (single x) (nslit0 x)))
 
-(println (infix x 0.2 2))
+(println (nslit-string x 0.2 2))
+;; => (pow(sin((3.1415*0.2*x))/(3.1415*0.2*x),2)*pow(sin((3.1415*2*x))/sin((3.1415*x)),2))
+
+(def c ((c/new TCanvas)))
 
 (c/add-type [:Classes TF1] [:B string string int int])
+(def Fnslits
+  ((c/new TF1 :B) "Fnslits" (nslit-string x 0.2 2) -5 5))
 
-(def pf2 ((c/new TF1 :B) "f2" (infix x 0.2 2) -5 5))
-(def pc2 ((c/new TCanvas :B) "c2" "Something" 0 0 800 600))
+(c/add-type [:Classes TF1 SetNpx] [:A null int])
+((c/call TF1 SetNpx) Fnslits 500)
 
-((c/call TF1 Draw) pf2)
-((c/call TCanvas Print) pc2 "c_interop_2.pdf")
+((c/call TF1 Draw) Fnslits)
+((c/call TCanvas Print) c "nslits_native.pdf")
