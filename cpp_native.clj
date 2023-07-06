@@ -5,10 +5,10 @@
 
 (defmacro overload []
   (defn paren [s] (str "(" s ")"))
-  (defn * [& args] (paren (apply str (interpose "*" args))))
+  (defn * [& args] (apply str (interpose "*" args)))
   (defn sin [arg] (str "sin" (paren arg)))
   (defn pow [x n] (str "pow" (paren (str x "," n))))
-  (defn / [a b] (str a "/" b))
+  (defn / [a b] (str a "/" (paren b)))
   nil)
 
 (overload)
@@ -28,8 +28,8 @@
 
   (* (single x) (nslit0 x)))
 
-(println (nslit-string x 0.2 2))
-;; => (pow(sin((3.1415*0.2*x))/(3.1415*0.2*x),2)*pow(sin((3.1415*2*x))/sin((3.1415*x)),2))
+(println (nslit-string "x[0]" 0.2 2))
+;;=> pow(sin(3.1415*0.2*x)/(3.1415*0.2*x),2)*pow(sin(3.1415*2*x)/(sin(3.1415*x)),2)
 
 (def c ((c/new TCanvas)))
 
@@ -47,7 +47,7 @@
             [:A null double])
 
 (def now1 (micros))
-(def erg ((c/call TF1 Eval) Fnslits 0.4))
+(def erg1 ((c/call TF1 Eval) Fnslits 0.4))
 (println "Basetime: " (- (micros) now1))
 
 (c/add-type [:Classes TF1 GetX]
@@ -63,13 +63,18 @@
 (native-declare
   "double nslitfun(double* x, double* par){
   return pow(sin((3.1415*0.2*x[0]))/(3.1415*0.2*x[0]),2)*pow(sin((3.1415*2*x[0]))/sin((3.1415*x[0])),2);
-}")
+}
 
+double runit() {
+  TF1 *Fnslit  = new TF1(\"Fnslit\",nslitfun,-5.001,5.,2);
+  return Fnslit->GetX(3.6, -5.0, 0.3, 1.E-14, 1000000000);
+}
+")
 
-(defn hu []
-  "double x[1] = {3.0};
-   double p[1] = {2.0};
+(defn runitnow [] "__result = obj<number>(runit())")
 
-__result = obj<number>(nslitfun(x, p))")
+(def now2 (micros))
+(def erg2 (runitnow))
+(println "Calctime2: " (- (micros) now2))
 
-(println (hu))
+;;Calctime2:  45 +-5
