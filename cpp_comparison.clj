@@ -1,6 +1,5 @@
 (native-header "TCanvas.h")
 (native-header "TF1.h")
-
 (require '[c_interop :as c])
 (c/load-types "root_types.edn")
 
