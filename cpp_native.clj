@@ -13,7 +13,7 @@
 
 (overload)
 
-(defmacro make-expression [r ns]
+(defmacro make-expression [x r ns]
   (def pi 3.1415)
 
   (defn single [x r ns]
@@ -29,9 +29,9 @@
   (defn nslit [x r ns]
     (* (single x r ns) (nslit0 x r ns)))
 
-  (nslit "x" r ns))
+  (nslit x r ns))
 
-(def nslit-string (make-expression 0.2 2))
+(def nslit-string (make-expression "x" 0.2 2))
 
 (println nslit-string)
 ;;=> pow(sin(3.1415*0.2*x)/(3.1415*0.2*x),2)*pow(sin(3.1415*2*x)/(sin(3.1415*x)),2)
@@ -39,8 +39,7 @@
 (def c ((c/new TCanvas)))
 
 (c/add-type [:Classes TF1] [:B string string int int])
-(def Fnslits
-  ((c/new TF1 :B) "Fnslits" nslit-string -5 5))
+(def Fnslits ((c/new TF1 :B) "Fnslits" nslit-string -5 5))
 
 (c/add-type [:Classes TF1 SetNpx] [:A null int])
 ((c/call TF1 SetNpx) Fnslits 500)
