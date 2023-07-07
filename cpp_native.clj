@@ -26,7 +26,10 @@
             (sin (* pi x)))
          2))
 
-  (* (single x) (nslit0 x)))
+  (defn nslit [x]
+    (* (single x) (nslit0 x)))
+
+  (nslit x))
 
 (println (nslit-string "x[0]" 0.2 2))
 ;;=> pow(sin(3.1415*0.2*x)/(3.1415*0.2*x),2)*pow(sin(3.1415*2*x)/(sin(3.1415*x)),2)
@@ -79,17 +82,20 @@ double runit() {
 
 ;;Calctime2:  45 +-5
 
-(def nat
- "[] (double* x, double* par) -> double {
-  return pow(sin((3.1415*0.2*x[0]))/(3.1415*0.2*x[0]),2)*pow(sin((3.1415*2*x[0]))/sin((3.1415*x[0])),2);
-}"
-)
+(defmacro def-native-fn-str []
+  (def native-fn-str
+    (str
+      "[] (double* x, double* par) -> double {
+return " (nslit "x[0]") ";}"))
+  nil)
+
+(def-native-fn-str)
 
 (def FastSlits
   ((c/new TF1
           :native
-          "[] (double* x, double* par) -> double
-{return x[0];}")
+          native-fn-str
+          )
    "Fnslit" "dum" -5.001 5. 2))
 
 ((c/call TF1 Draw) FastSlits)
