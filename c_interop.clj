@@ -99,7 +99,7 @@
     (fn [native-string]
       (fn [t v]
         (cond
-          (= :native-string t) (eval native-string)
+          (= :native-string t) native-string
           (keyword? t) (c-lambda v (get-in root-types [:Types :Functions t]))
           :else (cvts-to-c t v)))))
 
@@ -138,42 +138,5 @@
             codestr
             (wrap-result (first funtypes) codestr)))))
 
-
-(comment
-  (load-types "root_types.edn")
-  ((user/new TF1) "Fnslit" "dum" -5.001 5. 2)
-
-
-
-  "__result = obj<pointer>(
-new TF1(
-string::to<std::string>(a_0).c_str(),
-
-[a_1] (double* b_0, double* b_1) -> double {
-return number::to<double>(
-run(a_1, obj<array_seq<double, number>>(b_0, size_t(10)), obj<array_seq<double, number>>(b_1, size_t(11))));
-
-}, number::to<double>(a_2), number::to<double>(a_3), number::to<double>(a_4)))"
-
-
-  ((user/new TF1 :native "hi") "Fnslit" "dum" -5.001 5. 2)
-
-  "__result = obj<pointer>(
-new TF1(
-string::to<std::string>(a_0).c_str(),
-
-hi,
-
-number::to<double>(a_2),
-number::to<double>(a_3),
-number::to<double>(a_4)))"
-
-
-  (defmacro mi [] "himak")
-  ((user/new TF1 :native (mi)) "Fnslit" "dum" -5.001 5. 2)
-
-
-
-;;
-  )
-
+(defmacro defnative [head body]
+  (list 'native-declare (str head "{return " (eval body) ";}")))

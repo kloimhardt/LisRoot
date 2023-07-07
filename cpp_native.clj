@@ -16,20 +16,20 @@
 (defmacro make-expression [r ns]
   (def pi 3.1415)
 
-  (defn single [x]
+  (defn single [x r ns]
     (pow (/ (sin (* pi r x))
             (* pi r x))
          2))
 
-  (defn nslit0 [x]
+  (defn nslit0 [x r ns]
     (pow (/ (sin (* pi ns x))
             (sin (* pi x)))
          2))
 
-  (defn nslit [x]
-    (* (single x) (nslit0 x)))
+  (defn nslit [x r ns]
+    (* (single x r ns) (nslit0 x r ns)))
 
-  (nslit "x"))
+  (nslit "x" r ns))
 
 (def nslit-string (make-expression 0.2 2))
 
@@ -53,17 +53,26 @@
 
 (def now1 (micros))
 (def erg1 ((c/call TF1 Eval) Fnslits 0.4))
-(println "Basetime: " (- (micros) now1))
+(println "Call once: " (- (micros) now1))
 
 (c/add-type [:Classes TF1 GetX]
             [:A null double double double double int])
 
 (def now (micros))
 (def erg ((c/call TF1 GetX) Fnslits 3.6 -5.0 0.3 1.E-14 1000000000))
-(println "Calctime: " (- (micros) now))
+(println "Root-runtime-compile: " (- (micros) now))
 
-;;Basetime:  15 +-3
-;;Calctime:  125 +-10
+(c/defnative "double cpp_nslit(double* x, double* par)"
+  (nslit "x[0]" 0.2 2))
+
+(def FastSlits ((c/new TF1 :native cpp_nslit) "Fnslit" "native" -5.001 5. 2))
+
+(def now2 (micros))
+(def erg2 ((c/call TF1 GetX) FastSlits 3.6 -5.0 0.3 1.E-14 1000000000))
+(println "Native interop: " (- (micros) now2))
+
+((c/call TF1 Draw) FastSlits)
+((c/call TCanvas Print) c "nslits_fast.pdf")
 
 (native-declare
   "double nslitfun(double* x, double* par){
@@ -78,28 +87,12 @@ double runit() {
 
 (defn runitnow [] "__result = obj<number>(runit())")
 
-(def now2 (micros))
-(def erg2 (runitnow))
-(println "Calctime2: " (- (micros) now2))
+(def now3 (micros))
+(def erg3 (runitnow))
+(println "Native: " (- (micros) now3))
 
-;;Calctime2:  45 +-5
+;;Call once:  15 +-3
+;;Root-runtime-compile:  125 +-10
 
-(defmacro def-native-fn-str []
-  (def native-fn-str
-    (str
-      "[] (double* x, double* par) -> double {
-return " (nslit "x[0]") ";}"))
-  nil)
-
-(def-native-fn-str)
-
-(def FastSlits
-  ((c/new TF1
-          :native
-          native-fn-str
-          )
-   "Fnslit" "dum" -5.001 5. 2))
-
-((c/call TF1 Draw) FastSlits)
-((c/call TCanvas Print) c "nslits_fast.pdf")
-
+;;Native interop:  40 +-5
+;;Native:  40 +-5
