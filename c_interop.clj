@@ -96,10 +96,12 @@
              " {" (c-lambdabody varname signature) "}"))))
 
   (def cvt-to-c
-    (fn [t v]
-      (cond
-        (keyword? t) (c-lambda v (get-in root-types [:Types :Functions t]))
-        :else (cvts-to-c t v))))
+    (fn [native-string]
+      (fn [t v]
+        (cond
+          (= :native-string t) (eval native-string)
+          (keyword? t) (c-lambda v (get-in root-types [:Types :Functions t]))
+          :else (cvts-to-c t v)))))
 
   (def wrap-result
     (fn [t s]
@@ -111,15 +113,17 @@
 
 (defmacro new [class & args]
   (let [c-sub (or (first args) :A)
+        native-string (second args)
         contypes (get-in root-types [:Types :Classes class c-sub])
         funargs (->> contypes count (make-syms "a"))
         codestr (str "new "
                      (name class)
-                     (argslist (map cvt-to-c contypes funargs)))]
+                     (argslist (map (cvt-to-c native-string) contypes funargs)))]
     (list 'fn funargs (wrap-result 'pointer codestr))))
 
 (defmacro call [class method & args]
   (let [m-sub (or (first args) :A)
+        native-string (second args)
         funtypes (get-in root-types [:Types :Classes class method m-sub])
         funargs (->> funtypes count (make-syms "a"))
         codestr (str "pointer::to_pointer<"
@@ -128,50 +132,48 @@
                      (first funargs)
                      ")->"
                      (name method)
-                     (argslist (map cvt-to-c (rest funtypes) (rest funargs))))]
+                     (argslist (map (cvt-to-c native-string) (rest funtypes) (rest funargs))))]
     (list 'fn funargs
           (if (= (first funtypes) 'null)
             codestr
             (wrap-result (first funtypes) codestr)))))
 
 
-(comment 
+(comment
   (load-types "root_types.edn")
+  ((user/new TF1) "Fnslit" "dum" -5.001 5. 2)
 
-  (defmacro call1 [class method & args]
-    (let [m-sub (or (first args) :A)
-          funtypes (get-in root-types [:Types :Classes class method m-sub])
-          funargs (->> funtypes count (make-syms "a"))
-          codestr (str "pointer::to_pointer<"
-                       (name class)
-                       ">("
-                       (first funargs)
-                       ")->"
-                       (name method)
-                       (argslist (map cvt-to-c (rest funtypes) (rest funargs))))]
-      (list 'fn funargs
-            (if (= (first funtypes) 'null)
-              codestr
-              (wrap-result (first funtypes) codestr)))))
 
-  ((call1 TF1 SetParameters) 'p 2.0)
 
-  (def a (get-in root-types [:Types :Classes 'TF1 ' SetParameters :A]))
+  "__result = obj<pointer>(
+new TF1(
+string::to<std::string>(a_0).c_str(),
 
-  (map cvts-to-c (rest a) (rest (make-syms "a"(count a))))
+[a_1] (double* b_0, double* b_1) -> double {
+return number::to<double>(
+run(a_1, obj<array_seq<double, number>>(b_0, size_t(10)), obj<array_seq<double, number>>(b_1, size_t(11))));
+
+}, number::to<double>(a_2), number::to<double>(a_3), number::to<double>(a_4)))"
+
+
+  ((user/new TF1 :native "hi") "Fnslit" "dum" -5.001 5. 2)
+
+  "__result = obj<pointer>(
+new TF1(
+string::to<std::string>(a_0).c_str(),
+
+hi,
+
+number::to<double>(a_2),
+number::to<double>(a_3),
+number::to<double>(a_4)))"
+
+
+  (defmacro mi [] "himak")
+  ((user/new TF1 :native (mi)) "Fnslit" "dum" -5.001 5. 2)
+
+
+
 ;;
-  (defn new1 [class & args]
-    (let [c-sub (or (first args) :A)
-          contypes (get-in root-types [:Types :Classes class c-sub])
-          funargs (->> contypes count (make-syms "a"))
-          codestr (str "new "
-                       (name class)
-                       (argslist (map cvt-to-c contypes funargs)))]
-      (list 'fn funargs (wrap-result 'pointer codestr))))
-
-  (user/new1 'TCanvas :B)
-
-  ((user/new TCanvas :B))
-  ;;
   )
 

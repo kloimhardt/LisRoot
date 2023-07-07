@@ -9,6 +9,7 @@
     [:A null string]]]
   [TF1
    [:A string :plot-function double double double]
+   [:native string :native-string double double double]
    [Draw
     [:A null]]
    [SetParameters

@@ -78,3 +78,20 @@ double runit() {
 (println "Calctime2: " (- (micros) now2))
 
 ;;Calctime2:  45 +-5
+
+(def nat
+ "[] (double* x, double* par) -> double {
+  return pow(sin((3.1415*0.2*x[0]))/(3.1415*0.2*x[0]),2)*pow(sin((3.1415*2*x[0]))/sin((3.1415*x[0])),2);
+}"
+)
+
+(def FastSlits
+  ((c/new TF1
+          :native
+          "[] (double* x, double* par) -> double
+{return x[0];}")
+   "Fnslit" "dum" -5.001 5. 2))
+
+((c/call TF1 Draw) FastSlits)
+((c/call TCanvas Print) c "nslits_fast.pdf")
+
