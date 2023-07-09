@@ -24,7 +24,11 @@
   (fn [[x]]
     (+ d (* k x))))
 
+(println ((LinearB 2.0 5.0) (list 1.0))) ;;comment => 7.0
+(println ((LinearB 2.0 4.0) (list 1.0))) ;;comment => 6.0
+
 ((c/call TF1 Draw)
  ((c/new TF1) "pyf3" (LinearB 2. 5.) -1. 1. 2))
 
 ((c/call TCanvas Print) c "pyf3.pdf")
+
