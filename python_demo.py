@@ -17,3 +17,8 @@ print(lb([1.0])) #comment => 7.0
 
 lb._d = 4.0
 print(lb([1.0])) #comment => 6.0
+
+def LinearC(k, d):
+    return lambda arr: d + k*arr[0]
+
+print(LinearC(2.0, 5.0)([1.0]))
