@@ -34,9 +34,9 @@
 ;; Example 2
 
 (defn fmul [f g]
-  (fn [& args]
-    (* (apply f args)
-       (apply g args))))
+  (fn [& params]
+    (* (apply f params)
+       (apply g params))))
 
 (def Fnslits ((c/new TF1) "Fnslits" (fmul single nslit0) -5.001 5. 2))
 

@@ -4,8 +4,14 @@
 (c/load-types "root_types.edn")
 
 (defmacro overload []
+  (defn smul [args] (apply str (interpose "*" args)))
+  (defn fmul [args] (fn [& params]
+                      (smul (map (fn [f] (apply f params))
+                                 args))))
+  (defn * [& args] (if (fn? (first args))
+                     (fmul args)
+                     (smul args)))
   (defn paren [s] (str "(" s ")"))
-  (defn * [& args] (apply str (interpose "*" args)))
   (defn sin [arg] (str "sin" (paren arg)))
   (defn pow [x n] (str "pow" (paren (str x "," n))))
   (defn / [a b] (str a "/" (paren b)))
@@ -13,7 +19,7 @@
 
 (overload)
 
-(defmacro make-expression [x r ns]
+(defmacro nslit [x r ns]
   (def pi 3.1415)
 
   (defn single [x r ns]
@@ -26,20 +32,15 @@
             (sin (* pi x)))
          2))
 
-  (defn nslit [x r ns]
-    (* (single x r ns) (nslit0 x r ns)))
+  ((* single nslit0) x r ns))
 
-  (nslit x r ns))
-
-(def nslit-string (make-expression "x" 0.2 2))
-
-(println nslit-string)
+(println (nslit "x" 0.2 2))
 ;;=> pow(sin(3.1415*0.2*x)/(3.1415*0.2*x),2)*pow(sin(3.1415*2*x)/(sin(3.1415*x)),2)
 
 (def c ((c/new TCanvas)))
 
 (c/add-type [:Classes TF1] [:B string string int int])
-(def Fnslits ((c/new TF1 :B) "Fnslits" nslit-string -5 5))
+(def Fnslits ((c/new TF1 :B) "Fnslits" (nslit "x" 0.2 2) -5 5))
 
 (c/add-type [:Classes TF1 SetNpx] [:A null int])
 ((c/call TF1 SetNpx) Fnslits 500)
@@ -62,7 +63,7 @@
 (println "Root-runtime-compile: " (- (micros) now))
 
 (c/defnative "double cpp_nslit(double* x, double* par)"
-  (nslit "x[0]" 0.2 2))
+  ((* single nslit0) "x[0]" 0.2 2))
 
 (def FastSlits ((c/new TF1 :native cpp_nslit) "Fnslit" "native" -5.001 5. 2))
 
