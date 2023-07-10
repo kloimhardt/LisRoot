@@ -72,7 +72,6 @@
     (fn [t v]
       (cond
         (= t 'string) (str "string::to<std::string>(" v ").c_str()")
-   ;;TODO maybe "string::c_str(" name "_packed)"
         (= t 'int) (str "number::to<std::int32_t>(" v ")")
         (= t 'double) (str "number::to<double>(" v ")")
         :else v)))
