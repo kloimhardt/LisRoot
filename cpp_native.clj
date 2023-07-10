@@ -47,12 +47,11 @@
 ((c/call TF1 Draw) Fnslits)
 ((c/call TCanvas Print) c "nslits_native.pdf")
 
-(c/add-type [:Classes TF1 Eval]
-            [:A null double])
+(c/add-type [:Classes TF1 Eval] [:A double double])
 
 (def now1 (micros))
 (def erg1 ((c/call TF1 Eval) Fnslits 0.4))
-(println "Call once: " (- (micros) now1))
+(println "Call once: " erg1 (- (micros) now1))
 
 (c/add-type [:Classes TF1 GetX]
             [:A null double double double double int])

@@ -53,6 +53,7 @@
       (cond
         (= t 'string) (str "obj<string>(" v ")")
         (= t 'pointer) (str "obj<pointer>(" v ")")
+        (= t 'double) (str "obj<number>(" v ")")
         (vector? t) (str "obj<array_seq<"
                          (first t)
                          ", number>>("
@@ -60,7 +61,9 @@
                          ", size_t("
                          (second t)
 
-                         "))"))))
+                         "))")
+        :else v)))
+
   (def argslist
     (fn [strs]
       (str "(" (apply str (interpose ", " strs)) ")")))
@@ -71,7 +74,8 @@
         (= t 'string) (str "string::to<std::string>(" v ").c_str()")
    ;;TODO maybe "string::c_str(" name "_packed)"
         (= t 'int) (str "number::to<std::int32_t>(" v ")")
-        (= t 'double) (str "number::to<double>(" v ")"))))
+        (= t 'double) (str "number::to<double>(" v ")")
+        :else v)))
 
   (def c-lambdabody
     (fn [funname signature]
