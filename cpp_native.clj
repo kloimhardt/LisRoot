@@ -54,11 +54,11 @@
 (println "Call once: " erg1 (- (micros) now1))
 
 (c/add-type [:Classes TF1 GetX]
-            [:A null double double double double int])
+            [:A double double double double double int])
 
 (def now (micros))
 (def erg ((c/call TF1 GetX) Fnslits 3.6 -5.0 0.3 1.E-14 1000000000))
-(println "Root-runtime-compile: " (- (micros) now))
+(println "Root-runtime-compile: " erg (- (micros) now))
 
 (c/defnative "double cpp_nslit(double* x, double* par)"
   ((* single nslit0) "x[0]" 0.2 2))
@@ -67,7 +67,7 @@
 
 (def now2 (micros))
 (def erg2 ((c/call TF1 GetX) FastSlits 3.6 -5.0 0.3 1.E-14 1000000000))
-(println "Native interop: " (- (micros) now2))
+(println "Native interop: " erg2 (- (micros) now2))
 
 ((c/call TF1 Draw) FastSlits)
 ((c/call TCanvas Print) c "nslits_fast.pdf")
@@ -87,7 +87,7 @@ double runit() {
 
 (def now3 (micros))
 (def erg3 (runitnow))
-(println "Native: " (- (micros) now3))
+(println "Native: " erg3 (- (micros) now3))
 
 ;;Call once:  15 +-3
 ;;Root-runtime-compile:  125 +-10
