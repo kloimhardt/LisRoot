@@ -11,10 +11,9 @@
   (defn * [& args] (if (fn? (first args))
                      (fmul args)
                      (smul args)))
-  (defn paren [s] (str "(" s ")"))
-  (defn sin [arg] (str "sin" (paren arg)))
-  (defn pow [x n] (str "pow" (paren (str x "," n))))
-  (defn / [a b] (str a "/" (paren b)))
+  (defn sin [arg] (str "sin(" arg ")"))
+  (defn pow [x n] (str "pow(" x ", " n ")"))
+  (defn / [a b] (str a "/(" b ")"))
   nil)
 
 (overload)
