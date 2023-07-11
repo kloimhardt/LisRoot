@@ -2,7 +2,9 @@ function transducers ()
   "* The final result beforehand: *"
   "** Root mean square of [2, 3, 4, 5] from dirty data **"
   data = [2, 3, 11, 4, 5];
+  data = transpose(rand(10000,1) * 20.0);
   "*** procedural ***"
+  tic
   erg=0;
   n=0;
   for x = data
@@ -12,12 +14,21 @@ function transducers ()
     end
   end
   sqrt(erg / n)
+  toc
   "*** functional ***"
+  tic
   sqrt(mean(data(data < 10).^2))
-  "*** fast functional ***"
+  toc
+  "*** transducer ***"
   xform = comp(filtering(@(x) (x < 10)), ...
                mapping(@sqr));
+  tic
   sqrt(transduce(xform, @special_mean, data))
+  toc
+    "*** transducer (faster version) ***"
+  tic
+  sqrt(mean1(reduce(xform(@mean2), [0, 0], data)))
+  toc
 
   "* Break it down: *"
   v = [2, 3, 4, 5];
@@ -82,12 +93,20 @@ function erg = sumvec (acc, vals)
   end
 end
 
-function erg = reduce (f, acc, vals)
+function erg = reduce_slow (f, acc, vals)
   if length(vals) == 0
     erg = acc;
   else
     erg = reduce(f, f(acc, first(vals)), rest(vals));
   end
+end
+
+function erg = reduce (f, acc, vals)
+ y = acc;
+ for x = vals
+   y = f(y, x);
+ end
+ erg = y;
 end
 
 function erg = sum_count (acc, x)
@@ -108,6 +127,14 @@ function erg = special_mean (acc, x)
   elseif nargin() == 1
     erg = div(acc.sum, acc.count);
   end
+end
+
+function erg = mean1 (acc)
+ erg = acc(1) / acc(2);
+end
+
+function erg = mean2 (acc, x)
+  erg = [acc(1) + x, acc(2) + 1];
 end
 
 function erg = reduce_better (f, vals)
