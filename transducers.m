@@ -2,12 +2,25 @@ function transducers ()
   "* The final result beforehand: *"
   "** Root mean square of [2, 3, 4, 5] from dirty data **"
   data = [2, 3, 11, 4, 5];
+  "*** procedural ***"
+  erg=0;
+  n=0;
+  for x = data
+    if x < 10
+      n = n + 1;
+      erg = erg + x * x;
+    end
+  end
+  sqrt(erg / n)
+  "*** functional ***"
+  sqrt(mean(data(data < 10).^2))
+  "*** fast functional ***"
   xform = comp(filtering(@(x) (x < 10)), ...
                mapping(@sqr));
-  sqrt(transduce(xform, @mean, data))
+  sqrt(transduce(xform, @special_mean, data))
 
-  v = [2, 3, 4, 5];
   "* Break it down: *"
+  v = [2, 3, 4, 5];
   "** Sum of the manually cleaned data [2, 3, 4, 5] **"
   "*** using plain recursion ***"
   sumvec(0, v)
@@ -19,9 +32,9 @@ function transducers ()
 
   "** Mean value **"
   "*** our mean function takes zero, one, or two arguments"
-  mean(reduce(@mean, mean(), v))
+  special_mean(reduce(@special_mean, special_mean(), v))
   "*** which lets us create an even better reduce abstraction"
-  reduce_better(@mean, v)
+  reduce_better(@special_mean, v)
 
   "** Sum of the squares **"
   "*** First squaring the data and then summing takes a lot of memory ***"
@@ -35,9 +48,9 @@ function transducers ()
   transduce(mapping(@sqr), @summe_complete, v)
   "** The mean value again **"
   "*** Sure we can use transduce also for this ***"
-  transduce(@identity, @mean, v)
+  transduce(@identity, @special_mean, v)
   "** Voila, the root mean squared, of the manually cleaned data **"
-  sqrt(transduce(mapping(@sqr), @mean, v))
+  sqrt(transduce(mapping(@sqr), @special_mean, v))
   "** Only sum values lower than 4 **"
   transduce(filtering(@(x) (x < 4)), @summe_complete, v)
   "** Sum the squares of values lower than 4 **"
@@ -86,7 +99,7 @@ function erg = div (x, y)
   erg = x / y;
 end
 
-function erg = mean (acc, x)
+function erg = special_mean (acc, x)
   if nargin() == 0
     erg = struct("sum", 0 , "count", 0);
   elseif nargin() == 2
