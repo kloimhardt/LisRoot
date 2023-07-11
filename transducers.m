@@ -1,4 +1,4 @@
-function funktional ()
+function transducers ()
   "* The final result beforehand: *"
   "** Root mean square of [2, 3, 4, 5] from dirty data **"
   data = [2, 3, 11, 4, 5];
