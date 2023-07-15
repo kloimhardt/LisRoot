@@ -23,6 +23,10 @@
 
   (def root-types (hash-map))
 
+  (def set-types-raw
+    (fn [t]
+      (alter-var-root (var root-types) (constantly (make-types t)))))
+
   (def add-type-raw
     (fn [path t]
       (alter-var-root (var root-types)
@@ -33,17 +37,16 @@
 
 (type-fns)
 
-(defmacro set-types [t]
-  (alter-var-root (var root-types) (constantly (make-types t)))
-  nil)
-
 (defmacro load-types [filename]
-  (alter-var-root (var root-types)
-                  (->> filename slurp read-string make-types constantly))
+  (set-types-raw (read-string (slurp filename)))
   nil)
 
 (defmacro add-type [path t]
   (add-type-raw (concat (list :Types) path) t)
+  nil)
+
+(defmacro add-signature [path t]
+  (add-type-raw (concat (list :Types :Classes) path) t)
   nil)
 
 (defmacro class-fns []
