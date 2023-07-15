@@ -23,6 +23,12 @@
 
   (def root-types (hash-map))
 
+  (def add-type-raw
+    (fn [path t]
+      (alter-var-root (var root-types)
+                      assoc-in
+                      (concat path (list (first t)))
+                      (rest t))))
   nil)
 
 (type-fns)
@@ -37,10 +43,7 @@
   nil)
 
 (defmacro add-type [path t]
-  (alter-var-root (var root-types)
-                  assoc-in
-                  (concat (list :Types) path (list (first t)))
-                  (rest t))
+  (add-type-raw (concat (list :Types) path) t)
   nil)
 
 (defmacro class-fns []
