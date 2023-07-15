@@ -18,19 +18,17 @@
 (defn nslit []
   (fn [x par] (* (single x par) (nslit0 x par))))
 
-(def Fnslit ((c/new TF1) "Fnslit" (nslit) -5.001 5. 2))
+(def Fnslit ((c/TF1) "Fnslit" (nslit) -5.001 5. 2))
 
 (c/add-signature [TF1 SetNpx] [:A null int])
 
 ((c/TF1 SetNpx) Fnslit 500)
 
-;; ((c/call TF1 SetNpx) Fnslit 500)
-
-((c/call TF1 SetParameters) Fnslit 0.2 2)
+((c/TF1 SetParameters) Fnslit 0.2 2)
 
 (def c ((c/new TCanvas)))
 
-((c/call TF1 Draw) Fnslit)
+((c/TF1 Draw) Fnslit)
 ((c/call TCanvas Print) c "nslit.pdf")
 
 ;; Example 2

@@ -145,6 +145,13 @@
                 codestr
                 (wrap-result (first funtypes) codestr))))))
 
+  (def dispatch-new-call
+    (fn [classname args]
+      (if (or (keyword? (first args))
+              (nil? (first args)))
+        (new-raw (symbol classname) args)
+        (call-raw (symbol classname) (first args) (rest args)))))
+
   nil)
 
 (class-fns)
@@ -155,8 +162,7 @@
 (defmacro call [class method & args]
   (call-raw class method args))
 
-(defmacro TF1 [method & args]
-  (call-raw (symbol "TF1") method args))
-
 (defmacro defnative [head body]
   (list 'native-declare (str head "{return " (eval body) ";}")))
+
+(defmacro TF1 [& args] (dispatch-new-call "TF1" args))
