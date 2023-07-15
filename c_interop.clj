@@ -116,36 +116,47 @@
     (fn [t s]
       (str "__result = " (cvt-from-c t s))))
 
+  (def new-raw
+    (fn [class args]
+      (let [c-sub (or (first args) :A)
+            native-string (second args)
+            contypes (get-in root-types [:Types :Classes class c-sub])
+            funargs (->> contypes count (make-syms "a"))
+            codestr (str "new "
+                         (name class)
+                         (argslist (map (cvt-to-c native-string) contypes funargs)))]
+        (list 'fn funargs (wrap-result 'pointer codestr)))))
+
+  (def call-raw
+    (fn [class method args]
+      (let [m-sub (or (first args) :A)
+            native-string (second args)
+            funtypes (get-in root-types [:Types :Classes class method m-sub])
+            funargs (->> funtypes count (make-syms "a"))
+            codestr (str "pointer::to_pointer<"
+                         (name class)
+                         ">("
+                         (first funargs)
+                         ")->"
+                         (name method)
+                         (argslist (map (cvt-to-c native-string) (rest funtypes) (rest funargs))))]
+        (list 'fn funargs
+              (if (= (first funtypes) 'null)
+                codestr
+                (wrap-result (first funtypes) codestr))))))
+
   nil)
 
 (class-fns)
 
 (defmacro new [class & args]
-  (let [c-sub (or (first args) :A)
-        native-string (second args)
-        contypes (get-in root-types [:Types :Classes class c-sub])
-        funargs (->> contypes count (make-syms "a"))
-        codestr (str "new "
-                     (name class)
-                     (argslist (map (cvt-to-c native-string) contypes funargs)))]
-    (list 'fn funargs (wrap-result 'pointer codestr))))
+  (new-raw class args))
 
 (defmacro call [class method & args]
-  (let [m-sub (or (first args) :A)
-        native-string (second args)
-        funtypes (get-in root-types [:Types :Classes class method m-sub])
-        funargs (->> funtypes count (make-syms "a"))
-        codestr (str "pointer::to_pointer<"
-                     (name class)
-                     ">("
-                     (first funargs)
-                     ")->"
-                     (name method)
-                     (argslist (map (cvt-to-c native-string) (rest funtypes) (rest funargs))))]
-    (list 'fn funargs
-          (if (= (first funtypes) 'null)
-            codestr
-            (wrap-result (first funtypes) codestr)))))
+  (call-raw class method args))
+
+(defmacro TF1 [method & args]
+  (call-raw (symbol "TF1") method args))
 
 (defmacro defnative [head body]
   (list 'native-declare (str head "{return " (eval body) ";}")))

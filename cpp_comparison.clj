@@ -22,7 +22,9 @@
 
 (c/add-signature [TF1 SetNpx] [:A null int])
 
-((c/call TF1 SetNpx) Fnslit 500)
+((c/TF1 SetNpx) Fnslit 500)
+
+;; ((c/call TF1 SetNpx) Fnslit 500)
 
 ((c/call TF1 SetParameters) Fnslit 0.2 2)
 
