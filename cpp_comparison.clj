@@ -3,6 +3,8 @@
 (require '[c_interop :as c])
 (c/load-types "root_types.edn")
 
+(defmacro TF1 [& args] (dispatch-new-call "TF1" args))
+
 (def pi 3.1415)
 
 (defn single [[x] [r]]
@@ -18,17 +20,17 @@
 (defn nslit []
   (fn [x par] (* (single x par) (nslit0 x par))))
 
-(def Fnslit ((c/TF1) "Fnslit" (nslit) -5.001 5. 2))
+(def Fnslit ((TF1) "Fnslit" (nslit) -5.001 5. 2))
 
 (c/add-signature [TF1 SetNpx] [:A null int])
 
-((c/TF1 SetNpx) Fnslit 500)
+((TF1 SetNpx) Fnslit 500)
 
-((c/TF1 SetParameters) Fnslit 0.2 2)
+((TF1 SetParameters) Fnslit 0.2 2)
 
 (def c ((c/new TCanvas)))
 
-((c/TF1 Draw) Fnslit)
+((TF1 Draw) Fnslit)
 ((c/call TCanvas Print) c "nslit.pdf")
 
 ;; Example 2

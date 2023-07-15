@@ -164,5 +164,3 @@
 
 (defmacro defnative [head body]
   (list 'native-declare (str head "{return " (eval body) ";}")))
-
-(defmacro TF1 [& args] (dispatch-new-call "TF1" args))
