@@ -124,8 +124,9 @@
             funargs (->> contypes count (make-syms "a"))
             codestr (str "new "
                          (name class)
-                         (argslist (map (cvt-to-c native-string) contypes funargs)))]
-        (list 'fn funargs (wrap-result 'pointer codestr)))))
+                         (argslist (map (cvt-to-c native-string) contypes funargs)))
+            fnctn (list 'fn funargs (wrap-result 'pointer codestr))]
+        fnctn)))
 
   (def call-raw
     (fn [class method args]
@@ -145,8 +146,8 @@
                 codestr
                 (wrap-result (first funtypes) codestr))))))
 
-  (def dispatch-new-call
-    (fn [classname args]
+  (def bake
+    (fn [args classname]
       (if (or (keyword? (first args))
               (nil? (first args)))
         (new-raw (symbol classname) args)

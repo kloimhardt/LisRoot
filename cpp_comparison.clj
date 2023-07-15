@@ -3,7 +3,8 @@
 (require '[c_interop :as c])
 (c/load-types "root_types.edn")
 
-(defmacro TF1 [& args] (dispatch-new-call "TF1" args))
+(defmacro TF1 [& args] (bake args "TF1"))
+(defmacro TCanvas [& args] (bake args "TCanvas"))
 
 (def pi 3.1415)
 
@@ -28,10 +29,10 @@
 
 ((TF1 SetParameters) Fnslit 0.2 2)
 
-(def c ((c/new TCanvas)))
+(def c ((TCanvas)))
 
 ((TF1 Draw) Fnslit)
-((c/call TCanvas Print) c "nslit.pdf")
+((TCanvas Print) c "nslit.pdf")
 
 ;; Example 2
 
