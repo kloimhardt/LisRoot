@@ -124,9 +124,8 @@
             funargs (->> contypes count (make-syms "a"))
             codestr (str "new "
                          (name class)
-                         (argslist (map (cvt-to-c native-string) contypes funargs)))
-            fnctn (list 'fn funargs (wrap-result 'pointer codestr))]
-        fnctn)))
+                         (argslist (map (cvt-to-c native-string) contypes funargs)))]
+        (list 'fn funargs (wrap-result 'pointer codestr)))))
 
   (def call-raw
     (fn [class method args]
@@ -148,10 +147,17 @@
 
   (def bake
     (fn [args classname]
-      (if (or (keyword? (first args))
-              (nil? (first args)))
-        (new-raw (symbol classname) args)
-        (call-raw (symbol classname) (first args) (rest args)))))
+      (let [c-sub (or (first args) :A)
+            class (symbol classname)
+            types (get-in root-types [:Types :Classes class c-sub])
+            ]
+        (cond
+          (and (seq types) (not (map? types)))
+          (new-raw (symbol classname) args)
+          (and (not (seq types)) (map? types))
+          (list (new-raw (symbol classname) args))
+          :else
+          (call-raw (symbol classname) (first args) (rest args))))))
 
   nil)
 

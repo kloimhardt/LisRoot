@@ -29,7 +29,7 @@
 
 ((TF1 SetParameters) Fnslit 0.2 2)
 
-(def c ((TCanvas)))
+(def c (TCanvas))
 
 ((TF1 Draw) Fnslit)
 ((TCanvas Print) c "nslit.pdf")
