@@ -5,6 +5,7 @@
 
 (defmacro TF1 [& args] (bake args "TF1"))
 (defmacro TCanvas [& args] (bake args "TCanvas"))
+(defmacro => [fun class] (bake [fun] class))
 
 (def pi 3.1415)
 
@@ -25,7 +26,8 @@
 
 (c/add-signature [TF1 SetNpx] [:A null int])
 
-((TF1 SetNpx) Fnslit 500)
+;;((TF1 SetNpx) Fnslit 500)
+((=> SetNpx TF1) Fnslit 500)
 
 ((TF1 SetParameters) Fnslit 0.2 2)
 

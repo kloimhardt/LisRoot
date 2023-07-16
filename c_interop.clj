@@ -149,8 +149,7 @@
     (fn [args classname]
       (let [c-sub (or (first args) :A)
             class (symbol classname)
-            types (get-in root-types [:Types :Classes class c-sub])
-            ]
+            types (get-in root-types [:Types :Classes class c-sub])]
         (cond
           (and (seq types) (not (map? types)))
           (new-raw (symbol classname) args)
@@ -160,6 +159,49 @@
           (call-raw (symbol classname) (first args) (rest args))))))
 
   nil)
+
+(comment
+  (load-types "root_types.edn")
+
+  (defn bakeclass [class s args]
+    (let [c-sub (or s :A)
+          types (get-in root-types [:Types :Classes class c-sub])
+          code (new-raw class (cons s args))]
+      (if (seq types) code (list code))))
+
+  (defn bakemethod [method class t args]
+    (let [m-sub (or t :A)]
+      (call-raw class method (cons t args))))
+
+(defn bake2 [args]
+  (let [classes (get-in root-types [:Types :Classes])
+        f (first args)
+        s (second args)
+        t (first (nnext args))]
+    (do
+      (cond
+        (vector? s)
+        (add-type-raw (list :Types :Classes f) s)
+        (and (get classes s) (vector? t))
+        (add-type-raw (list :Types :Classes s f) t))
+      (cond
+        (get classes f)
+        (bakeclass f (if (vector? s) (first s) s) (nnext args))
+        (get classes s)
+        (bakemethod f s (if (vector? t) (first t) t) (next (nnext args)))
+        :else nil))))
+
+(defn g [& args] (bake2 args))
+
+(g 'TF1)
+(g 'TCanvas)
+(g 'TCanvas [:E 'double])
+(g 'TCanvas [:F])
+(g 'TCanvas :F)
+
+(g 'SetParameters 'TF1)
+;;
+  )
 
 (class-fns)
 
