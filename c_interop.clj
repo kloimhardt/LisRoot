@@ -133,6 +133,13 @@
             native-string (second args)
             funtypes (get-in root-types [:Types :Classes class method m-sub])
             funargs (->> funtypes count (make-syms "a"))
+            lasttwo (take-last 2 funtypes)
+            return-type (if (= (str (first lasttwo)) "->")
+                          (second lasttwo) 'null)
+            arg-types (if (= return-type 'null)
+                        funtypes
+                        (drop-last 2 funtypes))
+            arg-symbols (->> arg-types count (make-syms "a"))
             codestr (str "pointer::to_pointer<"
                          (name class)
                          ">("
