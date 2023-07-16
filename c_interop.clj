@@ -195,12 +195,25 @@
     (fn [type-filename]
       (set-types-raw (read-string (slurp type-filename)))
       (fn [macargs]
-        (list 'fn [(symbol "&") 'args]
-              (list 'def 'uu 'args)
-              (list 'apply (bake macargs) 'args)))))
+        (let [classes (get-in root-types [:Types :Classes])
+              method (first macargs)
+              class (second macargs)
+              class? (get classes class)
+              types (first (nnext macargs))
+              types-kw (or (if (vector? types) (first types) types) :A)
+              r (next (nnext macargs))
+              data (if (= (symbol "new") method)
+                     (get-in classes [class types-kw])
+                     (get-in classes [class method types-kw]))]
+          (list 'fn [(symbol "&") 'args]
+                (list 'checkit (cons 'list (map str data)) 'args)
+                (list 'apply (bake macargs) 'args))))))
   nil)
 
 (class-fns)
+
+(defn checkit [macargs args]
+  (println "checkit" macargs args))
 
 (comment
 
@@ -210,7 +223,7 @@
 
   (defmacro g [& args] ((with-types-check-1 "root_types.edn") args))
 
-  ((g SetParameters TF1) "hiai3" 2 3)
+  ((g SetParameters TF1) "hiai35" 2 3)
   (identity uu)
   ;;
   )

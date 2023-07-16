@@ -4,7 +4,7 @@
 (require 'c_interop)
 (defmacro => [& args] ((with-types "root_types.edn") args))
 
-(defmacro g [& args] ((with-types-check "root_types.edn") args))
+(defmacro ==> [& args] ((with-types-check "root_types.edn") args))
 
 (def pi 3.1415)
 
@@ -25,10 +25,7 @@
 
 ((=> SetNpx TF1 [:A int]) Fnslit 500)
 
-((=> SetParameters TF1) Fnslit 0.2 2)
-((g SetParameters TF1) Fnslit 0.2 2)
-
-(println "uu" uu)
+((==> SetParameters TF1) Fnslit 0.2 2)
 
 (def c (=> new TCanvas))
 
