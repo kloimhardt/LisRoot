@@ -45,10 +45,6 @@
   (add-type-raw (concat (list :Types) path) t)
   nil)
 
-(defmacro add-signature [path t]
-  (add-type-raw (concat (list :Types :Classes) path) t)
-  nil)
-
 (defmacro class-fns []
   (def make-syms
     (fn [s n]
@@ -132,34 +128,27 @@
       (let [m-sub (or (first args) :A)
             native-string (second args)
             funtypes (get-in root-types [:Types :Classes class method m-sub])
-            ;; funargs (->> funtypes count (make-syms "a"))
             lasttwo (take-last 2 funtypes)
             return-type (if (= (str (first lasttwo)) "->")
-                          (second lasttwo) 'void)
-            arg-types (if (= return-type 'void)
+                          (second lasttwo) (symbol "void"))
+            arg-types (if (= return-type (symbol "void"))
                         funtypes
                         (drop-last 2 funtypes))
             arg-symbols (->> arg-types count inc (make-syms "a"))
             codestr (str "pointer::to_pointer<"
                          (name class)
                          ">("
-                         ;;(first funargs)
                          (first arg-symbols)
                          ")->"
                          (name method)
                          (argslist (map (cvt-to-c native-string)
-                                        ;;(rest funtypes)
                                         arg-types
-                                        ;;(rest funargs)
-                                        (rest arg-symbols)
+                                        (rest arg-symbols))))]
 
-                                        )))]
-        (list 'fn arg-symbols ;;funargs
-              (if ;;(= (first funtypes) 'null)
-                  (= return-type 'void)
+        (list 'fn arg-symbols
+              (if (= return-type (symbol "void"))
                 codestr
                 (wrap-result
-                  ;;(first funtypes)
                   return-type
                   codestr))))))
 
@@ -178,21 +167,24 @@
   (def bake
     (fn [args]
       (let [classes (get-in root-types [:Types :Classes])
-            f (first args)
-            s (second args)
-            t (first (nnext args))]
+            method (first args)
+            class (second args)
+            class? (get classes class)
+            types (first (nnext args))
+            types-kw (if (vector? types) (first types) types)
+            r (next (nnext args))]
         (do
           (cond
-            (vector? s)
-            (add-type-raw (list :Types :Classes f) s)
-            (and (get classes s) (vector? t))
-            (add-type-raw (list :Types :Classes s f) t))
-          (cond
-            (get classes f)
-            (bakeclass f (if (vector? s) (first s) s) (nnext args))
-            (get classes s)
-            (bakemethod f s (if (vector? t) (first t) t) (next (nnext args)))
-            :else nil)))))
+            (< (count args) 2)
+            (println "Transpile refused: bake needs at least two args")
+            (and (vector? types) (= (symbol "new") method))
+            (add-type-raw (list :Types :Classes class) types)
+            (and (vector? types) class?)
+            (add-type-raw (list :Types :Classes class method) types))
+          (if (= (symbol "new") method)
+            (bakeclass class types-kw r)
+            (bakemethod method class types-kw r))))))
+
   nil)
 
 (class-fns)

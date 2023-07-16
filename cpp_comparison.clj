@@ -20,13 +20,13 @@
 (defn nslit []
   (fn [x par] (* (single x par) (nslit0 x par))))
 
-(def Fnslit ((=> TF1) "Fnslit" (nslit) -5.001 5. 2))
+(def Fnslit ((=> new TF1) "Fnslit" (nslit) -5.001 5. 2))
 
 ((=> SetNpx TF1 [:A int]) Fnslit 500)
 
 ((=> SetParameters TF1) Fnslit 0.2 2)
 
-(def c (=> TCanvas))
+(def c (=> new TCanvas))
 
 ((=> Draw TF1) Fnslit)
 ((=> Print TCanvas) c "nslit.pdf")
@@ -38,7 +38,7 @@
     (* (apply f params)
        (apply g params))))
 
-(def Fnslits ((=> TF1) "Fnslits" (fmul single nslit0) -5.001 5. 2))
+(def Fnslits ((=> new TF1) "Fnslits" (fmul single nslit0) -5.001 5. 2))
 
 ((=> SetNpx TF1) Fnslits 500)
 ((=> SetParameters TF1) Fnslits 0.2 2)
