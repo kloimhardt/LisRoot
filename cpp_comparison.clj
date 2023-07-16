@@ -5,7 +5,8 @@
 
 (defmacro TF1 [& args] (bake args "TF1"))
 (defmacro TCanvas [& args] (bake args "TCanvas"))
-(defmacro => [fun class] (bake [fun] class))
+;; (defmacro => [fun class] (bake [fun] class))
+(defmacro => [& args] (bake2 args))
 
 (def pi 3.1415)
 

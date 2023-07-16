@@ -158,6 +158,36 @@
           :else
           (call-raw (symbol classname) (first args) (rest args))))))
 
+  (def bakeclass
+    (fn [class s args]
+      (let [c-sub (or s :A)
+            types (get-in root-types [:Types :Classes class c-sub])
+            code (new-raw class (cons s args))]
+        (if (seq types) code (list code)))))
+
+  (def bakemethod
+    (fn [method class t args]
+      (let [m-sub (or t :A)]
+        (call-raw class method (cons t args)))))
+
+  (def bake2
+    (fn [args]
+      (let [classes (get-in root-types [:Types :Classes])
+            f (first args)
+            s (second args)
+            t (first (nnext args))]
+        (do
+          (cond
+            (vector? s)
+            (add-type-raw (list :Types :Classes f) s)
+            (and (get classes s) (vector? t))
+            (add-type-raw (list :Types :Classes s f) t))
+          (cond
+            (get classes f)
+            (bakeclass f (if (vector? s) (first s) s) (nnext args))
+            (get classes s)
+            (bakemethod f s (if (vector? t) (first t) t) (next (nnext args)))
+            :else nil)))))
   nil)
 
 (comment
