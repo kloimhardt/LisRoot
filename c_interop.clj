@@ -105,7 +105,8 @@
       (fn [t v]
         (cond
           (= :native-string t) native-string
-          (keyword? t) (c-lambda v (get-in root-types [:Types :Functions t]))
+          (keyword? t) (c-lambda v (let [ts (get-in root-types [:Types :Functions t])]
+                                     (cons (last ts) (drop-last 2 ts))))
           :else (cvts-to-c t v)))))
 
   (def wrap-result

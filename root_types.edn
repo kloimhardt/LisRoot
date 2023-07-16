@@ -1,6 +1,6 @@
 [:Types
  [:Functions
-  [:plot-function double double[10] double[11]]]
+  [:plot-function double[10] double[11] -> double]]
  [:Classes
   [TCanvas
    [:A]
