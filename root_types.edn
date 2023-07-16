@@ -6,11 +6,11 @@
    [:A]
    [:B string string int int int int]
    [Print
-    [:A null string]]]
+    [:A string]]]
   [TF1
    [:A string :plot-function double double double]
    [:native string :native-string double double double]
    [Draw
-    [:A null]]
+    [:A]]
    [SetParameters
-    [:A null double double]]]]]
+    [:A double double]]]]]

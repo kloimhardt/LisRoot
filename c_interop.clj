@@ -132,25 +132,36 @@
       (let [m-sub (or (first args) :A)
             native-string (second args)
             funtypes (get-in root-types [:Types :Classes class method m-sub])
-            funargs (->> funtypes count (make-syms "a"))
+            ;; funargs (->> funtypes count (make-syms "a"))
             lasttwo (take-last 2 funtypes)
             return-type (if (= (str (first lasttwo)) "->")
-                          (second lasttwo) 'null)
-            arg-types (if (= return-type 'null)
+                          (second lasttwo) 'void)
+            arg-types (if (= return-type 'void)
                         funtypes
                         (drop-last 2 funtypes))
-            arg-symbols (->> arg-types count (make-syms "a"))
+            arg-symbols (->> arg-types count inc (make-syms "a"))
             codestr (str "pointer::to_pointer<"
                          (name class)
                          ">("
-                         (first funargs)
+                         ;;(first funargs)
+                         (first arg-symbols)
                          ")->"
                          (name method)
-                         (argslist (map (cvt-to-c native-string) (rest funtypes) (rest funargs))))]
-        (list 'fn funargs
-              (if (= (first funtypes) 'null)
+                         (argslist (map (cvt-to-c native-string)
+                                        ;;(rest funtypes)
+                                        arg-types
+                                        ;;(rest funargs)
+                                        (rest arg-symbols)
+
+                                        )))]
+        (list 'fn arg-symbols ;;funargs
+              (if ;;(= (first funtypes) 'null)
+                  (= return-type 'void)
                 codestr
-                (wrap-result (first funtypes) codestr))))))
+                (wrap-result
+                  ;;(first funtypes)
+                  return-type
+                  codestr))))))
 
   (def bakeclass
     (fn [class s args]
