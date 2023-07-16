@@ -186,9 +186,34 @@
             (bakeclass class types-kw r)
             (bakemethod method class types-kw r))))))
 
+  (def with-types
+    (fn [type-filename]
+      (set-types-raw (read-string (slurp type-filename)))
+      bake))
+
+  (def with-types-check
+    (fn [type-filename]
+      (set-types-raw (read-string (slurp type-filename)))
+      (fn [macargs]
+        (list 'fn [(symbol "&") 'args]
+              (list 'def 'uu 'args)
+              (list 'apply (bake macargs) 'args)))))
   nil)
 
 (class-fns)
+
+(comment
+
+  ((with-types "root_types.edn") ['SetParameters 'TF1])
+
+  ((with-types-check "root_types.edn") ['SetParameters 'TF1])
+
+  (defmacro g [& args] ((with-types-check-1 "root_types.edn") args))
+
+  ((g SetParameters TF1) "hiai3" 2 3)
+  (identity uu)
+  ;;
+  )
 
 (defmacro new [class & args]
   (new-raw class args))
