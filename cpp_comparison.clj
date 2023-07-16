@@ -3,10 +3,7 @@
 (require '[c_interop :as c])
 (c/load-types "root_types.edn")
 
-(defmacro TF1 [& args] (bake args "TF1"))
-(defmacro TCanvas [& args] (bake args "TCanvas"))
-;; (defmacro => [fun class] (bake [fun] class))
-(defmacro => [& args] (bake2 args))
+(defmacro => [& args] (bake args))
 
 (def pi 3.1415)
 
@@ -23,19 +20,16 @@
 (defn nslit []
   (fn [x par] (* (single x par) (nslit0 x par))))
 
-(def Fnslit ((TF1) "Fnslit" (nslit) -5.001 5. 2))
+(def Fnslit ((=> TF1) "Fnslit" (nslit) -5.001 5. 2))
 
-(c/add-signature [TF1 SetNpx] [:A null int])
+((=> SetNpx TF1 [:A null int]) Fnslit 500)
 
-;;((TF1 SetNpx) Fnslit 500)
-((=> SetNpx TF1) Fnslit 500)
+((=> SetParameters TF1) Fnslit 0.2 2)
 
-((TF1 SetParameters) Fnslit 0.2 2)
+(def c (=> TCanvas))
 
-(def c (TCanvas))
-
-((TF1 Draw) Fnslit)
-((TCanvas Print) c "nslit.pdf")
+((=> Draw TF1) Fnslit)
+((=> Print TCanvas) c "nslit.pdf")
 
 ;; Example 2
 
@@ -44,25 +38,21 @@
     (* (apply f params)
        (apply g params))))
 
-(def Fnslits ((TF1) "Fnslits" (fmul single nslit0) -5.001 5. 2))
+(def Fnslits ((=> TF1) "Fnslits" (fmul single nslit0) -5.001 5. 2))
 
-((TF1 SetNpx) Fnslits 500)
-((TF1 SetParameters) Fnslits 0.2 2)
+((=> SetNpx TF1) Fnslits 500)
+((=> SetParameters TF1) Fnslits 0.2 2)
 
-((TF1 Draw) Fnslits)
-((TCanvas Print) c "nslits.pdf")
-
-(c/add-signature [TF1 Eval] [:A double double])
+((=> Draw TF1) Fnslits)
+((=> Print TCanvas) c "nslits.pdf")
 
 (def now1 (micros))
-(def erg ((TF1 Eval) Fnslits 0.4))
+(def erg ((=> Eval TF1 [:A double double]) Fnslits 0.4))
 (println "Basetime: " erg (- (micros) now1))
 
-(c/add-signature [TF1 GetX]
-                 [:A double double double double double int])
-
 (def now (micros))
-(def erg ((TF1 GetX) Fnslits 3.6 -5.0 0.3 1.E-14 1000000000))
+(def erg ((=> GetX TF1 [:A double double double double double int])
+          Fnslits 3.6 -5.0 0.3 1.E-14 1000000000))
 (println "Calctime: " erg (- (micros) now))
 
 ;; Basetime:  40 +-10
