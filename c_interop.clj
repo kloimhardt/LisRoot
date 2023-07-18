@@ -46,28 +46,31 @@
   nil)
 
 (defmacro malli-fns []
-  (def remove-kw-ns
-    (fn [v]
-      (mapv (fn [x] (cond
-                      (vector? x) (remove-kw-ns x)
-                      (keyword? x) (keyword (name x))
-                      :else x))
-            v)))
+  (def maps-to-vector
+    (fn [m]
+      (cond
+        (map? m) (maps-to-vector (cons :map m))
+        (coll? m) (mapv maps-to-vector m)
+        :else m)))
 
-  (def malli-to-map
-    (fn [v]
-      (reduce (fn [acc pair]
-                (if (vector? (second pair))
-                  (if (= :multi (first (second pair)))
-                    (if (get-in acc (vector :Types :Classes (get-in (second pair) (vector 2 1 1 1 1))))
-                      (reduce (fn [cacc v]
-                                (assoc-in cacc (vector :Types :Classes (get-in v (vector 1 1 1 1)) (first pair) (first v)) (second v)))
-                              acc (nnext (second pair)))
-                      (assoc-in acc (vector :Types :Classes (first pair)) (into (hash-map) (nnext (second pair)))))
-                    (assoc-in acc (vector :Types :Functions (first pair)) 1))
-                  (assoc-in acc (vector :Types :Functions (first pair)) 1))
-                )
-              (hash-map) (partition 2 (remove-kw-ns v)))))
+  (def remove-kw-ns
+    (fn [m]
+      (cond
+        (vector? m) (mapv remove-kw-ns m)
+        (qualified-keyword? m) (keyword "lisc" (name m))
+        :else m)))
+
+  (def vector-to-maps
+    (fn [m]
+      (cond
+        (and (vector? m) (= :map (first m)))
+        (into (hash-map) (vector-to-maps (rest m)))
+        (coll? m)
+        (mapv vector-to-maps m)
+        :else
+        m)))
+
+  (def malli-to-map (comp vector-to-maps remove-kw-ns maps-to-vector))
 
   nil)
 
@@ -224,10 +227,10 @@
   (def with-types-check
     (fn [type-filename]
       (set-types-raw (read-string (slurp type-filename)))
-      (alter-var-root (var malli-types) (constantly (malli-to-map (read-string (slurp "malli.edn")))))
+      (alter-var-root (var malli-types) (constantly (malli-to-map (read-string (slurp "malli1.edn")))))
       (fn [macargs]
         (let [classes (get-in root-types [:Types :Classes])
-              mclasses (get-in malli-types [:Types :Classes])
+              mclasses (dissoc malli-types :registry)
               x (println (str mclasses))
               method (first macargs)
               class (second macargs)

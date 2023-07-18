@@ -1,23 +1,17 @@
 (defmacro malli-fns []
-  (def remove-kw-ns
-    (fn [v]
-      (mapv (fn [x] (cond
-                      (vector? x) (remove-kw-ns x)
-                      (qualified-keyword? x) (keyword "lisc" (name x))
-                      :else x))
-            v)))
-
   (def maps-to-vector
     (fn [m]
-      (mapv (fn [x] (cond
-                      (map? x) (maps-to-vector (->> x
-                                                    (cons :map)
-                                                    (into (vector))))
-                      (vector? x) (maps-to-vector x)
-                      :else x))
-            m)))
+      (cond
+        (map? m) (maps-to-vector (cons :map m))
+        (coll? m) (mapv maps-to-vector m)
+        :else m)))
 
-
+  (def remove-kw-ns
+    (fn [m]
+      (cond
+        (vector? m) (mapv remove-kw-ns m)
+        (qualified-keyword? m) (keyword "lisc" (name m))
+        :else m)))
 
   (def vector-to-maps
     (fn [m]
@@ -28,14 +22,15 @@
         (mapv vector-to-maps m)
         :else
         m)))
+
+  (def malli-to-map (comp vector-to-maps remove-kw-ns maps-to-vector))
+
   nil)
 
 (malli-fns)
 
 (defmacro huxi []
   (def qq (read-string (slurp "malli1.edn")))
-  (def qq1 (remove-kw-ns (maps-to-vector qq)))
-  (vector-to-maps [:map [:a 1] [:b 2]])
-  (str (vector-to-maps qq1)))
+  (str (malli-to-map qq)))
 
 (println (huxi))
