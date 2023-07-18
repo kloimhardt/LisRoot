@@ -219,11 +219,16 @@
       (set-types-raw (read-string (slurp type-filename)))
       bake))
 
+  (def malli-types (hash-map))
+
   (def with-types-check
     (fn [type-filename]
       (set-types-raw (read-string (slurp type-filename)))
+      (alter-var-root (var malli-types) (constantly (malli-to-map (read-string (slurp "malli.edn")))))
       (fn [macargs]
         (let [classes (get-in root-types [:Types :Classes])
+              mclasses (get-in malli-types [:Types :Classes])
+              x (println (str mclasses))
               method (first macargs)
               class (second macargs)
               class? (get classes class)
