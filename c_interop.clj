@@ -35,9 +35,27 @@
                       assoc-in
                       (concat path (list (first t)))
                       (rest t))))
+
+  (def m-add-type-raw
+    (fn [path t]
+      (let [malli-t (concat [:cat [:= :nil]] (rest t))]
+        (alter-var-root (var malli-types)
+                        assoc-in
+                        (concat path (list (first t)))
+                        malli-t))))
+
   nil)
 
 (type-fns)
+
+(comment
+
+  (get-in (m-add-type-raw [:TF1 :SetNpx] [:A :int]) [:TF1 :SetNpx])
+
+  (def aa [:A :int]) ;; [:A [:cat [:= :nil] :int]]
+  (vector (first aa) (concat [:cat [:= :nil]] (rest aa)))
+;;
+  )
 
 (defmacro load-types [filename]
   (set-types-raw (read-string (slurp filename)))
@@ -180,6 +198,7 @@
     (fn [class method args]
       (let [m-sub (or (first args) :A)
             m-m-sub (or (first args) :default)
+            m (def p m-m-sub)
             native-string (second args)
             funtypes (get-in root-types [:Types :Classes class method m-sub])
             m-types (get-in malli-types [(keyword class) (keyword method) m-m-sub])
@@ -264,9 +283,14 @@
             (< (count args) 2)
             (println "Transpile refused: bake needs at least two args")
             (and (vector? types) (= (symbol "new") method))
-            (add-type-raw (list :Types :Classes class) types)
+            (do
+              (add-type-raw (list :Types :Classes class) types)
+              #_(m-add-type-raw (list (keyword class)) (map keyword types))) ;; add for malli
             (and (vector? types) class?)
-            (add-type-raw (list :Types :Classes class method) types))
+            (do
+              (add-type-raw (list :Types :Classes class method) types)
+              (def ma class) (def mb method) (def mc types) (identity malli-types)
+              (m-add-type-raw (map keyword [class method]) (map keyword types))))
           (if (= (symbol "new") method)
             (bakeclass class types-kw r)
             (bakemethod method class types-kw r))))))
@@ -304,13 +328,8 @@
 (comment
 
   ((with-types "root_types.edn") ['SetParameters 'TF1])
+  ((with-types "root_types.edn") ['SetNpx 'TF1 [:A 'int]])
 
-  ((with-types-check "root_types.edn") ['SetParameters 'TF1])
-
-  (defmacro g [& args] ((with-types-check-1 "root_types.edn") args))
-
-  ((g SetParameters TF1) "hiai35" 2 3)
-  (identity uu)
   ;;
   )
 
