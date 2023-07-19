@@ -1,10 +1,14 @@
 (native-header "TCanvas.h")
 (native-header "TF1.h")
 
-(require 'c_interop)
-(defmacro => [& args] ((with-types "root_types.edn") args))
+(require '[c_interop :as c])
 
-(defmacro ==> [& args] ((with-types-check "root_types.edn") args))
+(c/load-types "root_types.edn")
+(c/m-load-types "malli1.edn")
+
+(defmacro => [& args] (bake args))
+
+(defmacro ==> [& args] (with-types-check args))
 
 (def pi 3.1415)
 

@@ -1,3 +1,34 @@
+(defmacro malli-fns []
+  (def maps-to-vector
+    (fn [m]
+      (cond
+        (map? m) (maps-to-vector (cons :map m))
+        (coll? m) (mapv maps-to-vector m)
+        :else m)))
+
+  (def remove-kw-ns
+    (fn [m]
+      (cond
+        (vector? m) (mapv remove-kw-ns m)
+        (qualified-keyword? m) (keyword "lisc" (name m))
+        :else m)))
+
+  (def vector-to-maps
+    (fn [m]
+      (cond
+        (and (vector? m) (= :map (first m)))
+        (into (hash-map) (vector-to-maps (rest m)))
+        (coll? m)
+        (mapv vector-to-maps m)
+        :else
+        m)))
+
+  (def malli-to-map (comp vector-to-maps remove-kw-ns maps-to-vector))
+
+  nil)
+
+(malli-fns)
+
 (defmacro type-fns []
   (def form-arrays
     (fn [v]
@@ -29,6 +60,10 @@
     (fn [t]
       (alter-var-root (var root-types) (constantly (make-types t)))))
 
+  (def m-set-types-raw
+    (fn [t]
+      (alter-var-root (var malli-types) (constantly (malli-to-map t)))))
+
   (def add-type-raw
     (fn [path t]
       (alter-var-root (var root-types)
@@ -39,7 +74,7 @@
   (def m-add-type-raw
     (fn [path t]
       (let [sub-type (if (= (first t) :A) :default (first t))
-            malli-t (concat [:cat [:= :nil]] (rest t))]
+            malli-t (concat (vector :cat (vector := :nil)) (rest t))]
         (alter-var-root (var malli-types)
                         assoc-in
                         (concat path (list sub-type))
@@ -62,40 +97,13 @@
   (set-types-raw (read-string (slurp filename)))
   nil)
 
+(defmacro m-load-types [filename]
+  (m-set-types-raw (read-string (slurp filename)))
+  nil)
+
 (defmacro add-type [path t]
   (add-type-raw (concat (list :Types) path) t)
   nil)
-
-(defmacro malli-fns []
-  (def maps-to-vector
-    (fn [m]
-      (cond
-        (map? m) (maps-to-vector (cons :map m))
-        (coll? m) (mapv maps-to-vector m)
-        :else m)))
-
-  (def remove-kw-ns
-    (fn [m]
-      (cond
-        (vector? m) (mapv remove-kw-ns m)
-        (qualified-keyword? m) (keyword "lisc" (name m))
-        :else m)))
-
-  (def vector-to-maps
-    (fn [m]
-      (cond
-        (and (vector? m) (= :map (first m)))
-        (into (hash-map) (vector-to-maps (rest m)))
-        (coll? m)
-        (mapv vector-to-maps m)
-        :else
-        m)))
-
-  (def malli-to-map (comp vector-to-maps remove-kw-ns maps-to-vector))
-
-  nil)
-
-(malli-fns)
 
 (defmacro class-fns []
   (def make-syms
@@ -255,9 +263,19 @@
                             m-codestr)))
             m (def k erg) m (def l m-erg)
             m (println (if (= erg m-erg)
-                         (str "pass 2 " method)
-                         (str "failed 2 call-raw " class method args)))]
-
+                         (do
+                           (str "pass 2 " method)
+                           ;;
+                           )
+                         (do
+                           (str "failed 2 call-raw " class method args)
+                           (println erg)
+                           (println m-erg)
+                           (println "return type>" m-return-type "<")
+                           (println root-types)
+                           (println "xxxxx")
+                           (println malli-types)
+                           (println "--------"))))]
         erg)))
 
   (def bakeclass
@@ -298,29 +316,21 @@
             (bakeclass class types-kw r)
             (bakemethod method class types-kw r))))))
 
-  (def with-types
-    (fn [type-filename]
-      (set-types-raw (read-string (slurp type-filename)))
-      (alter-var-root (var malli-types) (constantly (malli-to-map (read-string (slurp "malli1.edn"))))) ;;m
-      bake))
-
   (def with-types-check
-    (fn [type-filename]
-      (set-types-raw (read-string (slurp type-filename)))
-      (fn [macargs]
-        (let [classes (get-in root-types [:Types :Classes])
-              method (first macargs)
-              class (second macargs)
-              class? (get classes class)
-              types (first (nnext macargs))
-              types-kw (or (if (vector? types) (first types) types) :A)
-              r (next (nnext macargs))
-              data (if (= (symbol "new") method)
-                     (get-in classes [class types-kw])
-                     (get-in classes [class method types-kw]))]
-          (list 'fn [(symbol "&") 'args]
-                (list 'checkit (cons 'list (map str data)) 'args)
-                (list 'apply (bake macargs) 'args))))))
+    (fn [macargs]
+      (let [classes (get-in root-types [:Types :Classes])
+            method (first macargs)
+            class (second macargs)
+            class? (get classes class)
+            types (first (nnext macargs))
+            types-kw (or (if (vector? types) (first types) types) :A)
+            r (next (nnext macargs))
+            data (if (= (symbol "new") method)
+                   (get-in classes [class types-kw])
+                   (get-in classes [class method types-kw]))]
+        (list 'fn [(symbol "&") 'args]
+              (list 'checkit (cons 'list (map str data)) 'args)
+              (list 'apply (bake macargs) 'args)))))
   nil)
 
 (class-fns)
