@@ -74,7 +74,13 @@
   (def m-add-type-raw
     (fn [path t]
       (let [sub-type (if (= (first t) :A) :default (first t))
-            malli-t (concat (vector :cat (vector := :nil)) (rest t))]
+            lasttwo (take-last 2 t)
+            ret-arg (if (= (first lasttwo) :->)
+                      [(last t) (rest (drop-last 2 t))]
+                      [:nil (rest t)])
+            malli-t (concat (vector :cat (vector := (first ret-arg)))
+                            (second ret-arg))
+            m (def mxxd t) m (def myyd path)]
         (alter-var-root (var malli-types)
                         assoc-in
                         (concat path (list sub-type))
@@ -85,7 +91,7 @@
 (type-fns)
 
 (comment
-
+(first mxxd)
   (get-in (m-add-type-raw [:TF1 :SetNpx] [:A :int]) [:TF1 :SetNpx])
 
   (def aa [:A :int]) ;; [:A [:cat [:= :nil] :int]]
@@ -339,12 +345,15 @@
   (println "checkit" macargs args))
 
 (comment
+  (load-types "root_types.edn")
+  (m-load-types "malli1.edn")
 
-  (def wt (with-types "root_types.edn"))
-  (wt ['SetParameters 'TF1])
-  (wt ['SetNpx 'TF1 [:A 'int]])
+  (bake ['SetParameters 'TF1])
+  (bake ['SetNpx 'TF1 [:A 'int]])
 
-  (wt ['SetNpx 'TF1])
+  (bake ['SetNpx 'TF1])
+
+  (bake ['Eval 'TF1 [:A 'double '-> 'double]])
 
   (identity malli-types)
   ;;
