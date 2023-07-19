@@ -23,6 +23,8 @@
 
   (def root-types (hash-map))
 
+  (def malli-types (hash-map))
+
   (def set-types-raw
     (fn [t]
       (alter-var-root (var root-types) (constantly (make-types t)))))
@@ -87,7 +89,19 @@
         (= t 'string) (str "obj<string>(" v ")")
         (= t 'pointer) (str "obj<pointer>(" v ")")
         (= t 'double) (str "obj<number>(" v ")")
-        (vector? t) (str "obj<array_seq<"
+        (= t :string) (str "obj<string>(" v ")")
+        (= t :pointer) (str "obj<pointer>(" v ")")
+        (= t :double) (str "obj<number>(" v ")")
+        (and (vector? t) (= :vector (first t))) ;;malli
+        (str "obj<array_seq<"
+             (name (last t))
+             ", number>>("
+             v
+             ", size_t("
+             (get (second t) :max)
+
+             "))")
+        (vector? t) (str "obj<array_seq<" ;;old
                          (first t)
                          ", number>>("
                          v
@@ -107,6 +121,9 @@
         (= t 'string) (str "string::to<std::string>(" v ").c_str()")
         (= t 'int) (str "number::to<std::int32_t>(" v ")")
         (= t 'double) (str "number::to<double>(" v ")")
+        (= t :string) (str "string::to<std::string>(" v ").c_str()")
+        (= t :int) (str "number::to<std::int32_t>(" v ")")
+        (= t :double) (str "number::to<double>(" v ")")
         :else v)))
 
   (def c-lambdabody
@@ -136,8 +153,12 @@
       (fn [t v]
         (cond
           (= :native-string t) native-string
-          (keyword? t) (c-lambda v (let [ts (get-in root-types [:Types :Functions t])]
-                                     (cons (last ts) (drop-last 2 ts))))
+          (= :lisc/native-string t) native-string
+
+          (= :plot-function t) (c-lambda v (let [ts (get-in root-types [:Types :Functions t])]
+                                             (cons (last ts) (drop-last 2 ts))))
+          (= :lisc/plot-function t) (let [ts (get-in malli-types [:registry t])]
+                                      (cons (second (second ts)) (nnext ts)))
           :else (cvts-to-c t v)))))
 
   (def wrap-result
@@ -155,18 +176,27 @@
                          (argslist (map (cvt-to-c native-string) contypes funargs)))]
         (list 'fn funargs (wrap-result 'pointer codestr)))))
 
-  (def call-raw
+(def call-raw
     (fn [class method args]
       (let [m-sub (or (first args) :A)
+            m-m-sub (or (first args) :default)
             native-string (second args)
             funtypes (get-in root-types [:Types :Classes class method m-sub])
+            m-types (get-in malli-types [(keyword class) (keyword method) m-m-sub])
+            m-funtypes (nnext m-types)
+            m (def a funtypes) x (def b m-funtypes) m (def e m-types)
             lasttwo (take-last 2 funtypes)
             return-type (if (= (str (first lasttwo)) "->")
                           (second lasttwo) (symbol "void"))
+            m-return-type (second (second m-types))
+            m (def c m-return-type)
             arg-types (if (= return-type (symbol "void"))
                         funtypes
                         (drop-last 2 funtypes))
+            m-arg-types m-funtypes
             arg-symbols (->> arg-types count inc (make-syms "a"))
+            m-arg-symbols (->> m-arg-types count inc (make-syms "a"))
+            m (def d m-arg-symbols)
             codestr (str "pointer::to_pointer<"
                          (name class)
                          ">("
@@ -175,14 +205,38 @@
                          (name method)
                          (argslist (map (cvt-to-c native-string)
                                         arg-types
-                                        (rest arg-symbols))))]
+                                        (rest arg-symbols))))
+            m-codestr (str "pointer::to_pointer<"
+                           (name class)
+                           ">("
+                           (first m-arg-symbols)
+                           ")->"
+                           (name method)
+                           (argslist (map (cvt-to-c native-string)
+                                          m-arg-types
+                                          (rest m-arg-symbols))))
+            m (def g codestr) m (def h m-codestr)
+            m (println (if (= codestr m-codestr)
+                         (str "pass 1 " method)
+                         (str "failed 1 call-raw " class method args)))
+            erg (list 'fn arg-symbols
+                      (if  (= return-type (symbol "void"))
+                        codestr
+                        (wrap-result
+                          return-type
+                          codestr)))
+            m-erg (list 'fn arg-symbols
+                        (if (= m-return-type :nil)
+                          m-codestr
+                          (wrap-result
+                            m-return-type
+                            m-codestr)))
+            m (def k erg) m (def l m-erg)
+            m (println (if (= erg m-erg)
+                         (str "pass 2 " method)
+                         (str "failed 2 call-raw " class method args)))]
 
-        (list 'fn arg-symbols
-              (if (= return-type (symbol "void"))
-                codestr
-                (wrap-result
-                  return-type
-                  codestr))))))
+        erg)))
 
   (def bakeclass
     (fn [class s args]
@@ -220,18 +274,14 @@
   (def with-types
     (fn [type-filename]
       (set-types-raw (read-string (slurp type-filename)))
+      (alter-var-root (var malli-types) (constantly (malli-to-map (read-string (slurp "malli1.edn"))))) ;;m
       bake))
-
-  (def malli-types (hash-map))
 
   (def with-types-check
     (fn [type-filename]
       (set-types-raw (read-string (slurp type-filename)))
-      (alter-var-root (var malli-types) (constantly (malli-to-map (read-string (slurp "malli1.edn")))))
       (fn [macargs]
         (let [classes (get-in root-types [:Types :Classes])
-              mclasses (dissoc malli-types :registry)
-              x (println (str mclasses))
               method (first macargs)
               class (second macargs)
               class? (get classes class)
