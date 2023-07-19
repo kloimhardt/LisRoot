@@ -38,10 +38,11 @@
 
   (def m-add-type-raw
     (fn [path t]
-      (let [malli-t (concat [:cat [:= :nil]] (rest t))]
+      (let [sub-type (if (= (first t) :A) :default (first t))
+            malli-t (concat [:cat [:= :nil]] (rest t))]
         (alter-var-root (var malli-types)
                         assoc-in
-                        (concat path (list (first t)))
+                        (concat path (list sub-type))
                         malli-t))))
 
   nil)
@@ -197,7 +198,9 @@
 (def call-raw
     (fn [class method args]
       (let [m-sub (or (first args) :A)
-            m-m-sub (or (first args) :default)
+            m-m-sub (if (or (= (first args) :A) (not (first args)))
+                      :default
+                      (first args))
             m (def p m-m-sub)
             native-string (second args)
             funtypes (get-in root-types [:Types :Classes class method m-sub])
@@ -327,9 +330,13 @@
 
 (comment
 
-  ((with-types "root_types.edn") ['SetParameters 'TF1])
-  ((with-types "root_types.edn") ['SetNpx 'TF1 [:A 'int]])
+  (def wt (with-types "root_types.edn"))
+  (wt ['SetParameters 'TF1])
+  (wt ['SetNpx 'TF1 [:A 'int]])
 
+  (wt ['SetNpx 'TF1])
+
+  (identity malli-types)
   ;;
   )
 
