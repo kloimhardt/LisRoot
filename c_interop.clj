@@ -317,8 +317,8 @@
               (def ma class) (def mb method) (def mc types) (identity malli-types)
               (m-add-type-raw (map keyword [class method]) (map keyword types))))
           (if (= (symbol "new") method)
-            (bakeclass class types-kw r)
-            (bakemethod method class types-kw r))))))
+            (new-raw class (cons types-kw r))
+            (call-raw class method (cons types-kw r)))))))
 
   (def with-types-check
     (fn [macargs]
