@@ -201,14 +201,34 @@
   (def new-raw
     (fn [class args]
       (let [c-sub (or (first args) :A)
+            m-c-sub (if (or (= (first args) :A) (not (first args)))
+                      :default
+                      (first args))
             native-string (second args)
             contypes (get-in root-types [:Types :Classes class c-sub])
+            m-contypes (next (get-in malli-types [(keyword class) m-c-sub]))
             funargs (->> contypes count (make-syms "a"))
+            m-funargs (->> m-contypes count (make-syms "a"))
             codestr (str "new "
                          (name class)
                          (argslist (map (cvt-to-c native-string) contypes funargs)))
+            m-codestr (str "new "
+                           (name class)
+                           (argslist (map (cvt-to-c native-string) m-contypes m-funargs)))
             funcode (list 'fn funargs (wrap-result 'pointer codestr))
-            erg (if (seq contypes) funcode (list funcode))]
+            m-funcode (list 'fn m-funargs (wrap-result :pointer m-codestr))
+            erg (if (seq contypes) funcode (list funcode))
+            m-erg (if (seq m-contypes) m-funcode (list m-funcode))
+            m (println (if (= erg m-erg)
+                         (do
+                           (println "classpass 1 " class)
+                           ;;
+                           )
+                         (do
+                           (println "failed 1 new-raw " class args)
+                           (println erg)
+                           (println m-erg)
+                           )))]
         erg)))
 
 (def call-raw
@@ -270,29 +290,21 @@
                             m-return-type
                             m-codestr)))
             m (def k erg) m (def l m-erg)
-            m (println (if (= erg m-erg)
-                         (do
-                           (str "pass 2 " method)
-                           ;;
-                           )
-                         (do
-                           (str "failed 2 call-raw " class method args)
-                           (println erg)
-                           (println m-erg)
-                           (println "return type>" m-return-type "<")
-                           (println root-types)
-                           (println "xxxxx")
-                           (println malli-types)
-                           (println "--------"))))]
+            m (if (= erg m-erg)
+                (do
+                  (println "pass 2 " method)
+                  ;;
+                  )
+                (do
+                  (println "failed 2 call-raw " class method args)
+                  (println erg)
+                  (println m-erg)
+                  (println "return type>" m-return-type "<")
+                  (println root-types)
+                  (println "xxxxx")
+                  (println malli-types)
+                  (println "--------")))]
         erg)))
-
-  (def bakeclass
-    (fn [class s args]
-      (new-raw class (cons s args))))
-
-  (def bakemethod
-    (fn [method class t args]
-      (call-raw class method (cons t args))))
 
   (def bake
     (fn [args]
