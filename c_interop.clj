@@ -258,7 +258,7 @@
                            (println erg)
                            (println m-erg)
                            )))]
-        erg)))
+        m-erg)))
 
 (def call-raw
     (fn [class method args]
@@ -338,14 +338,12 @@
                   (println "xxxxx")
                   (println malli-types)
                   (println "--------")))]
-        erg)))
+        m-erg)))
 
   (def bake
     (fn [args]
-      (let [classes (get-in root-types [:Types :Classes])
-            method (first args)
+      (let [method (first args)
             class (second args)
-            class? (get classes class)
             types (first (nnext args))
             types-kw (if (vector? types) (first types) types)
             r (next (nnext args))]
@@ -357,7 +355,7 @@
             (do
               (add-type-raw (list :Types :Classes class) types)
               (m-add-type-raw (list (keyword class)) (map keyword types)))
-            (and (vector? types) class?)
+            (vector? types)
             (do
               (add-type-raw (list :Types :Classes class method) types)
               (def ma class) (def mb method) (def mc types) (identity malli-types)
@@ -371,7 +369,6 @@
       (let [classes (get-in root-types [:Types :Classes])
             method (first macargs)
             class (second macargs)
-            class? (get classes class)
             types (first (nnext macargs))
             types-kw (or (if (vector? types) (first types) types) :A)
             r (next (nnext macargs))
