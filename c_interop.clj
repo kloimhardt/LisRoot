@@ -371,12 +371,19 @@
             class (second macargs)
             types (first (nnext macargs))
             types-kw (or (if (vector? types) (first types) types) :A)
+            m-types-kw (if (= types-kw :A) :default types-kw)
             r (next (nnext macargs))
             data (if (= (symbol "new") method)
                    (get-in classes [class types-kw])
-                   (get-in classes [class method types-kw]))]
+                   (get-in classes [class method types-kw]))
+            m-data (if (= (symbol "new") method)
+                     (get-in malli-types [(keyword class) m-types-kw])
+                     (get-in malli-types [(keyword class) (keyword method) m-types-kw]))
+            m (def ca data) m (def cb m-data)
+            m (def cc class) m (def cd method)
+            ]
         (list 'fn [(symbol "&") 'args]
-              (list 'checkit (cons 'list (map str data)) 'args)
+              (list 'checkit (cons 'list (map str m-data)) 'args)
               (list 'apply (bake macargs) 'args)))))
   nil)
 
@@ -386,11 +393,13 @@
   (println "checkit" macargs args))
 
 (comment
+  (get malli-types (keyword cc))
   (do
     (class-fns)
     (load-types "root_types.edn")
     (m-load-types "malli1.edn"))
 
+  (with-types-check ['new 'TF1])
   (bake ['new 'TF1])
 
   (bake ['SetParameters 'TF1])
