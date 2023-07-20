@@ -73,14 +73,18 @@
 
   (def m-add-type-raw
     (fn [path t]
-      (let [sub-type (if (= (first t) :A) :default (first t))
+      (let [m (println "in m-add-type-raw")
+            sub-type (if (= (first t) :A) :default (first t))
             lasttwo (take-last 2 t)
             ret-arg (if (= (first lasttwo) :->)
                       [(last t) (rest (drop-last 2 t))]
                       [:nil (rest t)])
-            malli-t (concat (vector :cat (vector := (first ret-arg)))
-                            (second ret-arg))
-            m (def mxxd t) m (def myyd path)]
+            malli-t (concat (vector :cat)
+                            (second ret-arg)
+                            (when-not (= :nil (first ret-arg))
+                              (vector [:= (first ret-arg)])))
+            m (def mxxd t) m (def myyd path) m (def mzzd ret-arg)
+            m (def mvvd malli-t)]
         (alter-var-root (var malli-types)
                         assoc-in
                         (concat path (list sub-type))
@@ -233,7 +237,8 @@
 
 (def call-raw
     (fn [class method args]
-      (let [m-sub (or (first args) :A)
+      (let [m (println "in call-raw")
+            m-sub (or (first args) :A)
             m-m-sub (if (or (= (first args) :A) (not (first args)))
                       :default
                       (first args))
@@ -241,17 +246,21 @@
             native-string (second args)
             funtypes (get-in root-types [:Types :Classes class method m-sub])
             m-types (get-in malli-types [(keyword class) (keyword method) m-m-sub])
-            m-funtypes (nnext m-types)
+            m-funtypes (next m-types)
             m (def a funtypes) x (def b m-funtypes) m (def e m-types)
             lasttwo (take-last 2 funtypes)
             return-type (if (= (str (first lasttwo)) "->")
                           (second lasttwo) (symbol "void"))
-            m-return-type (second (second m-types))
-            m (def c m-return-type)
+            m-lasttwo (take-last 2 funtypes)
+            m-ret-arg (if (and (vector? (last m-funtypes))
+                                   (= := (first (last m-funtypes))))
+                        [(second (last m-funtypes)) (butlast m-funtypes)]
+                        [:nil m-funtypes])
+            m (def c m-ret-arg)
             arg-types (if (= return-type (symbol "void"))
                         funtypes
                         (drop-last 2 funtypes))
-            m-arg-types m-funtypes
+            m-arg-types (second m-ret-arg)
             arg-symbols (->> arg-types count inc (make-syms "a"))
             m-arg-symbols (->> m-arg-types count inc (make-syms "a"))
             m (def d m-arg-symbols)
@@ -284,10 +293,10 @@
                           return-type
                           codestr)))
             m-erg (list 'fn arg-symbols
-                        (if (= m-return-type :nil)
+                        (if (= (first m-ret-arg) :nil)
                           m-codestr
                           (wrap-result
-                            m-return-type
+                            (first m-ret-arg)
                             m-codestr)))
             m (def k erg) m (def l m-erg)
             m (if (= erg m-erg)
@@ -299,7 +308,7 @@
                   (println "failed 2 call-raw " class method args)
                   (println erg)
                   (println m-erg)
-                  (println "return type>" m-return-type "<")
+                  (println "types>" m-ret-arg "<")
                   (println root-types)
                   (println "xxxxx")
                   (println malli-types)
@@ -355,8 +364,10 @@
   (println "checkit" macargs args))
 
 (comment
-  (load-types "root_types.edn")
-  (m-load-types "malli1.edn")
+  (do 
+    (class-fns)
+    (load-types "root_types.edn")
+    (m-load-types "malli1.edn"))
 
   (bake ['SetParameters 'TF1])
   (bake ['SetNpx 'TF1 [:A 'int]])

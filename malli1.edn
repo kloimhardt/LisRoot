@@ -2,19 +2,19 @@
  {:registry
   {::native-string :string
    ::plot-function [:tuple
-                    [:= :double]
-                    [:vector {:max 10} :double] [:vector {:max 11} :double]]
+                    [:vector {:max 10} :double] [:vector {:max 11} :double]
+                    [:= :double]]
    ::int-to-double :int}}
  [:TCanvas [:map
             [:default [:cat]]
             [:B [:cat :string :string :int :int :int :int]]
             [:Print [:map
-                     [:default [:cat [:= :nil] :string]]]]]]
+                     [:default [:cat :string]]]]]]
  [:TF1 [:map
         [:default [:cat :string ::plot-function :double :double :double]]
         [:native [:cat :string ::native-string :double :double :double]]
         [:Draw [:map
-                [:default [:cat [:= :nil]]]]]
+                [:default [:cat]]]]
         [:SetParameters [:map
-                         [:default [:cat [:= :nil] :double :double]]
-                         [:double_int [:cat [:= :nil] :double ::int-to-double]]]]]]]
+                         [:default [:cat :double :double]]
+                         [:double_int [:cat :double ::int-to-double]]]]]]]
