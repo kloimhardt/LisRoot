@@ -1,7 +1,9 @@
 (native-header "TCanvas.h")
 (native-header "TF1.h")
+
 (require '[c_interop :as c])
 (c/load-types "root_types.edn")
+(c/m-load-types "malli1.edn")
 
 (defmacro overload []
   (defn smul [args] (apply str (interpose "*" args)))
@@ -36,18 +38,22 @@
 (println (nslit "x" 0.2 2))
 ;;=> pow(sin(3.1415*0.2*x)/(3.1415*0.2*x),2)*pow(sin(3.1415*2*x)/(sin(3.1415*x)),2)
 
-(def c ((c/new TCanvas)))
+(def c (c/new TCanvas))
 
 (c/add-type [:Classes TF1] [:B string string int int])
+(c/m-add-type [:TF1] [:B :string :string :int :int])
+
 (def Fnslits ((c/new TF1 :B) "Fnslits" (nslit "x" 0.2 2) -5 5))
 
 (c/add-type [:Classes TF1 SetNpx] [:A int])
+(c/m-add-type [:TF1 :SetNpx] [:A :int])
 ((c/call TF1 SetNpx) Fnslits 500)
 
 ((c/call TF1 Draw) Fnslits)
 ((c/call TCanvas Print) c "nslits_native.pdf")
 
 (c/add-type [:Classes TF1 Eval] [:A double -> double])
+(c/m-add-type [:TF1 :Eval] [:A :double :-> :double])
 
 (def now1 (micros))
 (def erg1 ((c/call TF1 Eval) Fnslits 0.4))
@@ -55,6 +61,9 @@
 
 (c/add-type [:Classes TF1 GetX]
             [:A double double double double int -> double])
+
+(c/m-add-type [:TF1 :GetX]
+              [:A :double :double :double :double :int :-> :double])
 
 (def now (micros))
 (def erg ((c/call TF1 GetX) Fnslits 3.6 -5.0 0.3 1.E-14 1000000000))

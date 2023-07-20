@@ -2,7 +2,6 @@
 (native-header "TF1.h")
 
 (require '[c_interop :as c])
-
 (c/load-types "root_types.edn")
 (c/m-load-types "malli1.edn")
 

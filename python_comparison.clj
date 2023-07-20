@@ -3,6 +3,7 @@
 
 (require '[c_interop :as c])
 (c/load-types "root_types.edn")
+(c/m-load-types "malli1.edn")
 
 (defn Linear []
   (fn [[x] [par0 par1]]
@@ -12,7 +13,7 @@
 
 ((c/call TF1 SetParameters) f 5. 2.)
 
-(def c ((c/new TCanvas)))
+(def c (c/new TCanvas))
 
 ((c/call TF1 Draw) f)
 ((c/call TCanvas Print) c "pyf2.pdf")
