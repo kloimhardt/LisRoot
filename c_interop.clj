@@ -115,6 +115,10 @@
   (add-type-raw (concat (list :Types) path) t)
   nil)
 
+(defmacro m-add-type [path t]
+  (m-add-type-raw path t)
+  nil)
+
 (defmacro class-fns []
   (def make-syms
     (fn [s n]
@@ -243,6 +247,7 @@
             m-funcode (list 'fn m-funargs (wrap-result :pointer m-codestr))
             erg (if (seq contypes) funcode (list funcode))
             m-erg (if (seq m-contypes) m-funcode (list m-funcode))
+            m (def nga erg) m (def ngb m-erg)
             m (println (if (= erg m-erg)
                          (do
                            (println "classpass 1 " class)
@@ -397,6 +402,10 @@
   (bake ['SetNpx 'TF1])
 
   (bake ['Eval 'TF1 [:A 'double '-> 'double]])
+
+  (add-type [:Classes TF1] [:B string string int int])
+  (m-add-type [:TF1] [:B :string :string :int :int])
+  (bake ['new 'TF1])
 
   (identity malli-types)
 
