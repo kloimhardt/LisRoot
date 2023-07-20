@@ -383,14 +383,24 @@
             m (def cc class) m (def cd method)
             ]
         (list 'fn [(symbol "&") 'args]
-              (list 'checkit (cons 'list (map str m-data)) 'args)
+              (list 'checkit
+                    (cons 'list (map str macargs))
+                    (cons 'list (map str m-data))
+                    'args)
               (list 'apply (bake macargs) 'args)))))
   nil)
 
 (class-fns)
 
-(defn checkit [macargs args]
-  (println "checkit" macargs args))
+(defn check [type v]
+  (cond
+    (= type ":int") (when-not (= (floor v) v) (new-string  v " is not an integer"))
+    (= type ":string") (when-not (string? v) (new-string  v " is not a string"))
+    :else (new-string "unknown" type)))
+
+(defn checkit [macargs types args]
+  (println "checkit" macargs types args)
+  (println (map check (rest types) (rest args))))
 
 (comment
   (get malli-types (keyword cc))
