@@ -185,6 +185,25 @@
         (str "[" varname "] " (argslist combined) " -> " (first signature)
              " {" (c-lambdabody varname signature) "}"))))
 
+  (def m-c-lambda
+    (fn [varname malli-signature]
+      (let [signature (cons (second (last malli-signature))
+                            (butlast (rest malli-signature)))
+            m (def lb malli-signature) m (def la signature)
+            funargs (make-syms "b" (dec (count signature)))
+            argstypes (map (fn [e] (if (vector? e) (str (name (last e)) "*")
+                                       (name e)))
+                           (rest signature))
+            combined (map (fn [t v] (str t " " v)) argstypes funargs)]
+        (str "[" varname "] " (argslist combined) " -> " (name (first signature))
+             " {" (c-lambdabody varname signature) "}"))))
+
+  (comment
+    (cons (second (last lb)) (butlast (rest lb)))
+    (name (first la))
+    ;;
+    )
+
   (def cvt-to-c
     (fn [native-string]
       (fn [t v]
@@ -194,8 +213,7 @@
 
           (= :plot-function t) (c-lambda v (let [ts (get-in root-types [:Types :Functions t])]
                                              (cons (last ts) (drop-last 2 ts))))
-          (= :lisc/plot-function t) (let [ts (get-in malli-types [:registry t])]
-                                      (cons (second (second ts)) (nnext ts)))
+          (= :lisc/plot-function t) (m-c-lambda v (get-in malli-types [:registry t]))
           :else (cvts-to-c t v)))))
 
   (def wrap-result
@@ -204,13 +222,15 @@
 
   (def new-raw
     (fn [class args]
-      (let [c-sub (or (first args) :A)
+      (let [m (println "in new-raw")
+            c-sub (or (first args) :A)
             m-c-sub (if (or (= (first args) :A) (not (first args)))
                       :default
                       (first args))
             native-string (second args)
             contypes (get-in root-types [:Types :Classes class c-sub])
             m-contypes (next (get-in malli-types [(keyword class) m-c-sub]))
+            m (def na contypes) m (def nma m-contypes)
             funargs (->> contypes count (make-syms "a"))
             m-funargs (->> m-contypes count (make-syms "a"))
             codestr (str "new "
@@ -364,10 +384,12 @@
   (println "checkit" macargs args))
 
 (comment
-  (do 
+  (do
     (class-fns)
     (load-types "root_types.edn")
     (m-load-types "malli1.edn"))
+
+  (bake ['new 'TF1])
 
   (bake ['SetParameters 'TF1])
   (bake ['SetNpx 'TF1 [:A 'int]])
@@ -377,6 +399,7 @@
   (bake ['Eval 'TF1 [:A 'double '-> 'double]])
 
   (identity malli-types)
+
   ;;
   )
 
