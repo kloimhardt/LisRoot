@@ -7,7 +7,7 @@
 
 (defmacro => [& args] (bake args))
 
-(defmacro ==> [& args] (with-types-check args))
+(defmacro ==> [& args] (bake-safe args))
 
 (def pi 3.1415)
 
@@ -24,9 +24,9 @@
 (defn nslit []
   (fn [x par] (* (single x par) (nslit0 x par))))
 
-(def Fnslit ((=> new TF1) "Fnslit" (nslit) -5.001 5. 2))
+(def Fnslit ((==> new TF1) "Fnslit" (nslit) -5.001 5. 2))
 
-((=> SetNpx TF1 [:A int]) Fnslit 500)
+((==> SetNpx TF1 [:A int]) Fnslit 500)
 
 ((==> SetParameters TF1) Fnslit 0.2 2)
 

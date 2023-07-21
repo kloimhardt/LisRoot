@@ -364,7 +364,7 @@
             (new-raw class (cons types-kw r))
             (call-raw class method (cons types-kw r)))))))
 
-  (def with-types-check
+  (def bake-safe
     (fn [macargs]
       (let [classes (get-in root-types [:Types :Classes])
             method (first macargs)
@@ -380,27 +380,36 @@
                      (get-in malli-types [(keyword class) m-types-kw])
                      (get-in malli-types [(keyword class) (keyword method) m-types-kw]))
             m (def ca data) m (def cb m-data)
-            m (def cc class) m (def cd method)
-            ]
-        (list 'fn [(symbol "&") 'args]
-              (list 'checkit
-                    (cons 'list (map str macargs))
-                    (cons 'list (map str m-data))
-                    'args)
-              (list 'apply (bake macargs) 'args)))))
+            m (def cc class) m (def cd method)]
+        (do
+
+          (let [c-function (if (= (symbol "new") method)
+                             (new-raw class (cons types-kw r))
+                             (call-raw class method (cons types-kw r)))]
+            (list 'fn [(symbol "&") 'args]
+                  (list 'checkit
+                        (cons 'list (map str macargs))
+                        (cons 'list (map str m-data))
+                        'args)
+                  (list 'apply c-function 'args)))))))
   nil)
 
 (class-fns)
 
 (defn check [type v]
-  (cond
-    (= type ":int") (when-not (= (floor v) v) (new-string  v " is not an integer"))
-    (= type ":string") (when-not (string? v) (new-string  v " is not a string"))
-    :else (new-string "unknown" type)))
+  (list
+    (cond
+      (= type ":double") (if (and (not (zero? v)) (zero? (dec (inc v)))) "-" "!")
+      (= type ":int") (if-not (= (floor v) v) "-" "!")
+      (= type ":string") (if-not (string? v) "-" "!")
+      :else "?")
+    type v))
 
 (defn checkit [macargs types args]
   (println "checkit" macargs types args)
-  (println (map check (rest types) (rest args))))
+  (cond
+    (= (first macargs) "new") (println (map check (rest types) args))
+    :else (println (map check (rest types) (rest args)))))
 
 (comment
   (get malli-types (keyword cc))
