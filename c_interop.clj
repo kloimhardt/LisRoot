@@ -366,24 +366,33 @@
 
   (def bake-safe
     (fn [macargs]
-      (let [classes (get-in root-types [:Types :Classes])
-            method (first macargs)
+      (let [method (first macargs)
             class (second macargs)
             types (first (nnext macargs))
             types-kw (or (if (vector? types) (first types) types) :A)
             m-types-kw (if (= types-kw :A) :default types-kw)
-            r (next (nnext macargs))
-            data (if (= (symbol "new") method)
-                   (get-in classes [class types-kw])
-                   (get-in classes [class method types-kw]))
-            m-data (if (= (symbol "new") method)
-                     (get-in malli-types [(keyword class) m-types-kw])
-                     (get-in malli-types [(keyword class) (keyword method) m-types-kw]))
-            m (def ca data) m (def cb m-data)
-            m (def cc class) m (def cd method)]
+            r (next (nnext macargs))]
         (do
-
-          (let [c-function (if (= (symbol "new") method)
+          (cond
+            (and (vector? types) (= (symbol "new") method))
+            (do
+              (add-type-raw (list :Types :Classes class) types)
+              (m-add-type-raw (list (keyword class)) (map keyword types)))
+            (vector? types)
+            (do
+              (add-type-raw (list :Types :Classes class method) types)
+              (def ma class) (def mb method) (def mc types) (identity malli-types)
+              (m-add-type-raw (map keyword [class method]) (map keyword types))))
+          (let [classes (get-in root-types [:Types :Classes])
+                data (if (= (symbol "new") method)
+                       (get-in classes [class types-kw])
+                       (get-in classes [class method types-kw]))
+                m-data (if (= (symbol "new") method)
+                         (get-in malli-types [(keyword class) m-types-kw])
+                         (get-in malli-types [(keyword class) (keyword method) m-types-kw]))
+                m (def ca data) m (def cb m-data)
+                m (def cc class) m (def cd method)
+                c-function (if (= (symbol "new") method)
                              (new-raw class (cons types-kw r))
                              (call-raw class method (cons types-kw r)))]
             (list 'fn [(symbol "&") 'args]
