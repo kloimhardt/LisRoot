@@ -30,36 +30,11 @@
 (malli-fns)
 
 (defmacro type-fns []
-  (def form-arrays
-    (fn [v]
-      (->> v
-           (partition-all 2 1)
-           (remove #(vector? (first %)))
-           (map (fn [v]
-                  (let [o (first v)
-                        t (second v)]
-                    (if (vector? t)
-                      (vector o (first t))
-                      o)))))))
-
-  (def make-types-1
-    (fn [v]
-      (if (every? vector? (rest v))
-        [(first v) (into (hash-map) (map make-types-1 (rest v)))]
-        [(first v) (form-arrays (rest v))])))
-
-  (def make-types
-    (fn [v]
-      (apply hash-map (make-types-1 v))))
-
   (def malli-types (hash-map))
 
   (def m-set-types-raw
     (fn [t]
       (alter-var-root (var malli-types) (constantly (malli-to-map t)))))
-
-  (def add-type-raw ;; to be deleted
-    (fn [path t] nil))
 
   (def m-add-type-raw
     (fn [path t]
@@ -71,9 +46,7 @@
             malli-t (concat (vector :cat)
                             (second ret-arg)
                             (when-not (= :nil (first ret-arg))
-                              (vector [:= (first ret-arg)])))
-            m (def mxxd t) m (def myyd path) m (def mzzd ret-arg)
-            m (def mvvd malli-t)]
+                              (vector [:= (first ret-arg)])))]
         (alter-var-root (var malli-types)
                         assoc-in
                         (concat path (list sub-type))
