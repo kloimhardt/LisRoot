@@ -1,7 +1,7 @@
 (require '[malli.core :as m])
 
 (def =>data
-  (m/schema (read-string (slurp "malli1.edn"))))
+  (m/schema (read-string (slurp "malli_types.edn"))))
 
 (def plot-function [[3.4 1.2] [5.6 7.8] :double ])
 

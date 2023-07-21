@@ -2,7 +2,7 @@
 (native-header "TF1.h")
 
 (require '[c_interop :as c])
-(c/m-load-types "malli1.edn")
+(c/m-load-types "malli_types.edn")
 
 (defmacro overload []
   (defn smul [args] (apply str (interpose "*" args)))

@@ -8,3 +8,5 @@ for file in root_plot python_comparison cpp_comparison cpp_native; do
     clang++ $file.cpp $(root-config --glibs --cflags --libs) -o $file
     ./$file
 done
+
+clojure -Sdeps '{:deps {metosin/malli {:mvn/version "0.11.0"}}}' -M  mallitypes.clj

@@ -3,7 +3,7 @@
 
 (require '[c_interop :as c])
 
-(c/m-load-types "malli1.edn")
+(c/m-load-types "malli_types.edn")
 
 (defn n-times-x [n]
   (fn [[x]] (* n x)))
@@ -20,4 +20,4 @@
 (def pc2 ((c/new TCanvas :B) "c2" "Something" 0 0 800 600))
 
 ((c/call TF1 Draw) pf2)
-((c/call TCanvas Print) pc2 "c_interop_2.pdf")
+((c/call TCanvas Print) pc2 "root_plot_2.pdf")
