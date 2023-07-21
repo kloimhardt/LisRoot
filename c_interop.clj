@@ -52,8 +52,6 @@
     (fn [v]
       (apply hash-map (make-types-1 v))))
 
-  (def root-types (hash-map))
-
   (def malli-types (hash-map))
 
   (def m-set-types-raw
@@ -186,11 +184,7 @@
     (fn [native-string]
       (fn [t v]
         (cond
-          (= :native-string t) native-string
           (= :lisc/native-string t) native-string
-
-          (= :plot-function t) (c-lambda v (let [ts (get-in root-types [:Types :Functions t])]
-                                             (cons (last ts) (drop-last 2 ts))))
           (= :lisc/plot-function t) (m-c-lambda v (get-in malli-types [:registry t]))
           :else (cvts-to-c t v)))))
 
@@ -263,23 +257,12 @@
         (do
           (cond
             (and (vector? types) (= (symbol "new") method))
-            (do
-              (add-type-raw (list :Types :Classes class) types)
-              (m-add-type-raw (list (keyword class)) (map keyword types)))
+            (m-add-type-raw (list (keyword class)) (map keyword types))
             (vector? types)
-            (do
-              (add-type-raw (list :Types :Classes class method) types)
-              (def ma class) (def mb method) (def mc types) (identity malli-types)
-              (m-add-type-raw (map keyword [class method]) (map keyword types))))
-          (let [classes (get-in root-types [:Types :Classes])
-                data (if (= (symbol "new") method)
-                       (get-in classes [class types-kw])
-                       (get-in classes [class method types-kw]))
-                m-data (if (= (symbol "new") method)
+            (m-add-type-raw (map keyword [class method]) (map keyword types)))
+          (let [m-data (if (= (symbol "new") method)
                          (get-in malli-types [(keyword class) m-types-kw])
                          (get-in malli-types [(keyword class) (keyword method) m-types-kw]))
-                m (def ca data) m (def cb m-data)
-                m (def cc class) m (def cd method)
                 c-function (if (= (symbol "new") method)
                              (new-raw class (cons types-kw r))
                              (call-raw class method (cons types-kw r)))]
