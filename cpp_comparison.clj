@@ -5,7 +5,7 @@
 (c/load-types "root_types.edn")
 (c/m-load-types "malli1.edn")
 
-(defmacro => [& args] (bake args))
+;; (defmacro => [& args] (bake args))
 
 (defmacro ==> [& args] (bake-safe args))
 
@@ -32,8 +32,8 @@
 
 (def c (==> new TCanvas))
 
-((=> Draw TF1) Fnslit)
-((=> Print TCanvas) c "nslit.pdf")
+((==> Draw TF1) Fnslit)
+((==> Print TCanvas) c "nslit.pdf")
 
 ;; Example 2
 
@@ -42,20 +42,20 @@
     (* (apply f params)
        (apply g params))))
 
-(def Fnslits ((=> new TF1) "Fnslits" (fmul single nslit0) -5.001 5. 2))
+(def Fnslits ((==> new TF1) "Fnslits" (fmul single nslit0) -5.001 5. 2))
 
-((=> SetNpx TF1) Fnslits 500)
-((=> SetParameters TF1) Fnslits 0.2 2)
+((==> SetNpx TF1) Fnslits 500)
+((==> SetParameters TF1) Fnslits 0.2 2)
 
-((=> Draw TF1) Fnslits)
-((=> Print TCanvas) c "nslits.pdf")
+((==> Draw TF1) Fnslits)
+((==> Print TCanvas) c "nslits.pdf")
 
 (def now1 (micros))
-(def erg ((=> Eval TF1 [:A double -> double]) Fnslits 0.4))
+(def erg ((==> Eval TF1 [:A double -> double]) Fnslits 0.4))
 (println "Basetime: " erg (- (micros) now1))
 
 (def now (micros))
-(def erg ((=> GetX TF1 [:A double double double double int -> double])
+(def erg ((==> GetX TF1 [:A double double double double int -> double])
           Fnslits 3.6 -5.0 0.3 1.E-14 1000000000))
 (println "Calctime: " erg (- (micros) now))
 

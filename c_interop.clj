@@ -364,6 +364,12 @@
             (new-raw class (cons types-kw r))
             (call-raw class method (cons types-kw r)))))))
 
+  (def stri
+    (fn [x]
+      (if
+          (coll? x) (cons 'list (map stri x))
+          (str x))))
+
   (def bake-safe
     (fn [macargs]
       (let [method (first macargs)
@@ -399,15 +405,15 @@
               (and (= (symbol "new") method) (= m-data (vector :cat)))
               (list 'do
                     (list 'checkit
-                          (cons 'list (map str macargs))
-                          (cons 'list (map str m-data))
+                          (stri macargs)
+                          (stri m-data)
                           (list 'list))
                     c-function)
               :else
               (list 'fn [(symbol "&") 'args]
                     (list 'checkit
-                          (cons 'list (map str macargs))
-                          (cons 'list (map str m-data))
+                          (stri macargs)
+                          (stri m-data)
                           'args)
                     (list 'apply c-function 'args))))))))
   nil)
@@ -421,6 +427,7 @@
       (= type ":int") (if-not (= (floor v) v) "-" "+")
       (= type ":string") (if-not (string? v) "-" "+")
       (= type ":lisc/plot-function") "!"
+      (= type ":lisc/instance") "!"
       :else "?")
     type v))
 
@@ -431,13 +438,30 @@
 (defn checkit [macargs types args]
   (println "------ checkit" macargs)
   (println types args)
-  (let [types-args (cond
-                     (= (first macargs) "new") (list (rest types) args)
-                     :else (list (rest types) (rest args)))]
+  (let [lasttype (nth types (dec (count types)))
+        types-args (cond
+                     (= (first macargs) "new")
+                     (list (rest types) args)
+                     (and (list? lasttype) (= (first lasttype) ":="))
+                     (list (cons ":lisc/instance"
+                                 (rest (take (dec (count types)) types )))
+                           args)
+                     :else
+                     (list (cons ":lisc/instance" (rest types)) args))]
     (println (check-count (first types-args) (second types-args)))
     (println (map check-value (first types-args) (second types-args)))))
 
 (comment
+
+
+  (def stri
+    (fn [x]
+      (if
+        (coll? x) (map stri x)
+        (str x))))
+
+  (stri ["a" [1]])
+
   (do
     (class-fns)
     (load-types "root_types.edn")
