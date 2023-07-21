@@ -267,37 +267,16 @@
             m-m-sub (if (or (= (first args) :A) (not (first args)))
                       :default
                       (first args))
-            m (def p m-m-sub)
             native-string (second args)
-            funtypes (get-in root-types [:Types :Classes class method m-sub])
             m-types (get-in malli-types [(keyword class) (keyword method) m-m-sub])
             m-funtypes (next m-types)
-            m (def a funtypes) x (def b m-funtypes) m (def e m-types)
-            lasttwo (take-last 2 funtypes)
-            return-type (if (= (str (first lasttwo)) "->")
-                          (second lasttwo) (symbol "void"))
-            m-lasttwo (take-last 2 funtypes)
+            m-lasttwo (take-last 2 m-funtypes)
             m-ret-arg (if (and (vector? (last m-funtypes))
                                    (= := (first (last m-funtypes))))
                         [(second (last m-funtypes)) (butlast m-funtypes)]
                         [:nil m-funtypes])
-            m (def c m-ret-arg)
-            arg-types (if (= return-type (symbol "void"))
-                        funtypes
-                        (drop-last 2 funtypes))
             m-arg-types (second m-ret-arg)
-            arg-symbols (->> arg-types count inc (make-syms "a"))
             m-arg-symbols (->> m-arg-types count inc (make-syms "a"))
-            m (def d m-arg-symbols)
-            codestr (str "pointer::to_pointer<"
-                         (name class)
-                         ">("
-                         (first arg-symbols)
-                         ")->"
-                         (name method)
-                         (argslist (map (cvt-to-c native-string)
-                                        arg-types
-                                        (rest arg-symbols))))
             m-codestr (str "pointer::to_pointer<"
                            (name class)
                            ">("
@@ -307,37 +286,12 @@
                            (argslist (map (cvt-to-c native-string)
                                           m-arg-types
                                           (rest m-arg-symbols))))
-            m (def g codestr) m (def h m-codestr)
-            m (println (if (= codestr m-codestr)
-                         (str "pass 1 " method)
-                         (str "failed 1 call-raw " class method args)))
-            erg (list 'fn arg-symbols
-                      (if  (= return-type (symbol "void"))
-                        codestr
-                        (wrap-result
-                          return-type
-                          codestr)))
-            m-erg (list 'fn arg-symbols
+            m-erg (list 'fn m-arg-symbols
                         (if (= (first m-ret-arg) :nil)
                           m-codestr
                           (wrap-result
                             (first m-ret-arg)
-                            m-codestr)))
-            m (def k erg) m (def l m-erg)
-            m (if (= erg m-erg)
-                (do
-                  (println "pass 2 " method)
-                  ;;
-                  )
-                (do
-                  (println "failed 2 call-raw " class method args)
-                  (println erg)
-                  (println m-erg)
-                  (println "types>" m-ret-arg "<")
-                  (println root-types)
-                  (println "xxxxx")
-                  (println malli-types)
-                  (println "--------")))]
+                            m-codestr)))]
         m-erg)))
 
   (def bake
@@ -436,8 +390,8 @@
         "count"))
 
 (defn checkit [macargs types args]
-  (println "------ checkit" macargs)
-  (println types args)
+  ;;(println "------ checkit" macargs)
+  ;;(println types args)
   (let [lasttype (nth types (dec (count types)))
         types-args (cond
                      (= (first macargs) "new")
@@ -448,8 +402,10 @@
                            args)
                      :else
                      (list (cons ":lisc/instance" (rest types)) args))]
-    (println (check-count (first types-args) (second types-args)))
-    (println (map check-value (first types-args) (second types-args)))))
+    (print (filter (fn [x] (= (first x) "-"))
+                         (check-count (first types-args) (second types-args))))
+    (print (filter (fn [x] (= (first x) "-"))
+                         (map check-value (first types-args) (second types-args))))))
 
 (comment
 
