@@ -56,20 +56,12 @@
 
   (def malli-types (hash-map))
 
-  (def set-types-raw
-    (fn [t]
-      (alter-var-root (var root-types) (constantly (make-types t)))))
-
   (def m-set-types-raw
     (fn [t]
       (alter-var-root (var malli-types) (constantly (malli-to-map t)))))
 
-  (def add-type-raw
-    (fn [path t]
-      (alter-var-root (var root-types)
-                      assoc-in
-                      (concat path (list (first t)))
-                      (rest t))))
+  (def add-type-raw ;; to be deleted
+    (fn [path t] nil))
 
   (def m-add-type-raw
     (fn [path t]
@@ -93,16 +85,14 @@
 
 (type-fns)
 
-(defmacro load-types [filename]
-  (set-types-raw (read-string (slurp filename)))
+(defmacro load-types [filename] ;; to be deleted
   nil)
 
 (defmacro m-load-types [filename]
   (m-set-types-raw (read-string (slurp filename)))
   nil)
 
-(defmacro add-type [path t]
-  (add-type-raw (concat (list :Types) path) t)
+(defmacro add-type [path t] ;; to be deleted
   nil)
 
 (defmacro m-add-type [path t]
