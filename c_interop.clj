@@ -73,8 +73,7 @@
 
   (def m-add-type-raw
     (fn [path t]
-      (let [m (println "in m-add-type-raw")
-            sub-type (if (= (first t) :A) :default (first t))
+      (let [sub-type (if (= (first t) :A) :default (first t))
             lasttwo (take-last 2 t)
             ret-arg (if (= (first lasttwo) :->)
                       [(last t) (rest (drop-last 2 t))]
@@ -93,15 +92,6 @@
   nil)
 
 (type-fns)
-
-(comment
-(first mxxd)
-  (get-in (m-add-type-raw [:TF1 :SetNpx] [:A :int]) [:TF1 :SetNpx])
-
-  (def aa [:A :int]) ;; [:A [:cat [:= :nil] :int]]
-  (vector (first aa) (concat [:cat [:= :nil]] (rest aa)))
-;;
-  )
 
 (defmacro load-types [filename]
   (set-types-raw (read-string (slurp filename)))
@@ -202,12 +192,6 @@
         (str "[" varname "] " (argslist combined) " -> " (name (first signature))
              " {" (c-lambdabody varname signature) "}"))))
 
-  (comment
-    (cons (second (last lb)) (butlast (rest lb)))
-    (name (first la))
-    ;;
-    )
-
   (def cvt-to-c
     (fn [native-string]
       (fn [t v]
@@ -226,44 +210,22 @@
 
   (def new-raw
     (fn [class args]
-      (let [m (println "in new-raw")
-            c-sub (or (first args) :A)
-            m-c-sub (if (or (= (first args) :A) (not (first args)))
+      (let [m-c-sub (if (or (= (first args) :A) (not (first args)))
                       :default
                       (first args))
             native-string (second args)
-            contypes (get-in root-types [:Types :Classes class c-sub])
             m-contypes (next (get-in malli-types [(keyword class) m-c-sub]))
-            m (def na contypes) m (def nma m-contypes)
-            funargs (->> contypes count (make-syms "a"))
             m-funargs (->> m-contypes count (make-syms "a"))
-            codestr (str "new "
-                         (name class)
-                         (argslist (map (cvt-to-c native-string) contypes funargs)))
             m-codestr (str "new "
                            (name class)
                            (argslist (map (cvt-to-c native-string) m-contypes m-funargs)))
-            funcode (list 'fn funargs (wrap-result 'pointer codestr))
             m-funcode (list 'fn m-funargs (wrap-result :pointer m-codestr))
-            erg (if (seq contypes) funcode (list funcode))
-            m-erg (if (seq m-contypes) m-funcode (list m-funcode))
-            m (def nga erg) m (def ngb m-erg)
-            m (println (if (= erg m-erg)
-                         (do
-                           (println "classpass 1 " class)
-                           ;;
-                           )
-                         (do
-                           (println "failed 1 new-raw " class args)
-                           (println erg)
-                           (println m-erg)
-                           )))]
+            m-erg (if (seq m-contypes) m-funcode (list m-funcode))]
         m-erg)))
 
 (def call-raw
     (fn [class method args]
-      (let [m (println "in call-raw")
-            m-sub (or (first args) :A)
+      (let [m-sub (or (first args) :A)
             m-m-sub (if (or (= (first args) :A) (not (first args)))
                       :default
                       (first args))
@@ -382,41 +344,6 @@
                          (check-count (first types-args) (second types-args))))
     (print (filter (fn [x] (= (first x) "-"))
                          (map check-value (first types-args) (second types-args))))))
-
-(comment
-
-
-  (def stri
-    (fn [x]
-      (if
-        (coll? x) (map stri x)
-        (str x))))
-
-  (stri ["a" [1]])
-
-  (do
-    (class-fns)
-    (load-types "root_types.edn")
-    (m-load-types "malli1.edn"))
-
-  (bake-safe ['new 'TCanvas])
-  (bake ['new 'TF1])
-
-  (bake ['SetParameters 'TF1])
-  (bake ['SetNpx 'TF1 [:A 'int]])
-
-  (bake ['SetNpx 'TF1])
-
-  (bake ['Eval 'TF1 [:A 'double '-> 'double]])
-
-  (add-type [:Classes TF1] [:B string string int int])
-  (m-add-type [:TF1] [:B :string :string :int :int])
-  (bake ['new 'TF1])
-
-  (identity malli-types)
-
-  ;;
-  )
 
 (defmacro new [class & args]
   (new-raw class args))
