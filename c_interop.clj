@@ -395,39 +395,55 @@
                 c-function (if (= (symbol "new") method)
                              (new-raw class (cons types-kw r))
                              (call-raw class method (cons types-kw r)))]
-            (list 'fn [(symbol "&") 'args]
-                  (list 'checkit
-                        (cons 'list (map str macargs))
-                        (cons 'list (map str m-data))
-                        'args)
-                  (list 'apply c-function 'args)))))))
+            (cond
+              (and (= (symbol "new") method) (= m-data (vector :cat)))
+              (list 'do
+                    (list 'checkit
+                          (cons 'list (map str macargs))
+                          (cons 'list (map str m-data))
+                          (list 'list))
+                    c-function)
+              :else
+              (list 'fn [(symbol "&") 'args]
+                    (list 'checkit
+                          (cons 'list (map str macargs))
+                          (cons 'list (map str m-data))
+                          'args)
+                    (list 'apply c-function 'args))))))))
   nil)
 
 (class-fns)
 
-(defn check [type v]
+(defn check-value [type v]
   (list
     (cond
-      (= type ":double") (if (and (not (zero? v)) (zero? (dec (inc v)))) "-" "!")
-      (= type ":int") (if-not (= (floor v) v) "-" "!")
-      (= type ":string") (if-not (string? v) "-" "!")
+      (= type ":double") (if (and (not (zero? v)) (zero? (dec (inc v)))) "-" "+")
+      (= type ":int") (if-not (= (floor v) v) "-" "+")
+      (= type ":string") (if-not (string? v) "-" "+")
+      (= type ":lisc/plot-function") "!"
       :else "?")
     type v))
 
+(defn check-count [types args]
+  (list (if (not= (count types) (count args))  "-" "+")
+        "count"))
+
 (defn checkit [macargs types args]
-  (println "checkit" macargs types args)
-  (cond
-    (= (first macargs) "new") (println (map check (rest types) args))
-    :else (println (map check (rest types) (rest args)))))
+  (println "------ checkit" macargs)
+  (println types args)
+  (let [types-args (cond
+                     (= (first macargs) "new") (list (rest types) args)
+                     :else (list (rest types) (rest args)))]
+    (println (check-count (first types-args) (second types-args)))
+    (println (map check-value (first types-args) (second types-args)))))
 
 (comment
-  (get malli-types (keyword cc))
   (do
     (class-fns)
     (load-types "root_types.edn")
     (m-load-types "malli1.edn"))
 
-  (with-types-check ['new 'TF1])
+  (bake-safe ['new 'TCanvas])
   (bake ['new 'TF1])
 
   (bake ['SetParameters 'TF1])
