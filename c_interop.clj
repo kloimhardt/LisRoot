@@ -294,30 +294,6 @@
                             m-codestr)))]
         m-erg)))
 
-  (def bake
-    (fn [args]
-      (let [method (first args)
-            class (second args)
-            types (first (nnext args))
-            types-kw (if (vector? types) (first types) types)
-            r (next (nnext args))]
-        (do
-          (cond
-            (< (count args) 2)
-            (println "Transpile refused: bake needs at least two args")
-            (and (vector? types) (= (symbol "new") method))
-            (do
-              (add-type-raw (list :Types :Classes class) types)
-              (m-add-type-raw (list (keyword class)) (map keyword types)))
-            (vector? types)
-            (do
-              (add-type-raw (list :Types :Classes class method) types)
-              (def ma class) (def mb method) (def mc types) (identity malli-types)
-              (m-add-type-raw (map keyword [class method]) (map keyword types))))
-          (if (= (symbol "new") method)
-            (new-raw class (cons types-kw r))
-            (call-raw class method (cons types-kw r)))))))
-
   (def stri
     (fn [x]
       (if

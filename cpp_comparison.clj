@@ -5,8 +5,6 @@
 (c/load-types "root_types.edn")
 (c/m-load-types "malli1.edn")
 
-;; (defmacro => [& args] (bake args))
-
 (defmacro ==> [& args] (bake-safe args))
 
 (def pi 3.1415)
