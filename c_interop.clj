@@ -96,6 +96,7 @@
         (= t :string) (str "string::to<std::string>(" v ").c_str()")
         (= t :int) (str "number::to<std::int32_t>(" v ")")
         (= t :double) (str "number::to<double>(" v ")")
+        (= t :lisc/int-to-double) (str "number::to<double>(" v ")")
         :else v)))
 
   (def c-lambdabody
@@ -186,8 +187,7 @@
 
   (def stri
     (fn [x]
-      (if
-          (coll? x) (cons 'list (map stri x))
+      (if (coll? x) (cons 'list (map stri x))
           (str x))))
 
   (def bake-safe
@@ -231,11 +231,18 @@
 
 (class-fns)
 
+(defn not-double? [v]
+  (and (not (zero? v)) (zero? (dec (inc v)))))
+
+(defn not-int? [v]
+  (not= (floor v) v))
+
 (defn check-value [type v]
   (list
     (cond
-      (= type ":double") (if (and (not (zero? v)) (zero? (dec (inc v)))) "-" "+")
-      (= type ":int") (if-not (= (floor v) v) "-" "+")
+      (= type ":double") (if (not-double? v) "-" "+")
+      (= type ":int") (if (not-int? v)  "-" "+")
+      (= type ":lisc/int-to-double") (if (not-int? v) "-" "+")
       (= type ":string") (if-not (string? v) "-" "+")
       (= type ":lisc/plot-function") "!"
       (= type ":lisc/instance") "!"
@@ -247,8 +254,8 @@
         "count"))
 
 (defn checkit [macargs types args]
-  ;;(println "------ checkit" macargs)
-  ;;(println types args)
+  ;; (println "------ checkit" macargs)
+  ;; (println types args)
   (let [lasttype (nth types (dec (count types)))
         types-args (cond
                      (= (first macargs) "new")

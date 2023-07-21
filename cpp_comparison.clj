@@ -42,7 +42,7 @@
 (def Fnslits ((=> new TF1) "Fnslits" (fmul single nslit0) -5.001 5. 2))
 
 ((=> SetNpx TF1) Fnslits 500)
-((=> SetParameters TF1) Fnslits 0.2 2)
+((=> SetParameters TF1 :double_int) Fnslits 0.2 2)
 
 ((=> Draw TF1) Fnslits)
 ((=> Print TCanvas) c "nslits.pdf")
