@@ -78,13 +78,10 @@
   (def cvt-from-c
     (fn [t v]
       (cond
-        (= t 'string) (str "obj<string>(" v ")")
-        (= t 'pointer) (str "obj<pointer>(" v ")")
-        (= t 'double) (str "obj<number>(" v ")")
         (= t :string) (str "obj<string>(" v ")")
         (= t :pointer) (str "obj<pointer>(" v ")")
         (= t :double) (str "obj<number>(" v ")")
-        (and (vector? t) (= :vector (first t))) ;;malli
+        (and (vector? t) (= :vector (first t)))
         (str "obj<array_seq<"
              (name (last t))
              ", number>>("
@@ -93,14 +90,6 @@
              (get (second t) :max)
 
              "))")
-        (vector? t) (str "obj<array_seq<" ;;old
-                         (first t)
-                         ", number>>("
-                         v
-                         ", size_t("
-                         (second t)
-
-                         "))")
         :else v)))
 
   (def argslist
@@ -110,9 +99,6 @@
   (def cvts-to-c
     (fn [t v]
       (cond
-        (= t 'string) (str "string::to<std::string>(" v ").c_str()")
-        (= t 'int) (str "number::to<std::int32_t>(" v ")")
-        (= t 'double) (str "number::to<double>(" v ")")
         (= t :string) (str "string::to<std::string>(" v ").c_str()")
         (= t :int) (str "number::to<std::int32_t>(" v ")")
         (= t :double) (str "number::to<double>(" v ")")
@@ -130,15 +116,6 @@
                                     (rest signature)
                                     (make-syms "b" (dec (count signature))))))))
            ";")))
-
-  (def c-lambda
-    (fn [varname signature]
-      (let [funargs (make-syms "b" (dec (count signature)))
-            argstypes (map (fn [e] (if (vector? e) (str (first e) "*") e))
-                           (rest signature))
-            combined (map (fn [t v] (str t " " v)) argstypes funargs)]
-        (str "[" varname "] " (argslist combined) " -> " (first signature)
-             " {" (c-lambdabody varname signature) "}"))))
 
   (def m-c-lambda
     (fn [varname malli-signature]
@@ -235,7 +212,9 @@
             (m-add-type-raw (map keyword [class method]) (map keyword types)))
           (let [m-data (if (= (symbol "new") method)
                          (get-in malli-types [(keyword class) m-types-kw])
-                         (get-in malli-types [(keyword class) (keyword method) m-types-kw]))
+                         (get-in malli-types [(keyword class)
+                                              (keyword method)
+                                              m-types-kw]))
                 c-function (if (= (symbol "new") method)
                              (new-raw class (cons types-kw r))
                              (call-raw class method (cons types-kw r)))]
