@@ -56,14 +56,8 @@
 
 (type-fns)
 
-(defmacro load-types [filename] ;; to be deleted
-  nil)
-
 (defmacro m-load-types [filename]
   (m-set-types-raw (read-string (slurp filename)))
-  nil)
-
-(defmacro add-type [path t] ;; to be deleted
   nil)
 
 (defmacro m-add-type [path t]

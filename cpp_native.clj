@@ -2,7 +2,6 @@
 (native-header "TF1.h")
 
 (require '[c_interop :as c])
-(c/load-types "root_types.edn")
 (c/m-load-types "malli1.edn")
 
 (defmacro overload []
@@ -40,27 +39,21 @@
 
 (def c (c/new TCanvas))
 
-(c/add-type [:Classes TF1] [:B string string int int])
 (c/m-add-type [:TF1] [:B :string :string :int :int])
 
 (def Fnslits ((c/new TF1 :B) "Fnslits" (nslit "x" 0.2 2) -5 5))
 
-(c/add-type [:Classes TF1 SetNpx] [:A int])
 (c/m-add-type [:TF1 :SetNpx] [:A :int])
 ((c/call TF1 SetNpx) Fnslits 500)
 
 ((c/call TF1 Draw) Fnslits)
 ((c/call TCanvas Print) c "nslits_native.pdf")
 
-(c/add-type [:Classes TF1 Eval] [:A double -> double])
 (c/m-add-type [:TF1 :Eval] [:A :double :-> :double])
 
 (def now1 (micros))
 (def erg1 ((c/call TF1 Eval) Fnslits 0.4))
 (println "Call once: " erg1 (- (micros) now1))
-
-(c/add-type [:Classes TF1 GetX]
-            [:A double double double double int -> double])
 
 (c/m-add-type [:TF1 :GetX]
               [:A :double :double :double :double :int :-> :double])
