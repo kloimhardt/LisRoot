@@ -129,9 +129,12 @@
     (fn [native-string]
       (fn [t v]
         (cond
-          (= :lisc/native-string t) native-string
-          (= :lisc/plot-function t) (m-c-lambda v (get-in (deref malli-types) [:registry t]))
-          :else (cvts-to-c t v)))))
+          (= :lisc/native-string t)
+          native-string
+          (= :lisc/plot-function t)
+          (m-c-lambda v (get-in (deref malli-types) [:registry t]))
+          :else
+          (cvts-to-c t v)))))
 
   (def wrap-result
     (fn [t s]
