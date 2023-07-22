@@ -96,5 +96,5 @@ double runit() {
 ;;Call once:  15 +-3
 ;;Root-runtime-compile:  125 +-10
 
-;;Native interop:  40 +-5
-;;Native:  40 +-5
+;;Native interop:  110 +-10
+;;Native:  110 +-10

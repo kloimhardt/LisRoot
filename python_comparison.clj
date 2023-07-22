@@ -3,19 +3,20 @@
 
 (require '[c_interop :as c])
 (c/m-load-types "malli_types.edn")
+(defmacro => [& args] (bake-safe args))
 
 (defn Linear []
   (fn [[x] [par0 par1]]
     (+ par0 (* x par1))))
 
-(def f ((c/new TF1) "pyf1" (Linear) -1. 1. 2))
+(def f ((=> new TF1) "pyf1" (Linear) -1. 1. 2))
 
-((c/call TF1 SetParameters) f 5. 2.)
+((=> SetParameters TF1) f 5. 2.)
 
-(def c (c/new TCanvas))
+(def c (=> new TCanvas))
 
-((c/call TF1 Draw) f)
-((c/call TCanvas Print) c "python_comparison_1.pdf")
+((=> Draw TF1) f)
+((=> Print TCanvas) c "python_comparison_1.pdf")
 
 ;; Example 2
 
@@ -26,8 +27,7 @@
 (println ((LinearB 2.0 5.0) (list 1.0))) ;;comment => 7.0
 (println ((LinearB 2.0 4.0) (list 1.0))) ;;comment => 6.0
 
-((c/call TF1 Draw)
- ((c/new TF1) "pyf2" (LinearB 2. 5.) -1. 1. 2))
+((=> Draw TF1)
+ ((=> new TF1) "pyf2" (LinearB 2. 5.) -1. 1. 2))
 
-((c/call TCanvas Print) c "python_comparison_2.pdf")
-
+((=> Print TCanvas) c "python_comparison_2.pdf")
