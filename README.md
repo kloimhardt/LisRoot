@@ -24,3 +24,8 @@ Install https://clojure.org
 ```
 clojure -Sdeps '{:deps {metosin/malli {:mvn/version "0.11.0"}}}' -M  mallitypes.clj
 ```
+
+Run all scripts with
+```
+./runall.sh
+```
