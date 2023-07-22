@@ -3,6 +3,7 @@
 
 (require '[c_interop :as c])
 (c/m-load-types "malli_types.edn")
+(defmacro => [& args] (bake-safe args))
 
 (defmacro overload []
   (defn smul [args] (apply str (interpose "*" args)))
@@ -37,17 +38,25 @@
 (println (nslit "x" 0.2 2))
 ;;=> pow(sin(3.1415*0.2*x)/(3.1415*0.2*x),2)*pow(sin(3.1415*2*x)/(sin(3.1415*x)),2)
 
-(def c (c/new TCanvas))
+(def c (=> new TCanvas))
 
-(c/m-add-type [:TF1] [:B :string :string :int :int])
+(def Fnslits ((=> new TF1 [:B string string int int])
+              "Fnslits" (nslit "x" 0.2 2) -5 5))
 
-(def Fnslits ((c/new TF1 :B) "Fnslits" (nslit "x" 0.2 2) -5 5))
+((=> SetNpx TF1 [:default int]) Fnslits 500)
+((=> Draw TF1) Fnslits)
+((=> Print TCanvas) c "nslits_native.pdf")
 
-(c/m-add-type [:TF1 :SetNpx] [:default :int])
-((c/call TF1 SetNpx) Fnslits 500)
+(c/defnative "double cpp_nslit(double* x, double* par)"
+  ((* single nslit0) "x[0]" 0.2 2))
 
-((c/call TF1 Draw) Fnslits)
-((c/call TCanvas Print) c "nslits_native.pdf")
+(def FastSlits ((=> new TF1 :native cpp_nslit) "Fnslit" "native" -5.001 5. 2))
+
+((=> SetNpx TF1) FastSlits 500)
+((=> Draw TF1) FastSlits)
+((=> Print TCanvas) c "nslits_fast.pdf")
+
+;; Benchmarks
 
 (c/m-add-type [:TF1 :Eval] [:default :double :-> :double])
 
@@ -58,21 +67,13 @@
 (c/m-add-type [:TF1 :GetX]
               [:default :double :double :double :double :int :-> :double])
 
-(def now (micros))
-(def erg ((c/call TF1 GetX) Fnslits 3.6 -5.0 0.3 1.E-14 1000000000))
-(println "Root-runtime-compile: " erg (- (micros) now))
-
-(c/defnative "double cpp_nslit(double* x, double* par)"
-  ((* single nslit0) "x[0]" 0.2 2))
-
-(def FastSlits ((c/new TF1 :native cpp_nslit) "Fnslit" "native" -5.001 5. 2))
-
 (def now2 (micros))
-(def erg2 ((c/call TF1 GetX) FastSlits 3.6 -5.0 0.3 1.E-14 1000000000))
-(println "Native interop: " erg2 (- (micros) now2))
+(def erg2 ((c/call TF1 GetX) Fnslits 3.6 -5.0 0.3 1.E-14 1000000000))
+(println "Root-runtime-compile: " erg2 (- (micros) now2))
 
-((c/call TF1 Draw) FastSlits)
-((c/call TCanvas Print) c "nslits_fast.pdf")
+(def now3 (micros))
+(def erg3 ((c/call TF1 GetX) FastSlits 3.6 -5.0 0.3 1.E-14 1000000000))
+(println "Native interop: " erg3 (- (micros) now3))
 
 (native-declare
   "double nslitfun(double* x, double* par){
@@ -80,16 +81,17 @@
 }
 
 double runit() {
-  TF1 *Fnslit  = new TF1(\"Fnslit\",nslitfun,-5.001,5.,2);
-  return Fnslit->GetX(3.6, -5.0, 0.3, 1.E-14, 1000000000);
+  TF1 *Cslit  = new TF1(\"Fnslit\",nslitfun,-5.001,5.,2);
+  Cslit->SetNpx(500);
+  return Cslit->GetX(3.6, -5.0, 0.3, 1.E-14, 1000000000);
 }
 ")
 
 (defn runitnow [] "__result = obj<number>(runit())")
 
-(def now3 (micros))
-(def erg3 (runitnow))
-(println "Native: " erg3 (- (micros) now3))
+(def now4 (micros))
+(def erg4 (runitnow))
+(println "Native: " erg4 (- (micros) now4))
 
 ;;Call once:  15 +-3
 ;;Root-runtime-compile:  125 +-10

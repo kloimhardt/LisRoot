@@ -3,7 +3,6 @@
 
 (require '[c_interop :as c])
 (c/m-load-types "malli_types.edn")
-
 (defmacro => [& args] (bake-safe args))
 
 (def pi 3.1415)
