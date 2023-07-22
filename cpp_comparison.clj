@@ -47,14 +47,19 @@
 ((=> Draw TF1) Fnslits)
 ((=> Print TCanvas) c "nslits.pdf")
 
-(def now1 (micros))
-(def erg ((=> Eval TF1 [:default double -> double]) Fnslits 0.4))
-(println "Basetime: " erg (- (micros) now1))
+;; Benchmarks
 
+(c/m-add-type [:TF1 :Eval] [:default :double [:= :double]])
+(def now1 (micros))
+(def erg ((c/call TF1 Eval) Fnslits 0.4))
+(println "Call once: " erg (- (micros) now1))
+
+(c/m-add-type [:TF1 :GetX]
+              [:default :double :double :double :double :int [:= :double]])
 (def now (micros))
-(def erg ((=> GetX TF1 [:default double double double double int -> double])
+(def erg ((c/call TF1 GetX)
           Fnslits 3.6 -5.0 0.3 1.E-14 1000000000))
 (println "Calctime: " erg (- (micros) now))
 
-;; Basetime:  40 +-10
-;; Calctime:  12,800 +-300
+;; Basetime:  40 +-10 (760 +- 100 with Malli runtime check: )
+;; Calctime:  12,800 +-300 (14,100 +- 300 with Malli check)
