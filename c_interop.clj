@@ -38,7 +38,7 @@
 
   (def m-add-type-raw
     (fn [path t]
-      (let [sub-type (if (= (first t) :A) :default (first t))
+      (let [sub-type (first t)
             lasttwo (take-last 2 t)
             ret-arg (if (= (first lasttwo) :->)
                       [(last t) (rest (drop-last 2 t))]
@@ -142,9 +142,7 @@
 
   (def new-raw
     (fn [class args]
-      (let [m-c-sub (if (or (= (first args) :A) (not (first args)))
-                      :default
-                      (first args))
+      (let [m-c-sub (or (first args) :default)
             native-string (second args)
             m-contypes (next (get-in (deref malli-types) [(keyword class) m-c-sub]))
             m-funargs (->> m-contypes count (make-syms "a"))
@@ -157,12 +155,10 @@
 
 (def call-raw
     (fn [class method args]
-      (let [m-sub (or (first args) :A)
-            m-m-sub (if (or (= (first args) :A) (not (first args)))
-                      :default
-                      (first args))
+      (let [m-m-sub (or (first args) :default)
             native-string (second args)
-            m-types (get-in (deref malli-types) [(keyword class) (keyword method) m-m-sub])
+            m-types (get-in (deref malli-types)
+                            [(keyword class) (keyword method) m-m-sub])
             m-funtypes (next m-types)
             m-lasttwo (take-last 2 m-funtypes)
             m-ret-arg (if (and (vector? (last m-funtypes))
@@ -198,8 +194,7 @@
       (let [method (first macargs)
             class (second macargs)
             types (first (nnext macargs))
-            types-kw (or (if (vector? types) (first types) types) :A)
-            m-types-kw (if (= types-kw :A) :default types-kw)
+            m-types-kw (or (if (vector? types) (first types) types) :default)
             r (next (nnext macargs))]
         (do
           (cond
@@ -213,8 +208,8 @@
                                               (keyword method)
                                               m-types-kw]))
                 c-function (if (= (symbol "new") method)
-                             (new-raw class (cons types-kw r))
-                             (call-raw class method (cons types-kw r)))]
+                             (new-raw class (cons m-types-kw r))
+                             (call-raw class method (cons m-types-kw r)))]
             (cond
               (and (= (symbol "new") method) (= m-data (vector :cat)))
               (list 'do

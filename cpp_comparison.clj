@@ -23,7 +23,7 @@
 
 (def Fnslit ((=> new TF1) "Fnslit" (nslit) -5.001 5. 2))
 
-((=> SetNpx TF1 [:A int]) Fnslit 500)
+((=> SetNpx TF1 [:default int]) Fnslit 500)
 
 ((=> SetParameters TF1) Fnslit 0.2 2)
 
@@ -48,11 +48,11 @@
 ((=> Print TCanvas) c "nslits.pdf")
 
 (def now1 (micros))
-(def erg ((=> Eval TF1 [:A double -> double]) Fnslits 0.4))
+(def erg ((=> Eval TF1 [:default double -> double]) Fnslits 0.4))
 (println "Basetime: " erg (- (micros) now1))
 
 (def now (micros))
-(def erg ((=> GetX TF1 [:A double double double double int -> double])
+(def erg ((=> GetX TF1 [:default double double double double int -> double])
           Fnslits 3.6 -5.0 0.3 1.E-14 1000000000))
 (println "Calctime: " erg (- (micros) now))
 

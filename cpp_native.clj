@@ -43,20 +43,20 @@
 
 (def Fnslits ((c/new TF1 :B) "Fnslits" (nslit "x" 0.2 2) -5 5))
 
-(c/m-add-type [:TF1 :SetNpx] [:A :int])
+(c/m-add-type [:TF1 :SetNpx] [:default :int])
 ((c/call TF1 SetNpx) Fnslits 500)
 
 ((c/call TF1 Draw) Fnslits)
 ((c/call TCanvas Print) c "nslits_native.pdf")
 
-(c/m-add-type [:TF1 :Eval] [:A :double :-> :double])
+(c/m-add-type [:TF1 :Eval] [:default :double :-> :double])
 
 (def now1 (micros))
 (def erg1 ((c/call TF1 Eval) Fnslits 0.4))
 (println "Call once: " erg1 (- (micros) now1))
 
 (c/m-add-type [:TF1 :GetX]
-              [:A :double :double :double :double :int :-> :double])
+              [:default :double :double :double :double :int :-> :double])
 
 (def now (micros))
 (def erg ((c/call TF1 GetX) Fnslits 3.6 -5.0 0.3 1.E-14 1000000000))
