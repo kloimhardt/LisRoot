@@ -30,11 +30,11 @@
 (malli-fns)
 
 (defmacro type-fns []
-  (def malli-types (hash-map))
+  (def malli-types (volatile! (hash-map)))
 
   (def m-set-types-raw
     (fn [t]
-      (alter-var-root (var malli-types) (constantly (malli-to-map t)))))
+      (vreset! malli-types (malli-to-map t))))
 
   (def m-add-type-raw
     (fn [path t]
@@ -47,10 +47,10 @@
                             (second ret-arg)
                             (when-not (= :nil (first ret-arg))
                               (vector [:= (first ret-arg)])))]
-        (alter-var-root (var malli-types)
-                        assoc-in
-                        (concat path (list sub-type))
-                        malli-t))))
+        (vswap! malli-types
+                assoc-in
+                (concat path (list sub-type))
+                malli-t))))
 
   nil)
 
@@ -130,7 +130,7 @@
       (fn [t v]
         (cond
           (= :lisc/native-string t) native-string
-          (= :lisc/plot-function t) (m-c-lambda v (get-in malli-types [:registry t]))
+          (= :lisc/plot-function t) (m-c-lambda v (get-in (deref malli-types) [:registry t]))
           :else (cvts-to-c t v)))))
 
   (def wrap-result
@@ -143,7 +143,7 @@
                       :default
                       (first args))
             native-string (second args)
-            m-contypes (next (get-in malli-types [(keyword class) m-c-sub]))
+            m-contypes (next (get-in (deref malli-types) [(keyword class) m-c-sub]))
             m-funargs (->> m-contypes count (make-syms "a"))
             m-codestr (str "new "
                            (name class)
@@ -159,7 +159,7 @@
                       :default
                       (first args))
             native-string (second args)
-            m-types (get-in malli-types [(keyword class) (keyword method) m-m-sub])
+            m-types (get-in (deref malli-types) [(keyword class) (keyword method) m-m-sub])
             m-funtypes (next m-types)
             m-lasttwo (take-last 2 m-funtypes)
             m-ret-arg (if (and (vector? (last m-funtypes))
@@ -205,8 +205,8 @@
             (vector? types)
             (m-add-type-raw (map keyword [class method]) (map keyword types)))
           (let [m-data (if (= (symbol "new") method)
-                         (get-in malli-types [(keyword class) m-types-kw])
-                         (get-in malli-types [(keyword class)
+                         (get-in (deref malli-types) [(keyword class) m-types-kw])
+                         (get-in (deref malli-types) [(keyword class)
                                               (keyword method)
                                               m-types-kw]))
                 c-function (if (= (symbol "new") method)
