@@ -1,5 +1,4 @@
-(native-header "TCanvas.h")
-(native-header "TF1.h")
+(native-header "ROOT.h")
 
 (require '[c_interop :as c])
 (c/m-load-types "malli_types.edn")
