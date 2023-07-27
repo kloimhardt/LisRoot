@@ -1,5 +1,5 @@
 (native-header "ROOT.h")
-(require '[c_interop :as c])
+(require '[cxx :as c])
 (defmacro => [& args] (interop args))
 
 (def pi 3.1415)
