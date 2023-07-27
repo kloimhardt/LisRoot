@@ -3,7 +3,7 @@
 
 (require '[c_interop :as c])
 (c/m-load-types "malli_types.edn")
-(defmacro => [& args] (bake-safe args))
+(defmacro => [& args] (interop args))
 
 (defmacro overload []
   (defn smul [args] (apply str (interpose "*" args)))

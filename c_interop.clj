@@ -189,7 +189,7 @@
       (if (coll? x) (cons 'list (map stri x))
           (str x))))
 
-  (def bake-safe
+  (def interop
     (fn [macargs]
       (let [method (first macargs)
             class (second macargs)
@@ -225,6 +225,7 @@
                           (stri m-data)
                           'args)
                     (list 'apply c-function 'args))))))))
+
   nil)
 
 (class-fns)
@@ -277,3 +278,5 @@
 
 (defmacro defnative [head body]
   (list 'native-declare (str head "{return " (eval body) ";}")))
+
+(m-load-types "malli_types.edn")
