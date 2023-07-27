@@ -194,14 +194,14 @@
       (let [method (first macargs)
             class (second macargs)
             types (first (nnext macargs))
-            m-types-kw (or (if (vector? types) (first types) types) :default)
+            m-types-kw (if (vector? types) :default (or types :default))
             r (next (nnext macargs))]
         (do
           (cond
             (and (vector? types) (= (symbol "new") method))
-            (m-add-type-raw (list (keyword class)) (map keyword types))
+            (m-add-type-raw (list (keyword class)) (map keyword (cons m-types-kw types)))
             (vector? types)
-            (m-add-type-raw (map keyword [class method]) (map keyword types)))
+            (m-add-type-raw (map keyword [class method]) (map keyword (cons m-types-kw types))))
           (let [m-data (if (= (symbol "new") method)
                          (get-in (deref malli-types) [(keyword class) m-types-kw])
                          (get-in (deref malli-types) [(keyword class)

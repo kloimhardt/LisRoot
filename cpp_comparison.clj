@@ -19,7 +19,7 @@
 
 (def Fnslit ((=> new TF1) "Fnslit" (nslit) -5.001 5. 2))
 
-((=> SetNpx TF1 [:default int]) Fnslit 500)
+((=> SetNpx TF1 [int]) Fnslit 500)
 
 ((=> SetParameters TF1) Fnslit 0.2 2)
 

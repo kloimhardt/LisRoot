@@ -1,8 +1,5 @@
-(native-header "TCanvas.h")
-(native-header "TF1.h")
-
+(native-header "ROOT.h")
 (require '[c_interop :as c])
-(c/m-load-types "malli_types.edn")
 (defmacro => [& args] (interop args))
 
 (defmacro overload []
@@ -40,10 +37,10 @@
 
 (def c (=> new TCanvas))
 
-(def Fnslits ((=> new TF1 [:B string string int int])
+(def Fnslits ((=> new TF1 [string string int int])
               "Fnslits" (nslit "x" 0.2 2) -5 5))
 
-((=> SetNpx TF1 [:default int]) Fnslits 500)
+((=> SetNpx TF1 [int]) Fnslits 500)
 ((=> Draw TF1) Fnslits)
 ((=> Print TCanvas) c "nslits_native.pdf")
 
