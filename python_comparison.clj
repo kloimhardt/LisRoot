@@ -7,9 +7,9 @@
 
 (def c (cxx_> new TCanvas))
 
-(doto ((cxx_> new TF1) "pyf1" (Linear) -1. 1. 2)
-  ((cxx_> SetParameters TF1) 5. 2.)
-  ((cxx_> Draw TF1)))
+(cxx_doto> ((new TF1) "pyf1" (Linear) -1. 1. 2)
+           (SetParameters 5. 2.)
+           Draw)
 
 ((cxx_> Print TCanvas) c "python_comparison_1.pdf")
 

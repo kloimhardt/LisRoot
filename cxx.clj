@@ -207,8 +207,12 @@
                          (get-in (deref malli-types) [(keyword class)
                                               (keyword method)
                                               m-types-kw]))
-                c-function (if (= (symbol "new") method)
+                c-function (cond
+                             (= (symbol "bless") method)
+                             'identity
+                             (= (symbol "new") method)
                              (new-raw class (cons m-types-kw r))
+                             :else
                              (call-raw class method (cons m-types-kw r)))]
             (cond
               (and (= (symbol "new") method) (= m-data (vector :cat)))
@@ -280,5 +284,22 @@
   (list 'native-declare (str head "{return " (eval body) ";}")))
 
 (defmacro > [& args] (interop args))
+
+(defmacro doto> [& a]
+  (let [b (map (fn [x] (if-not (list? x) (list x) x))
+               a)
+        c (map (fn [x] (if-not (list? (first x))
+                         (cons (list (first x)) (rest x))
+                         x))
+               b)
+        class (second (ffirst c))
+        d (cons (interop (ffirst c)) (rest (first c)))
+        e (map (fn [x] (cons (interop (concat (list (ffirst x) class)
+                                               (rest (first x))))
+                             (rest x)))
+               (rest c))
+        f (cons d e)
+        erg (cons 'doto f)]
+    erg))
 
 (m-load-types "malli_types.edn")
