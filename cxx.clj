@@ -305,14 +305,3 @@
     erg))
 
 (m-load-types "malli_types.edn")
-
-(comment
-  (defn interop [x] (cons ">" x))
-  (doto> (new TCanvas))
-  ;; => "[((new) TCanvas)]"
-
-  (doto> ((new TF1) "pyf1" (Linear) -1. 1. 2))
-  ;; => "[((new TF1) \"pyf1\" (Linear) -1.0 1.0 2)]"
-
-  ;;
-  )

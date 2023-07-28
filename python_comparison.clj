@@ -28,8 +28,9 @@
 ((cxx_> Print TCanvas) c "python_comparison_2.pdf")
 
 ;; SetParameters integers
-(doto ((cxx_> new TF1) "pyf3" (Linear) -1. 1. 2)
-  ((cxx_> SetParameters TF1 :double_int) 5. 2)
-  ((cxx_> Draw TF1)))
+(cxx_doto> ((new TF1) "pyf3" (Linear) -1. 1. 2)
+           ((SetParameters :double_int) 5. 2)
+           Draw)
 
-((cxx_> Print TCanvas) c "python_comparison_3.pdf")
+(cxx_doto> ((bless TCanvas) c)
+           (Print "python_comparison_3.pdf"))
