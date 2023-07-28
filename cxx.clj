@@ -293,7 +293,9 @@
                          x))
                b)
         class (second (ffirst c))
-        d (cons (interop (ffirst c)) (rest (first c)))
+        d (if (= (symbol "new") (ffirst a))
+            (interop (first a))
+            (cons (interop (ffirst c)) (rest (first c))))
         e (map (fn [x] (cons (interop (concat (list (ffirst x) class)
                                                (rest (first x))))
                              (rest x)))
@@ -303,3 +305,14 @@
     erg))
 
 (m-load-types "malli_types.edn")
+
+(comment
+  (defn interop [x] (cons ">" x))
+  (doto> (new TCanvas))
+  ;; => "[((new) TCanvas)]"
+
+  (doto> ((new TF1) "pyf1" (Linear) -1. 1. 2))
+  ;; => "[((new TF1) \"pyf1\" (Linear) -1.0 1.0 2)]"
+
+  ;;
+  )
