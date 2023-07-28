@@ -7,7 +7,7 @@
 
 (def c (cxx_> new TCanvas))
 
-(doto ((cxx_> new TF1) "pyf3" (Linear) -1. 1. 2)
+(doto ((cxx_> new TF1) "pyf1" (Linear) -1. 1. 2)
   ((cxx_> SetParameters TF1) 5. 2.)
   ((cxx_> Draw TF1)))
 
@@ -26,3 +26,10 @@
  ((cxx_> new TF1) "pyf2" (LinearB 2. 5.) -1. 1. 2))
 
 ((cxx_> Print TCanvas) c "python_comparison_2.pdf")
+
+;; SetParameters integers
+(doto ((cxx_> new TF1) "pyf3" (Linear) -1. 1. 2)
+  ((cxx_> SetParameters TF1 :double_int) 5. 2)
+  ((cxx_> Draw TF1)))
+
+((cxx_> Print TCanvas) c "python_comparison_3.pdf")
