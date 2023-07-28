@@ -5,13 +5,12 @@
   (fn [[x] [par0 par1]]
     (+ par0 (* x par1))))
 
-(def f ((cxx_> new TF1) "pyf1" (Linear) -1. 1. 2))
-
-((cxx_> SetParameters TF1) f 5. 2.)
-
 (def c (cxx_> new TCanvas))
 
-((cxx_> Draw TF1) f)
+(doto ((cxx_> new TF1) "pyf3" (Linear) -1. 1. 2)
+  ((cxx_> SetParameters TF1) 5. 2.)
+  ((cxx_> Draw TF1)))
+
 ((cxx_> Print TCanvas) c "python_comparison_1.pdf")
 
 ;; Example 2
@@ -28,14 +27,3 @@
 
 ((cxx_> Print TCanvas) c "python_comparison_2.pdf")
 
-;; Example 3
-(defn LinearC []
-  (fn [[x] [par0 par1]]
-    (+ par0 (* x par1))))
-
-(def c (cxx_> new TCanvas))
-
-((cxx_> Draw TF1) (doto ((cxx_> new TF1) "pyf3" (LinearC) -1. 1. 2)
-                    ((cxx_> SetParameters TF1) 5. 2.)))
-
-((cxx_> Print TCanvas) c "python_comparison_3.pdf")
