@@ -1,9 +1,9 @@
 (native-header "ROOT.h")
-(require '[cxx])
+(require 'cxx)
 
 (defn Linear []
-  (fn [[x] [par0 par1]]
-    (+ par0 (* x par1))))
+  (fn [[x] [d k]]
+    (+ d (* x k))))
 
 (def c (cxx_> new TCanvas))
 
@@ -26,4 +26,3 @@
  ((cxx_> new TF1) "pyf2" (LinearB 2. 5.) -1. 1. 2))
 
 ((cxx_> Print TCanvas) c "python_comparison_2.pdf")
-
