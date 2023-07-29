@@ -239,6 +239,10 @@
                              (call-raw class method (cons m-types-kw r)))]
             (vector macargs c-function m-data))))))
 
+  (def interop-flat
+    (fn [macargs]
+      (apply interop-fn (interop-vec macargs))))
+
   (def interop
     (fn [macargs]
       (apply interop-fn-direct (interop-vec macargs))))
@@ -246,20 +250,6 @@
   nil)
 
 (class-fns)
-
-(comment
-  (m-load-types "malli_types.edn")
-  (second (new-raw 'TF1 []))
-  ;; => (fn [a_0 a_1 a_2 a_3 a_4] "__result = obj<pointer>(new TF1(string::to<std::string>(a_0).c_str(), [a_1] (double* b_0, double* b_1) -> double {return number::to<double>(run(a_1, obj<array_seq<double, number>>(b_0, size_t(10)), obj<array_seq<double, number>>(b_1, size_t(11))));}, number::to<double>(a_2), number::to<double>(a_3), number::to<double>(a_4)))")
-
-  (second (new-raw 'TCanvas []))
-  ;; => ((fn [] "__result = obj<pointer>(new TCanvas())"))
-
-  (second (call-raw 'TF1 'SetParameters []))
-  ;; => (fn [a_0 a_1 a_2] "pointer::to_pointer<TF1>(a_0)->SetParameters(number::to<double>(a_1), number::to<double>(a_2))")
-
-;;
-  )
 
 (defn not-double? [v]
   (and (not (zero? v)) (zero? (dec (inc v)))))
@@ -313,21 +303,19 @@
 (defmacro defnative [head body]
   (list 'native-declare (str head "{return " (eval body) ";}")))
 
-(defmacro > [& args]
-  (apply interop-fn-direct (interop-vec args)))
-
-(defmacro _ [& args]
-  (apply interop-fn-direct (interop-vec args)))
+(defmacro > [& args] (interop args))
+(defmacro _ [& args] (interop args))
 
 (defmacro _doto [& args]
   (let [frt (first args)
-        m-frt (if (and (= (symbol "TF1") (second (first frt)))
-                       (nil? (nnext (first frt))))
-                (update (vec frt) 2 (fn [x] (list 'identity x)))
-                frt)
+        frt1 (if (= (symbol "new") (first frt)) (list frt) frt)
+        hack-frt (if (and (= (symbol "TF1") (second (first frt1)))
+                       (nil? (nnext (first frt1))))
+                (update (vec frt1) 2 (fn [x] (list 'identity x)))
+                frt1)
 
         ;; hack for https://github.com/nakkaya/ferret/issues/52
-        a (cons m-frt (rest args))
+        a (cons hack-frt (rest args))
 
         b (map (fn [x] (if-not (coll? x) (list x) x))
                a)
@@ -335,13 +323,9 @@
                          (cons (list (first x)) (rest x))
                          x))
                b)
-        class (if (= (symbol "new") (first m-frt))
-                (second m-frt)
-                (second (ffirst c)))
-        d (if (= (symbol "new") (first m-frt))
-            (interop m-frt)
-            (cons (interop (ffirst c)) (rest (first c))))
-        e (map (fn [x] (cons (interop (concat (list (ffirst x) class)
+        class (second (ffirst c))
+        d (cons (interop-flat (ffirst c)) (rest (first c)))
+        e (map (fn [x] (cons (interop-flat (concat (list (ffirst x) class)
                                               (rest (first x))))
                              (rest x)))
                (rest c))

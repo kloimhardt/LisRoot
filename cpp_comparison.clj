@@ -23,7 +23,8 @@
 
 ((=> SetParameters TF1) Fnslit 0.2 2)
 
-(def c (=> new TCanvas))
+(def c (cxx__doto (new TCanvas)
+                  (Print "empty.pdf")))
 
 ((=> Draw TF1) Fnslit)
 ((=> Print TCanvas) c "nslit.pdf")
