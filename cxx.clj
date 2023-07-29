@@ -151,7 +151,7 @@
                            (argslist (map (cvt-to-c native-string) m-contypes m-funargs)))
             m-funcode (list 'fn m-funargs (wrap-result :pointer m-codestr))
             m-erg (if (seq m-contypes) m-funcode (list m-funcode))]
-        m-erg)))
+        (vector :fn m-erg))))
 
 (def call-raw
     (fn [class method args]
@@ -182,7 +182,7 @@
                           (wrap-result
                             (first m-ret-arg)
                             m-codestr)))]
-        m-erg)))
+        (vector :fn m-erg))))
 
   (def stri
     (fn [x]
@@ -209,7 +209,7 @@
                                               m-types-kw]))
                 c-function (cond
                              (= (symbol "bless") method)
-                             'identity
+                             (vector :fn 'identity)
                              (= (symbol "new") method)
                              (new-raw class (cons m-types-kw r))
                              :else
@@ -221,18 +221,32 @@
                           (stri macargs)
                           (stri m-data)
                           (list 'list))
-                    c-function)
+                    (second c-function))
               :else
               (list 'fn [(symbol "&") 'args]
                     (list 'checkit
                           (stri macargs)
                           (stri m-data)
                           'args)
-                    (list 'apply c-function 'args))))))))
+                    (list 'apply (second c-function) 'args))))))))
 
   nil)
 
 (class-fns)
+
+(comment
+  (m-load-types "malli_types.edn")
+  (second (new-raw 'TF1 []))
+  ;; => (fn [a_0 a_1 a_2 a_3 a_4] "__result = obj<pointer>(new TF1(string::to<std::string>(a_0).c_str(), [a_1] (double* b_0, double* b_1) -> double {return number::to<double>(run(a_1, obj<array_seq<double, number>>(b_0, size_t(10)), obj<array_seq<double, number>>(b_1, size_t(11))));}, number::to<double>(a_2), number::to<double>(a_3), number::to<double>(a_4)))")
+
+  (second (new-raw 'TCanvas []))
+  ;; => ((fn [] "__result = obj<pointer>(new TCanvas())"))
+
+  (second (call-raw 'TF1 'SetParameters []))
+  ;; => (fn [a_0 a_1 a_2] "pointer::to_pointer<TF1>(a_0)->SetParameters(number::to<double>(a_1), number::to<double>(a_2))")
+
+;;
+  )
 
 (defn not-double? [v]
   (and (not (zero? v)) (zero? (dec (inc v)))))
@@ -275,10 +289,10 @@
                          (map check-value (first types-args) (second types-args))))))
 
 (defmacro new [class & args]
-  (new-raw class args))
+  (second (new-raw class args)))
 
 (defmacro call [class method & args]
-  (call-raw class method args))
+  (second (call-raw class method args)))
 
 (defmacro defnative [head body]
   (list 'native-declare (str head "{return " (eval body) ";}")))
