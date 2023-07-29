@@ -190,7 +190,25 @@
       (if (coll? x) (cons 'list (map stri x))
           (str x))))
 
-  (def interop
+  (def interop-fn
+    (fn [macargs c-function m-data]
+      (cond
+        (= :new-no-args (first c-function))
+        (list 'do
+              (list 'checkit
+                    (stri macargs)
+                    (stri m-data)
+                    (list 'list))
+              (list (second c-function)))
+        :else
+        (list 'fn [(symbol "&") 'args]
+              (list 'checkit
+                    (stri macargs)
+                    (stri m-data)
+                    'args)
+              (list 'apply (second c-function) 'args)))))
+
+  (def interop-vec
     (fn [macargs]
       (let [method (first macargs)
             class (second macargs)
@@ -215,21 +233,11 @@
                              (new-raw class (cons m-types-kw r))
                              :else
                              (call-raw class method (cons m-types-kw r)))]
-            (cond
-              (= :new-no-args (first c-function))
-              (list 'do
-                    (list 'checkit
-                          (stri macargs)
-                          (stri m-data)
-                          (list 'list))
-                    (list (second c-function)))
-              :else
-              (list 'fn [(symbol "&") 'args]
-                    (list 'checkit
-                          (stri macargs)
-                          (stri m-data)
-                          'args)
-                    (list 'apply (second c-function) 'args))))))))
+            (vector macargs c-function m-data))))))
+
+  (def interop
+    (fn [macargs]
+      (apply interop-fn (interop-vec macargs))))
 
   nil)
 
