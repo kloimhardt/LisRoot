@@ -285,21 +285,30 @@
 
 (defmacro > [& args] (interop args))
 
-(defmacro doto> [& a]
-  (let [b (map (fn [x] (if-not (list? x) (list x) x))
+(defmacro doto> [& args]
+  (let [frt (first args)
+        m-frt (if (and (= (symbol "TF1") (second (first frt)))
+                       (nil? (nnext (first frt))))
+                (update (vec frt) 2 (fn [x] (list 'identity x)))
+                frt)
+
+        ;; hack for https://github.com/nakkaya/ferret/issues/52
+        a (cons m-frt (rest args))
+
+        b (map (fn [x] (if-not (coll? x) (list x) x))
                a)
-        c (map (fn [x] (if-not (list? (first x))
+        c (map (fn [x] (if-not (coll? (first x))
                          (cons (list (first x)) (rest x))
                          x))
                b)
-        class (if (= (symbol "new") (ffirst a))
-                (second (first a))
+        class (if (= (symbol "new") (first m-frt))
+                (second m-frt)
                 (second (ffirst c)))
-        d (if (= (symbol "new") (ffirst a))
-            (interop (first a))
+        d (if (= (symbol "new") (first m-frt))
+            (interop m-frt)
             (cons (interop (ffirst c)) (rest (first c))))
         e (map (fn [x] (cons (interop (concat (list (ffirst x) class)
-                                               (rest (first x))))
+                                              (rest (first x))))
                              (rest x)))
                (rest c))
         f (cons d e)

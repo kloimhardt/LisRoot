@@ -1,13 +1,12 @@
 (native-header "ROOT.h")
 (require 'cxx)
 
-(defn Linear []
-  (fn [[x] [d k]]
-    (+ d (* x k))))
+(defn Linear [[x] [d k]]
+  (+ d (* x k)))
 
 (def c (cxx_> new TCanvas))
 
-(cxx_doto> ((new TF1) "pyf1" (Linear) -1. 1. 2)
+(cxx_doto> ((new TF1) "pyf1" Linear -1. 1. 2)
            (SetParameters 5. 2.)
            Draw)
 
@@ -28,7 +27,7 @@
 ((cxx_> Print TCanvas) c "python_comparison_2.pdf")
 
 ;; SetParameters integers
-(cxx_doto> ((new TF1) "pyf3" (Linear) -1. 1. 2)
+(cxx_doto> ((new TF1) "pyf3" Linear -1. 1. 2)
            ((SetParameters :double_int) 5. 2)
            Draw)
 
