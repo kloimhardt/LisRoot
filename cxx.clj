@@ -305,7 +305,7 @@
 
 (defmacro _ [& args] (interop args))
 
-(defmacro _doto [& args]
+(defmacro > [& args]
   (let [frt (first args)
         frt1 (if (= (symbol "new") (first frt)) (list frt) frt)
         hack-frt (if (and (= (symbol "TF1") (second (first frt1)))
