@@ -284,8 +284,9 @@
   (list 'native-declare (str head "{return " (eval body) ";}")))
 
 (defmacro > [& args] (interop args))
+(defmacro _ [& args] (interop args))
 
-(defmacro doto> [& args]
+(defmacro _doto [& args]
   (let [frt (first args)
         m-frt (if (and (= (symbol "TF1") (second (first frt)))
                        (nil? (nnext (first frt))))

@@ -4,9 +4,11 @@
 (defn Linear [[x] [d k]]
   (+ d (* x k)))
 
-(def c (cxx_> new TCanvas))
+;; create a canvas
+(def c (cxx__ new TCanvas))
 
-(cxx_doto> ((new TF1) "pyf1" Linear -1. 1. 2)
+;; plot the function
+(cxx__doto ((new TF1) "pyf2" Linear -1. 1. 2)
            (SetParameters 5. 2.)
            Draw)
 
@@ -27,9 +29,9 @@
 ((cxx_> Print TCanvas) c "python_comparison_2.pdf")
 
 ;; SetParameters integers
-(cxx_doto> ((new TF1) "pyf3" Linear -1. 1. 2)
+(cxx__doto ((new TF1) "pyf2" Linear -1. 1. 2)
            ((SetParameters :double_int) 5. 2)
            Draw)
 
-(cxx_doto> ((bless TCanvas) c)
+(cxx__doto ((bless TCanvas) c)
            (Print "python_comparison_3.pdf"))
