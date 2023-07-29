@@ -192,6 +192,15 @@
 
   (def interop-fn
     (fn [macargs c-function m-data]
+      (list 'fn [(symbol "&") 'args]
+            (list 'checkit
+                  (stri macargs)
+                  (stri m-data)
+                  'args)
+            (list 'apply (second c-function) 'args))))
+
+  (def interop-fn-direct
+    (fn [macargs c-function m-data]
       (cond
         (= :new-no-args (first c-function))
         (list 'do
@@ -201,12 +210,7 @@
                     (list 'list))
               (list (second c-function)))
         :else
-        (list 'fn [(symbol "&") 'args]
-              (list 'checkit
-                    (stri macargs)
-                    (stri m-data)
-                    'args)
-              (list 'apply (second c-function) 'args)))))
+        (interop-fn macargs c-function m-data))))
 
   (def interop-vec
     (fn [macargs]
@@ -237,7 +241,7 @@
 
   (def interop
     (fn [macargs]
-      (apply interop-fn (interop-vec macargs))))
+      (apply interop-fn-direct (interop-vec macargs))))
 
   nil)
 
@@ -309,8 +313,11 @@
 (defmacro defnative [head body]
   (list 'native-declare (str head "{return " (eval body) ";}")))
 
-(defmacro > [& args] (interop args))
-(defmacro _ [& args] (interop args))
+(defmacro > [& args]
+  (apply interop-fn-direct (interop-vec args)))
+
+(defmacro _ [& args]
+  (apply interop-fn-direct (interop-vec args)))
 
 (defmacro _doto [& args]
   (let [frt (first args)
