@@ -150,8 +150,9 @@
                            (name class)
                            (argslist (map (cvt-to-c native-string) m-contypes m-funargs)))
             m-funcode (list 'fn m-funargs (wrap-result :pointer m-codestr))
-            m-erg (if (seq m-contypes) m-funcode (list m-funcode))]
-        (vector :fn m-erg))))
+            m-erg (vector (if (seq m-contypes) :fn :new-no-args)
+                          m-funcode)]
+        m-erg)))
 
 (def call-raw
     (fn [class method args]
@@ -215,13 +216,13 @@
                              :else
                              (call-raw class method (cons m-types-kw r)))]
             (cond
-              (and (= (symbol "new") method) (= m-data (vector :cat)))
+              (= :new-no-args (first c-function))
               (list 'do
                     (list 'checkit
                           (stri macargs)
                           (stri m-data)
                           (list 'list))
-                    (second c-function))
+                    (list (second c-function)))
               :else
               (list 'fn [(symbol "&") 'args]
                     (list 'checkit
@@ -289,7 +290,10 @@
                          (map check-value (first types-args) (second types-args))))))
 
 (defmacro new [class & args]
-  (second (new-raw class args)))
+  (let [fncode (new-raw class args)]
+    (if (= :new-no-args (first fncode))
+      (list (second fncode))
+      (second fncode))))
 
 (defmacro call [class method & args]
   (second (call-raw class method args)))
