@@ -303,7 +303,6 @@
 (defmacro defnative [head body]
   (list 'native-declare (str head "{return " (eval body) ";}")))
 
-(defmacro > [& args] (interop args))
 (defmacro _ [& args] (interop args))
 
 (defmacro _doto [& args]

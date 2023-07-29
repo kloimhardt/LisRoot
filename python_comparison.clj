@@ -12,7 +12,7 @@
            (SetParameters 5. 2.)
            Draw)
 
-((cxx_> Print TCanvas) c "python_comparison_1.pdf")
+((cxx__ Print TCanvas) c "python_comparison_1.pdf")
 
 ;; Example 2
 
@@ -23,10 +23,10 @@
 (println ((LinearB 2.0 5.0) (list 1.0))) ;;comment => 7.0
 (println ((LinearB 2.0 4.0) (list 1.0))) ;;comment => 6.0
 
-((cxx_> Draw TF1)
- ((cxx_> new TF1) "pyf2" (LinearB 2. 5.) -1. 1. 2))
+((cxx__ Draw TF1)
+ ((cxx__ new TF1) "pyf2" (LinearB 2. 5.) -1. 1. 2))
 
-((cxx_> Print TCanvas) c "python_comparison_2.pdf")
+((cxx__ Print TCanvas) c "python_comparison_2.pdf")
 
 ;; SetParameters integers
 (cxx__doto ((new TF1) "pyf2" Linear -1. 1. 2)
