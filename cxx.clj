@@ -247,6 +247,33 @@
     (fn [macargs]
       (apply interop-fn-direct (interop-vec macargs))))
 
+  (def _doto
+    (fn [args]
+      (let [frt (first args)
+            frt1 (if (= (symbol "new") (first frt)) (list frt) frt)
+            hack-frt (if (and (= (symbol "TF1") (second (first frt1)))
+                              (nil? (nnext (first frt1))))
+                       (update (vec frt1) 2 (fn [x] (list 'identity x)))
+                       frt1)
+
+            ;; hack for https://github.com/nakkaya/ferret/issues/52
+            a (cons hack-frt (rest args))
+
+            b (map (fn [x] (if-not (coll? x) (list x) x))
+                   a)
+            c (map (fn [x] (if-not (coll? (first x))
+                             (cons (list (first x)) (rest x))
+                             x))
+                   b)
+            class (second (ffirst c))
+            d (cons (interop-flat (ffirst c)) (rest (first c)))
+            e (map (fn [x] (cons (interop-flat (concat (list (ffirst x) class)
+                                                       (rest (first x))))
+                                 (rest x)))
+                   (rest c))
+            f (cons d e)
+            erg (cons 'doto f)]
+        erg)))
   nil)
 
 (class-fns)
@@ -305,31 +332,7 @@
 
 (defmacro _ [& args] (interop args))
 
-(defmacro > [& args]
-  (let [frt (first args)
-        frt1 (if (= (symbol "new") (first frt)) (list frt) frt)
-        hack-frt (if (and (= (symbol "TF1") (second (first frt1)))
-                       (nil? (nnext (first frt1))))
-                (update (vec frt1) 2 (fn [x] (list 'identity x)))
-                frt1)
-
-        ;; hack for https://github.com/nakkaya/ferret/issues/52
-        a (cons hack-frt (rest args))
-
-        b (map (fn [x] (if-not (coll? x) (list x) x))
-               a)
-        c (map (fn [x] (if-not (coll? (first x))
-                         (cons (list (first x)) (rest x))
-                         x))
-               b)
-        class (second (ffirst c))
-        d (cons (interop-flat (ffirst c)) (rest (first c)))
-        e (map (fn [x] (cons (interop-flat (concat (list (ffirst x) class)
-                                              (rest (first x))))
-                             (rest x)))
-               (rest c))
-        f (cons d e)
-        erg (cons 'doto f)]
-    erg))
+(defmacro > [& args] (_doto args))
+(defmacro T [& args] (_doto args))
 
 (m-load-types "malli_types.edn")

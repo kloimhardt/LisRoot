@@ -1,14 +1,14 @@
 (native-header "ROOT.h")
-(require 'cxx)
+(require '[cxx :as ROO])
 
 (defn Linear [[x] [d k]]
   (+ d (* x k)))
 
 ;; create a canvas
-(def c (cxx_> (new TCanvas)))
+(def c (ROO/T (new TCanvas)))
 
 ;; plot the function
-(cxx_> ((new TF1) "pyf2" Linear -1. 1. 2)
+(ROO/T ((new TF1) "pyf2" Linear -1. 1. 2)
        (SetParameters 5. 2.)
        Draw)
 
