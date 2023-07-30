@@ -8,7 +8,7 @@
 (def c (ROO/T (new TCanvas)))
 
 ;; plot the function
-(ROO/T ((new TF1 :XR2) "pyf2" Linear -1. 1. 2)
+(ROO/T ((new TF1 :XR2) "pyf2" Linear -1. 1.)
        (SetParameters 5. 2.)
        Draw)
 

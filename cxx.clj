@@ -90,6 +90,10 @@
     (fn [strs]
       (str "(" (apply str (interpose ", " strs)) ")")))
 
+  (def given-value
+    (fn [typ]
+      (when (and (vector? typ) (= :enum (first typ))) (second typ))))
+
   (def cvts-to-c
     (fn [t v]
       (cond
@@ -97,7 +101,7 @@
         (= t :int) (str "number::to<std::int32_t>(" v ")")
         (= t :double) (str "number::to<double>(" v ")")
         (= t :lisc/int-to-double) (str "number::to<double>(" v ")")
-        (and (vector? t) (= :enum (first t))) (str (second t))
+        (given-value t) (str (given-value t))
         :else v)))
 
   (def c-lambdabody
@@ -148,10 +152,12 @@
             native-string (second args)
             m-contypes (next (get-in (deref malli-types) [(keyword class) m-c-sub]))
             m-funargs (->> m-contypes count (make-syms "a"))
-            real-funargs m-funargs
             m-codestr (str "new "
                            (name class)
                            (argslist (map (cvt-to-c native-string) m-contypes m-funargs)))
+            real-funargs (mapv second
+                               (remove (fn [x] (given-value (first x)))
+                                       (map vector m-contypes m-funargs)))
             m-funcode (list 'fn real-funargs (wrap-result :pointer m-codestr))
             m-erg (vector (if (seq real-funargs) :fn :new-no-args)
                           m-funcode)]
@@ -276,6 +282,7 @@
             f (cons d e)
             erg (cons 'doto f)]
         erg)))
+
   nil)
 
 (class-fns)
@@ -283,13 +290,7 @@
 (comment
 
   (m-load-types "malli_types.edn")
-
-  (identity _m-contypes)
-
-  (identity _op)
-  (identity _oo)
   (new-raw 'TF1 [:XR2])
-
   (new-raw 'TCanvas [])
 
   ;;
