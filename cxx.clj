@@ -166,7 +166,6 @@
 (def call-raw
     (fn [class method args]
       (let [m-m-sub (or (first args) :default)
-            native-string (second args)
             m-types (get-in (deref malli-types)
                             [(keyword class) (keyword method) m-m-sub])
             m-funtypes (next m-types)
@@ -183,9 +182,7 @@
                            (first m-arg-symbols)
                            ")->"
                            (name method)
-                           (argslist (map (cvt-to-c native-string)
-                                          m-arg-types
-                                          (rest m-arg-symbols))))
+                           (argslist (map cvts-to-c m-arg-types (rest m-arg-symbols))))
             m-erg (list 'fn m-arg-symbols
                         (if (= (first m-ret-arg) :nil)
                           m-codestr
@@ -292,6 +289,10 @@
   (m-load-types "malli_types.edn")
   (new-raw 'TF1 [:XR2])
   (new-raw 'TCanvas [])
+
+  (new-raw 'TF1 [:native 'cpp_nslit])
+
+  ;; => [:fn (fn [a_0 a_1 a_2 a_3 a_4] "__result = obj<pointer>(new TF1(string::to<std::string>(a_0).c_str(), cpp_nslit, number::to<double>(a_2), number::to<double>(a_3), number::to<double>(a_4)))")]
 
   ;;
   )
