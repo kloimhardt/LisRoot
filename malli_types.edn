@@ -1,7 +1,6 @@
 [:map
  {:registry
-  {::native-string :string
-   ::plot-function [:tuple
+  {::plot-function [:tuple
                     [:vector {:max 10} :double]
                     [:vector {:max 11} :double]
                     [:= :double]]
@@ -18,7 +17,7 @@
  [:TF1 [:map
         [:default [:cat :string ::plot-function :double :double :int]]
         [:XR2 [:cat :string ::R1R2->R :double :double [:enum 2]]]
-        [:native [:cat :string ::native-string :double :double :double]]
+        [:XR2-native [:cat :string [:enum 1 :args] :double :double [:enum 2]]]
         [:Draw [:map
                 [:default [:cat]]]]
         [:SetParameters [:map

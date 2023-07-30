@@ -91,8 +91,11 @@
       (str "(" (apply str (interpose ", " strs)) ")")))
 
   (def given-value
-    (fn [typ]
-      (when (and (vector? typ) (= :enum (first typ))) (second typ))))
+    (fn [typ args]
+      (when (and (vector? typ) (= :enum (first typ)))
+        (if (= :args (last typ))
+          (nth args (second typ))
+          (second typ)))))
 
   (def cvts-to-c
     (fn [t v]
@@ -101,7 +104,6 @@
         (= t :int) (str "number::to<std::int32_t>(" v ")")
         (= t :double) (str "number::to<double>(" v ")")
         (= t :lisc/int-to-double) (str "number::to<double>(" v ")")
-        (given-value t) (str (given-value t))
         :else v)))
 
   (def c-lambdabody
@@ -133,12 +135,12 @@
     (fn [args]
       (fn [t v]
         (cond
-          (= :lisc/native-string t)
-          (second args)
           (= :lisc/plot-function t)
           (m-c-lambda v (get-in (deref malli-types) [:registry t]))
           (and (keyword? t) (re-matches #"R\dR\d->R" (name t)))
           (m-c-lambda v (get-in (deref malli-types) [:registry t]))
+          (given-value t args)
+          (str (given-value t args))
           :else
           (cvts-to-c t v)))))
 
@@ -155,7 +157,7 @@
                            (name class)
                            (argslist (map (cvt-to-c args) m-contypes m-funargs)))
             real-funargs (mapv second
-                               (remove (fn [x] (given-value (first x)))
+                               (remove (fn [x] (given-value (first x) args))
                                        (map vector m-contypes m-funargs)))
             m-funcode (list 'fn real-funargs (wrap-result :pointer m-codestr))
             m-erg (vector (if (seq real-funargs) :fn :new-no-args)

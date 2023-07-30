@@ -11,7 +11,7 @@
                      :Print {:default ["file.pdf"]}}
            :TF1 {:default ["FunctionName" plot-function -5.001 5. 2]
                  :XR2 ["FunctionName" R1R2->R -5.001 5. 2]
-                 :native ["FunctionName" "placeholder foo" -5.001 5. 2.0]
+                 :XR2-native ["FunctionName" 1 -5.001 5. 2]
                  :Draw {:default []}
                  :SetParameters {:default [0.2 2.0]
                                  :double_int [0.2 2]}}})

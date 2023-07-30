@@ -47,7 +47,7 @@
 (c/defnative "double cpp_nslit(double* x, double* par)"
   ((* single nslit0) "x[0]" 0.2 2))
 
-(def FastSlits ((=> new TF1 :native cpp_nslit) "Fnslit" "native" -5.001 5. 2))
+(def FastSlits ((=> new TF1 :XR2-native cpp_nslit) "Fnslit" -5.001 5.))
 
 ((=> SetNpx TF1) FastSlits 500)
 ((=> Draw TF1) FastSlits)
