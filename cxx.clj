@@ -254,7 +254,7 @@
       (let [frt (first args)
             frt1 (if (= (symbol "new") (first frt)) (list frt) frt)
             hack-frt (if (and (= (symbol "TF1") (second (first frt1)))
-                              (= :R1R2->R (first (nnext (first frt1)))))
+                              (= :XR2 (first (nnext (first frt1)))))
                        (update (vec frt1) 2 (fn [x] (list 'identity x)))
                        frt1)
             ;; hack for https://github.com/nakkaya/ferret/issues/52

@@ -8,7 +8,7 @@
 (def c (ROO/T (new TCanvas)))
 
 ;; plot the function
-(ROO/T ((new TF1 :R1R2->R) "pyf2" Linear -1. 1. 2)
+(ROO/T ((new TF1 :XR2) "pyf2" Linear -1. 1. 2)
        (SetParameters 5. 2.)
        Draw)
 
@@ -24,12 +24,12 @@
 (println ((LinearB 2.0 4.0) (list 1.0))) ;;comment => 6.0
 
 ((cxx__ Draw TF1)
- ((cxx__ new TF1 :R1R2->R) "pyf2" (LinearB 2. 5.) -1. 1. 2))
+ ((cxx__ new TF1) "pyf2" (LinearB 2. 5.) -1. 1. 2))
 
 ((cxx__ Print TCanvas) c "python_comparison_2.pdf")
 
 ;; SetParameters integers
-(cxx_> ((new TF1 :R1R2->R) "pyf2" Linear -1. 1. 2)
+(cxx_> ((new TF1) "pyf2" (identity Linear) -1. 1. 2)
        ((SetParameters :double_int) 5. 2)
        Draw)
 

@@ -9,8 +9,8 @@
 (def data {:TCanvas {:default []
                      :B ["c", "Something", 0, 0, 800, 600]
                      :Print {:default ["file.pdf"]}}
-           :TF1 {:default ["FunctionName" plot-function -5.001 5. 2.0]
-                 :R1R2->R ["FunctionName" R1R2->R -5.001 5. 2.0]
+           :TF1 {:default ["FunctionName" plot-function -5.001 5. 2]
+                 :XR2 ["FunctionName" R1R2->R -5.001 5. 2]
                  :native ["FunctionName" "placeholder foo" -5.001 5. 2.0]
                  :Draw {:default []}
                  :SetParameters {:default [0.2 2.0]

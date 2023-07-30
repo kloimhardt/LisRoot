@@ -16,8 +16,8 @@
             [:Print [:map
                      [:default [:cat :string]]]]]]
  [:TF1 [:map
-        [:default [:cat :string ::plot-function :double :double :double]]
-        [:R1R2->R [:cat :string ::R1R2->R :double :double :double]]
+        [:default [:cat :string ::plot-function :double :double :int]]
+        [:XR2 [:cat :string ::R1R2->R :double :double :int]]
         [:native [:cat :string ::native-string :double :double :double]]
         [:Draw [:map
                 [:default [:cat]]]]
