@@ -17,7 +17,7 @@
                      [:default [:cat :string]]]]]]
  [:TF1 [:map
         [:default [:cat :string ::plot-function :double :double :int]]
-        [:XR2 [:cat :string ::R1R2->R :double :double :int]]
+        [:XR2 [:cat :string ::R1R2->R :double :double [:enum 2]]]
         [:native [:cat :string ::native-string :double :double :double]]
         [:Draw [:map
                 [:default [:cat]]]]
