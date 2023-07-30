@@ -103,7 +103,6 @@
         (= t :string) (str "string::to<std::string>(" v ").c_str()")
         (= t :int) (str "number::to<std::int32_t>(" v ")")
         (= t :double) (str "number::to<double>(" v ")")
-        (= t :lisc/int-to-double) (str "number::to<double>(" v ")")
         :else v)))
 
   (def c-lambdabody
@@ -134,15 +133,16 @@
   (def cvt-to-c
     (fn [args]
       (fn [t v]
-        (cond
-          (= :lisc/plot-function t)
-          (m-c-lambda v (get-in (deref malli-types) [:registry t]))
-          (and (keyword? t) (re-matches #"R\dR\d->R" (name t)))
-          (m-c-lambda v (get-in (deref malli-types) [:registry t]))
-          (given-value t args)
-          (str (given-value t args))
-          :else
-          (cvts-to-c t v)))))
+        (let [funspec (get-in (deref malli-types) [:registry t])]
+          (cond
+            (given-value t args)
+            (str (given-value t args))
+            (and (keyword? funspec) (= t :lisc/int-to-double))
+            (str "number::to<double>(" v ")")
+            (and (vector? funspec) (= [:= :double] (last funspec)))
+            (m-c-lambda v funspec)
+            :else
+            (cvts-to-c t v))))))
 
   (def wrap-result
     (fn [t s]
@@ -183,7 +183,7 @@
                            (first m-arg-symbols)
                            ")->"
                            (name method)
-                           (argslist (map cvts-to-c m-arg-types (rest m-arg-symbols))))
+                           (argslist (map (cvt-to-c args) m-arg-types (rest m-arg-symbols))))
             m-erg (list 'fn m-arg-symbols
                         (if (= (first m-ret-arg) :nil)
                           m-codestr
@@ -288,12 +288,10 @@
 (comment
 
   (m-load-types "malli_types.edn")
+
   (new-raw 'TF1 [:XR2])
   (new-raw 'TCanvas [])
-
   (new-raw 'TF1 [:native 'cpp_nslit])
-
-  ;; => [:fn (fn [a_0 a_1 a_2 a_3 a_4] "__result = obj<pointer>(new TF1(string::to<std::string>(a_0).c_str(), cpp_nslit, number::to<double>(a_2), number::to<double>(a_3), number::to<double>(a_4)))")]
 
   ;;
   )
