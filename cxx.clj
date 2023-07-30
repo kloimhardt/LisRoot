@@ -130,11 +130,11 @@
              " {" (c-lambdabody varname signature) "}"))))
 
   (def cvt-to-c
-    (fn [native-string]
+    (fn [args]
       (fn [t v]
         (cond
           (= :lisc/native-string t)
-          native-string
+          (second args)
           (= :lisc/plot-function t)
           (m-c-lambda v (get-in (deref malli-types) [:registry t]))
           (and (keyword? t) (re-matches #"R\dR\d->R" (name t)))
@@ -149,12 +149,11 @@
   (def new-raw
     (fn [class args]
       (let [m-c-sub (or (first args) :default)
-            native-string (second args)
             m-contypes (next (get-in (deref malli-types) [(keyword class) m-c-sub]))
             m-funargs (->> m-contypes count (make-syms "a"))
             m-codestr (str "new "
                            (name class)
-                           (argslist (map (cvt-to-c native-string) m-contypes m-funargs)))
+                           (argslist (map (cvt-to-c args) m-contypes m-funargs)))
             real-funargs (mapv second
                                (remove (fn [x] (given-value (first x)))
                                        (map vector m-contypes m-funargs)))
