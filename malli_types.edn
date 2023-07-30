@@ -2,10 +2,12 @@
  {:registry
   {::native-string :string
    ::plot-function [:tuple
-                    [:vector {:max 10} :double] [:vector {:max 11} :double]
+                    [:vector {:max 10} :double]
+                    [:vector {:max 11} :double]
                     [:= :double]]
    ::R1R2->R [:tuple
-              [:vector {:max 1} :double] [:vector {:max 2} :double]
+              [:vector {:min 1 :max 1} :double]
+              [:vector {:min 2 :max 2} :double]
               [:= :double]]
    ::int-to-double :int}}
  [:TCanvas [:map
