@@ -4,6 +4,9 @@
    ::plot-function [:tuple
                     [:vector {:max 10} :double] [:vector {:max 11} :double]
                     [:= :double]]
+   ::R1R2->R [:tuple
+              [:vector {:max 1} :double] [:vector {:max 2} :double]
+              [:= :double]]
    ::int-to-double :int}}
  [:TCanvas [:map
             [:default [:cat]]
@@ -12,6 +15,7 @@
                      [:default [:cat :string]]]]]]
  [:TF1 [:map
         [:default [:cat :string ::plot-function :double :double :double]]
+        [:R1R2->R [:cat :string ::R1R2->R :double :double :double]]
         [:native [:cat :string ::native-string :double :double :double]]
         [:Draw [:map
                 [:default [:cat]]]]

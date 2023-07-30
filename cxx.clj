@@ -133,6 +133,8 @@
           native-string
           (= :lisc/plot-function t)
           (m-c-lambda v (get-in (deref malli-types) [:registry t]))
+          (re-matches #"R\dR\d->R" (name t))
+          (m-c-lambda v (get-in (deref malli-types) [:registry t]))
           :else
           (cvts-to-c t v)))))
 
@@ -252,10 +254,9 @@
       (let [frt (first args)
             frt1 (if (= (symbol "new") (first frt)) (list frt) frt)
             hack-frt (if (and (= (symbol "TF1") (second (first frt1)))
-                              (nil? (nnext (first frt1))))
+                              (= :R1R2->R (first (nnext (first frt1)))))
                        (update (vec frt1) 2 (fn [x] (list 'identity x)))
                        frt1)
-
             ;; hack for https://github.com/nakkaya/ferret/issues/52
             a (cons hack-frt (rest args))
 
@@ -292,6 +293,7 @@
       (= type ":lisc/int-to-double") (if (not-int? v) "-" "+")
       (= type ":string") (if-not (string? v) "-" "+")
       (= type ":lisc/plot-function") "!"
+      (= type ":lisc/R1R2->R") "!"
       (= type ":lisc/instance") "!"
       :else "?")
     type v))
