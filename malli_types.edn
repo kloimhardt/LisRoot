@@ -11,18 +11,17 @@
    ::pos :double
    ::pos-int :int}}
  [:TCanvas [:map
-            [:default [:cat]]
+            [:minimal [:cat]]
             [:B [:cat :string :string :int :int :int :int]]
             [:Print [:map
                      [:default [:cat :string]]]]]]
  [:TF1 [:map
-        [:default [:cat :string ::plot-function :double :double :int]]
+        [:XRN [:cat :string ::plot-function :double :double :int]]
         [:XR2 [:cat :string ::R1R2->R :double :double [:enum 2]]]
         [:XR2-native [:cat :string [:enum 1 :args] :double :double [:enum 2]]]
-        [:Draw [:map
-                [:default [:cat]]]]
+        [:Draw [:map [:minimal [:cat]]]]
         [:SetParameters [:map
-                         [:default [:cat :double :double]]
+                         [:XRN [:cat :double :double]]
                          [:linear [:map
                                    [:rtm [:map [:d ::pos-int] [:k ::pos]]]
                                    [:cxx [:cat :double :double]]]]]]]]]

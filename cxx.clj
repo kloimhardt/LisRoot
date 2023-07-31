@@ -72,12 +72,22 @@
                 (concat path (list sub-type))
                 malli-t))))
 
+  (def add-type-rtm-cxx
+    (fn [path]
+      (vswap! malli-types update-in (butlast path)
+              (fn [x] (assoc x :default (get x (last path)))))))
+
   nil)
 
 (type-fns)
 
-(defmacro m-load-types [filename]
-  (m-set-types-raw (read-string (slurp filename)))
+(defmacro TS-default [path]
+  (add-type-rtm-cxx path)
+  nil)
+
+(defmacro m-load-types [str-types str-defaults]
+  (m-set-types-raw (read-string (slurp str-types)))
+  (run! add-type-rtm-cxx (read-string (slurp str-defaults)))
   nil)
 
 (defmacro m-add-type [path t]
@@ -423,9 +433,4 @@
           (remove-kw-ns (vec (cons :cat cxx))))
   nil)
 
-(defmacro TS-default [path]
-  (vswap! malli-types update-in (butlast path)
-          (fn [x] (assoc x :default (get x (last path)))))
-  nil)
-
-(m-load-types "malli_types.edn")
+(m-load-types "malli_types.edn" "root_defaults.edn")
