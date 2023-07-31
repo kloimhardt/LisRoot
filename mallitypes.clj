@@ -14,7 +14,8 @@
                  :XR2-native ["FunctionName" 1 -5.001 5. 2]
                  :Draw {:default []}
                  :SetParameters {:default [0.2 2.0]
-                                 :double_int [0.2 2]}}})
+                                 :linear {:rtm {:d 5 :k 2.0}
+                                          :cxx [5.0 2.0]}}}})
 
 (println (m/validate =>data data))
 (println (m/explain =>data data))

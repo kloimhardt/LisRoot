@@ -8,7 +8,8 @@
               [:vector {:min 1 :max 1} :double]
               [:vector {:min 2 :max 2} :double]
               [:= :double]]
-   ::int-to-double :int}}
+   ::pos :double
+   ::pos-int :int}}
  [:TCanvas [:map
             [:default [:cat]]
             [:B [:cat :string :string :int :int :int :int]]
@@ -22,4 +23,6 @@
                 [:default [:cat]]]]
         [:SetParameters [:map
                          [:default [:cat :double :double]]
-                         [:double_int [:cat :double ::int-to-double]]]]]]]
+                         [:linear [:map
+                                   [:rtm [:map [:d ::pos-int] [:k ::pos]]]
+                                   [:cxx [:cat :double :double]]]]]]]]]

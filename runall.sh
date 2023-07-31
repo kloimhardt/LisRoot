@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for file in root_plot python_comparison cpp_comparison cpp_native; do
+ for file in root_plot python_comparison cpp_comparison cpp_native; do
 # for file in python_comparison; do
     rm $file.cpp
     rm $file

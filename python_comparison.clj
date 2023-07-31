@@ -4,12 +4,14 @@
 (defn Linear [[x] [d k]]
   (+ d (* x k)))
 
-;; create a canvas
-(def c (ROO/T (new TCanvas)))
+(ROO/TS [:TF1 :SetParameters :line]
+        [[:d ::pos-int] [:k ::pos]]
+        [    :double        :double])
 
-;; plot the function
+(def c (ROO/t new TCanvas))
+
 (ROO/T ((new TF1 :XR2) "pyf2" Linear -1. 1.)
-       (SetParameters 5. 2.)
+       ((SetParameters :line) {:d 5 :k 2})
        Draw)
 
 ((cxx__ Print TCanvas) c "python_comparison_1.pdf")
@@ -28,9 +30,8 @@
 
 ((cxx__ Print TCanvas) c "python_comparison_2.pdf")
 
-;; SetParameters integers
 (cxx_> ((new TF1) "pyf2" (identity Linear) -1. 1. 2)
-       ((SetParameters :double_int) 5. 2)
+       (SetParameters 5. 2)
        Draw)
 
 (cxx_> ((bless TCanvas) c)

@@ -16,6 +16,8 @@
   (def vector-to-maps
     (fn [m]
       (cond
+        (and (vector? m) (= :rtm (first m)))
+        m
         (and (vector? m) (= :map (first m)))
         (into (hash-map) (vector-to-maps (rest m)))
         (coll? m)
@@ -28,6 +30,24 @@
   nil)
 
 (malli-fns)
+
+(comment
+
+  (def u1 (read-string (slurp "malli_types.edn")))
+  (def u2
+    [:map
+     [:TF1 [:map [:SetParameters [:map [:default [:cat :double :double]
+                                        [:map [:d :double] [:k :double]]]
+                                  ]]]]]
+    )
+  (vector-to-maps (remove-kw-ns (maps-to-vector u1)))
+
+  (new-raw 'TF1 [:XR2])
+  (new-raw 'TCanvas [])
+  (new-raw 'TF1 [:native 'cpp_nslit])
+
+  ;;
+  )
 
 (defmacro type-fns []
   (def malli-types (volatile! (hash-map)))
@@ -130,15 +150,21 @@
         (str "[" varname "] " (argslist combined) " -> " (name (first signature))
              " {" (c-lambdabody varname signature) "}"))))
 
+  (def get-malli-types
+    (fn [path] (get-in (deref malli-types) path)))
+
+  (def get-ct-malli-types
+    (fn [path]
+      (let [scheme (get-malli-types path)]
+        (if (map? scheme) (get scheme :cxx) scheme))))
+
   (def cvt-to-c
     (fn [args]
       (fn [t v]
-        (let [funspec (get-in (deref malli-types) [:registry t])]
+        (let [funspec (get-ct-malli-types [:registry t])]
           (cond
             (given-value t args)
             (str (given-value t args))
-            (and (keyword? funspec) (= t :lisc/int-to-double))
-            (str "number::to<double>(" v ")")
             (and (vector? funspec) (= [:= :double] (last funspec)))
             (m-c-lambda v funspec)
             :else
@@ -151,7 +177,7 @@
   (def new-raw
     (fn [class args]
       (let [m-c-sub (or (first args) :default)
-            m-contypes (next (get-in (deref malli-types) [(keyword class) m-c-sub]))
+            m-contypes (next (get-ct-malli-types [(keyword class) m-c-sub]))
             m-funargs (->> m-contypes count (make-syms "a"))
             m-codestr (str "new "
                            (name class)
@@ -167,7 +193,7 @@
 (def call-raw
     (fn [class method args]
       (let [m-m-sub (or (first args) :default)
-            m-types (get-in (deref malli-types)
+            m-types (get-ct-malli-types
                             [(keyword class) (keyword method) m-m-sub])
             m-funtypes (next m-types)
             m-lasttwo (take-last 2 m-funtypes)
@@ -197,24 +223,41 @@
       (if (coll? x) (cons 'list (map stri x))
           (str x))))
 
+  (def vector-to-list
+    (fn [fun]
+      (fn [x]
+        (cond
+          (nil? x)
+          "nil"
+          (map? x)
+          (into (hash-map)
+                (map (comp vec rest (vector-to-list fun)) x))
+          (coll? x)
+          (cons 'list (map (vector-to-list fun) x))
+          :else (fun x)))))
+
+  (def construct-call
+    (fn [sym-fun sym-args macargs c-function m-data]
+      (list sym-fun
+            (stri macargs)
+            ((vector-to-list identity) m-data)
+            ((vector-to-list str) m-data)
+            sym-args)))
+
   (def interop-fn
     (fn [macargs c-function m-data]
       (list 'fn [(symbol "&") 'args]
-            (list 'checkit
-                  (stri macargs)
-                  (stri m-data)
-                  'args)
-            (list 'apply (second c-function) 'args))))
+            (construct-call 'checkit 'args macargs c-function m-data)
+            (list 'apply (second c-function)
+                  (construct-call 'transform 'args macargs c-function m-data)))))
 
   (def interop-fn-direct
     (fn [macargs c-function m-data]
       (cond
         (= :new-no-args (first c-function))
         (list 'do
-              (list 'checkit
-                    (stri macargs)
-                    (stri m-data)
-                    (list 'list))
+              (construct-call 'checkit (list 'list)
+                              macargs c-function m-data)
               (list (second c-function)))
         :else
         (interop-fn macargs c-function m-data))))
@@ -233,8 +276,8 @@
             (vector? types)
             (m-add-type-raw (map keyword [class method]) (map keyword (cons m-types-kw types))))
           (let [m-data (if (= (symbol "new") method)
-                         (get-in (deref malli-types) [(keyword class) m-types-kw])
-                         (get-in (deref malli-types) [(keyword class)
+                         (get-malli-types [(keyword class) m-types-kw])
+                         (get-malli-types [(keyword class)
                                               (keyword method)
                                               m-types-kw]))
                 c-function (cond
@@ -292,11 +335,37 @@
   (new-raw 'TF1 [:XR2])
   (new-raw 'TCanvas [])
   (new-raw 'TF1 [:native 'cpp_nslit])
+  (def u1 (get-malli-types [:TF1 :SetParameters :default]))
+
+  (def vector-to-list
+    (fn [x]
+      (cond
+        (map? x)
+        (into (hash-map)
+              (map (comp vec rest vector-to-list) x))
+        (coll? x)
+        (cons 'list (map vector-to-list x))
+        :else
+        (str x))))
+
+  (vector-to-list u1)
+
+  (def u2 {:a 1 :b 2})
+
+  (def u3 (vector-to-list u2))
+
+  (into (hash-map) (map vec u3))
 
   ;;
   )
 
-
+(defn transform [macargs raw-types str-types args]
+  (let [rs (when (not (= "nil" str-types)) (:rtm raw-types))]
+    (if rs
+      (cons (first args)
+            (map (fn [t] (get (second args) (first t)))
+                 (rest rs)))
+      args)))
 
 (defn not-double? [v]
   (and (not (zero? v)) (zero? (dec (inc v)))))
@@ -309,35 +378,21 @@
     (cond
       (= type ":double") (if (not-double? v) "-" "+")
       (= type ":int") (if (not-int? v)  "-" "+")
-      (= type ":lisc/int-to-double") (if (not-int? v) "-" "+")
+      (= type ":lisc/pos-int") (if (or (not-int? v) (not (pos? v))) "-" "+")
+      (= type ":lisc/pos") (if (not (pos? v))  "-" "+")
       (= type ":string") (if-not (string? v) "-" "+")
-      (= type ":lisc/plot-function") "!"
-      (= type ":lisc/R1R2->R") "!"
-      (= type ":lisc/instance") "!"
       :else "?")
     type v))
 
-(defn check-count [types args]
-  (list (if (not= (count types) (count args))  "-" "+")
-        "count"))
-
-(defn checkit [macargs types args]
-  ;; (println "------ checkit" macargs)
-  ;; (println types args)
-  (let [lasttype (nth types (dec (count types)))
-        types-args (cond
-                     (= (first macargs) "new")
-                     (list (rest types) args)
-                     (and (list? lasttype) (= (first lasttype) ":="))
-                     (list (cons ":lisc/instance"
-                                 (rest (take (dec (count types)) types )))
-                           args)
-                     :else
-                     (list (cons ":lisc/instance" (rest types)) args))]
-    (print (filter (fn [x] (= (first x) "-"))
-                         (check-count (first types-args) (second types-args))))
-    (print (filter (fn [x] (= (first x) "-"))
-                         (map check-value (first types-args) (second types-args))))))
+(defn checkit [macargs raw-types str-types args]
+  (let [rs (when (not (= "nil" str-types)) (:rtm raw-types))
+        st (when (not (= "nil" str-types)) (get str-types ":rtm"))
+        erg (when rs
+              (map (fn [r s] (check-value (second s)
+                                        (get (second args) (first r))))
+                   (rest rs) (rest st)))]
+    (when (pos? (count (filter (fn [x] (not= (first x) "+")) erg)))
+      (println erg))))
 
 (defmacro new [class & args]
   (let [fncode (new-raw class args)]
@@ -352,8 +407,20 @@
   (list 'native-declare (str head "{return " (eval body) ";}")))
 
 (defmacro _ [& args] (interop args))
+(defmacro t [& args] (interop args))
 
 (defmacro > [& args] (_doto args))
 (defmacro T [& args] (_doto args))
+
+(defmacro TS [path rtm cxx]
+  (vswap! malli-types
+          assoc-in
+          (concat path (list :rtm))
+          (remove-kw-ns (vec (cons :map rtm))))
+  (vswap! malli-types
+          assoc-in
+          (concat path (list :cxx))
+          (remove-kw-ns (vec (cons :cat cxx))))
+  nil)
 
 (m-load-types "malli_types.edn")
