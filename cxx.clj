@@ -81,7 +81,7 @@
 
 (type-fns)
 
-(defmacro TS-default [path]
+(defmacro Ts-default [path]
   (add-type-rtm-cxx path)
   nil)
 
@@ -417,12 +417,12 @@
   (list 'native-declare (str head "{return " (eval body) ";}")))
 
 (defmacro _ [& args] (interop args))
-(defmacro t [& args] (interop args))
+(defmacro T [& args] (interop args))
 
 (defmacro > [& args] (_doto args))
-(defmacro T [& args] (_doto args))
+(defmacro To [& args] (_doto args))
 
-(defmacro TS [path rtm cxx]
+(defmacro Ts [path rtm cxx]
   (vswap! malli-types
           assoc-in
           (concat path (list :rtm))
