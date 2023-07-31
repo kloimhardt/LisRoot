@@ -423,4 +423,9 @@
           (remove-kw-ns (vec (cons :cat cxx))))
   nil)
 
+(defmacro TS-default [path]
+  (vswap! malli-types update-in (butlast path)
+          (fn [x] (assoc x :default (get x (last path)))))
+  nil)
+
 (m-load-types "malli_types.edn")

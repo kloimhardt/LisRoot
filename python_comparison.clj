@@ -6,7 +6,7 @@
 
 (ROO/TS [:TF1 :SetParameters :line]
         [[:d ::pos-int] [:k ::pos]]
-        [    :double        :double])
+        [:double :double])
 
 (def c (ROO/t new TCanvas))
 
@@ -30,8 +30,10 @@
 
 ((cxx__ Print TCanvas) c "python_comparison_2.pdf")
 
+(ROO/TS-default [:TF1 :SetParameters :line])
+
 (cxx_> ((new TF1) "pyf2" (identity Linear) -1. 1. 2)
-       (SetParameters 5. 2)
+       (SetParameters {:d 5 :k 2})
        Draw)
 
 (cxx_> ((bless TCanvas) c)
