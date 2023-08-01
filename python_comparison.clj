@@ -9,8 +9,7 @@
 
 (def c (ROO/T new TCanvas))
 
-(def f ((ROO/T new TF1)
-        "pyf2" (Linear) -1. 1. 2))
+(def f ((ROO/T new TF1) "pyf2" (Linear) -1. 1. 2))
 ((ROO/T SetParameters TF1) f 5. 2.)
 ((ROO/T Draw TF1) f)
 
@@ -18,9 +17,10 @@
 
 ;; Example 1b
 
-(ROO/To ((new TF1) "pyf2" (Linear) -1. 1. 2)
-        (SetParameters 5. 2.)
-        Draw)
+(def g (ROO/To
+         ((new TF1) "pyf2" (Linear) -1. 1. 2)
+         (SetParameters 5. 2.)
+         Draw))
 
 ((cxx__ Print TCanvas) c "python_comparison_1b.pdf")
 
@@ -32,9 +32,9 @@
 
 (def params {:d 10 :k -2})
 
-((ROO/T SetParameters TF1 :line) f params)
-
-((ROO/T Draw TF1) f)
+(ROO/To ((bless TF1) g)
+        ((SetParameters :line) params)
+        Draw)
 
 ((cxx__ Print TCanvas) c "python_comparison_1c.pdf")
 
