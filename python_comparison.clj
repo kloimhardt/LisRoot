@@ -30,9 +30,9 @@
         [[:d ::pos-int] [:k ::pos]]
         [:double :double])
 
-(def line {:d 10 :k -2})
+(def params {:d 10 :k -2})
 
-((ROO/T SetParameters TF1 :line) g line)
+((ROO/T SetParameters TF1 :line) g params)
 
 ((ROO/T Draw TF1) g)
 
@@ -44,6 +44,9 @@
 
 (ROO/Ts-default [:TF1 :SetParameters :line])
 
+(ROO/To ((new TF1 :XR2) LinearA -1. 1.)
+        (SetParameters {:d 10 :k 2})
+        Draw)
 
 ((cxx__ Print TCanvas) c "python_comparison_1d.pdf")
 

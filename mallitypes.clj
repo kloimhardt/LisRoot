@@ -10,7 +10,7 @@
                      :B ["c", "Something", 0, 0, 800, 600]
                      :Print {:default ["file.pdf"]}}
            :TF1 {:XRN ["FunctionName" plot-function -5.001 5. 2]
-                 :XR2 ["FunctionName" R1R2->R -5.001 5. 2]
+                 :XR2 ["\"XR2\"" R1R2->R -5.001 5. 2]
                  :XR2-native ["FunctionName" 1 -5.001 5. 2]
                  :Draw {:minimal []}
                  :SetParameters {:XRN [0.2 2.0]

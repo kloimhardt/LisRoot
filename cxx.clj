@@ -311,10 +311,8 @@
     (fn [args]
       (let [frt (first args)
             frt1 (if (= (symbol "new") (first frt)) (list frt) frt)
-            hack-frt (if (and (= (symbol "TF1") (second (first frt1)))
-                              (= :XR2 (first (nnext (first frt1)))))
-                       (update (vec frt1) 2 (fn [x] (list 'identity x)))
-                       frt1)
+            hack-frt (cons (first frt1) (map (fn [x] (list 'identity x))
+                                             (rest frt1)))
             ;; hack for https://github.com/nakkaya/ferret/issues/52
             a (cons hack-frt (rest args))
 
@@ -346,25 +344,6 @@
   (new-raw 'TCanvas [])
   (new-raw 'TF1 [:native 'cpp_nslit])
   (def u1 (get-malli-types [:TF1 :SetParameters :default]))
-
-  (def vector-to-list
-    (fn [x]
-      (cond
-        (map? x)
-        (into (hash-map)
-              (map (comp vec rest vector-to-list) x))
-        (coll? x)
-        (cons 'list (map vector-to-list x))
-        :else
-        (str x))))
-
-  (vector-to-list u1)
-
-  (def u2 {:a 1 :b 2})
-
-  (def u3 (vector-to-list u2))
-
-  (into (hash-map) (map vec u3))
 
   ;;
   )
