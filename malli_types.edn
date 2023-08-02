@@ -18,7 +18,7 @@
  [:TF1 [:map
         [:XRN [:cat :string ::plot-function :double :double :int]]
         [:XR2 [:cat [:enum "\"XR2\""] ::R1R2->R :double :double [:enum 2]]]
-        [:XR2-native [:cat :string [:enum 1 :args] :double :double [:enum 2]]]
+        [:XR2-native [:cat [:enum "\"XR2\""] [:enum 1 :args] :double :double [:enum 2]]]
         [:Draw [:map [:minimal [:cat]]]]
         [:SetParameters [:map
                          [:XRN [:cat :double :double]]

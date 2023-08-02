@@ -62,6 +62,19 @@
 (ROO/To ((bless TCanvas) c)
         (Print "python_comparison_2.pdf"))
 
+;; native
+
+(native-declare "
+double linear(double* arr, double* par) {
+  return par[0] + arr[0]*par[1];
+} ")
+
+(ROO/To ((new TF1 :XR2-native linear) -1. 1.)
+        (SetParameters {:d 15 :k 2})
+        Draw)
+
+((cxx__ Print TCanvas) c "python_comparison_native.pdf")
+
 ;; Calculation
 
 (println ((LinearB 2.0 5.0) (list 1.0))) ;;comment => 7.0
