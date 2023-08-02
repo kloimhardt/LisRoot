@@ -13,6 +13,8 @@
 ((ROO/T SetParameters TF1) f 5. 2.)
 ((ROO/T Draw TF1) f)
 
+(def draw (ROO/T Draw TF1)) (draw f)
+
 ((cxx__ Print TCanvas) c "python_comparison_1.pdf")
 
 ;; Example 1b

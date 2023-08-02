@@ -31,24 +31,6 @@
 
 (malli-fns)
 
-(comment
-
-  (def u1 (read-string (slurp "malli_types.edn")))
-  (def u2
-    [:map
-     [:TF1 [:map [:SetParameters [:map [:default [:cat :double :double]
-                                        [:map [:d :double] [:k :double]]]
-                                  ]]]]]
-    )
-  (vector-to-maps (remove-kw-ns (maps-to-vector u1)))
-
-  (new-raw 'TF1 [:XR2])
-  (new-raw 'TCanvas [])
-  (new-raw 'TF1 [:native 'cpp_nslit])
-
-  ;;
-  )
-
 (defmacro type-fns []
   (def malli-types (volatile! (hash-map)))
 
@@ -336,18 +318,6 @@
 
 (class-fns)
 
-(comment
-
-  (m-load-types "malli_types.edn")
-
-  (new-raw 'TF1 [:XR2])
-  (new-raw 'TCanvas [])
-  (new-raw 'TF1 [:native 'cpp_nslit])
-  (def u1 (get-malli-types [:TF1 :SetParameters :default]))
-
-  ;;
-  )
-
 (defn transform [macargs raw-types str-types args]
   (let [rs (when (not (= "nil" str-types)) (:rtm raw-types))]
     (if rs
@@ -413,3 +383,15 @@
   nil)
 
 (m-load-types "malli_types.edn" "root_defaults.edn")
+
+(comment
+
+  (m-load-types "malli_types.edn")
+
+  (new-raw 'TF1 [:XR2])
+  (new-raw 'TCanvas [])
+  (new-raw 'TF1 [:native 'cpp_nslit])
+  (def u1 (get-malli-types [:TF1 :SetParameters :default]))
+
+  ;;
+  )
