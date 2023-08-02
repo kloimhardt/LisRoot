@@ -57,7 +57,7 @@
     (+ d (* k x))))
 
 ((ROO/T Draw TF1)
- ((ROO/T new TF1) "pyf2" (LinearB 2. 5.) -1. 1. 2))
+ ((ROO/T new TF1 :XR2) (LinearB 2. 5.) -1. 1.))
 
 (ROO/To ((bless TCanvas) c)
         (Print "python_comparison_2.pdf"))
