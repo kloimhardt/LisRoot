@@ -7,9 +7,11 @@
   (fn [[x] [d k]]
     (+ d (* x k))))
 
+(def l (Linear))
+
 (def c (ROO/T new TCanvas))
 
-(def f ((ROO/T new TF1) "pyf2" (Linear) -1. 1. 2))
+(def f ((ROO/T new TF1) "pyf2" l -1. 1. 2))
 ((ROO/T SetParameters TF1) f 5. 2.)
 ((ROO/T Draw TF1) f)
 
@@ -20,7 +22,7 @@
 ;; Example 1b
 
 (def g (ROO/To
-         ((new TF1) "pyf2" (Linear) -1. 1. 2)
+         ((new TF1) "pyf2" l -1. 1. 2)
          (SetParameters 5. 2.)
          Draw))
 
