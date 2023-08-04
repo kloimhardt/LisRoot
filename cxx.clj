@@ -81,6 +81,14 @@
     (fn [s n]
       (mapv #(symbol (str s "_" %)) (range n))))
 
+  (def obj-encode
+    (fn [s p]
+      (str "rt::dense_list(obj<string>(" s "), obj<number>(" p "))")))
+
+  (def obj-decode
+    (fn [dense-list]
+      (str "sequence::to<std_vector>(" dense-list ")[1]")))
+
   (def cvt-from-c
     (fn [t v]
       (cond
@@ -115,6 +123,7 @@
         (= t :string) (str "string::to<std::string>(" v ").c_str()")
         (= t :int) (str "number::to<std::int32_t>(" v ")")
         (= t :double) (str "number::to<double>(" v ")")
+        (= t :sequence) (str "sequence::to<std_vector>(" v ")")
         :else v)))
 
   (def c-lambdabody
@@ -317,6 +326,20 @@
   nil)
 
 (class-fns)
+
+(defmacro oe []
+  (list 'fn ['s 'n]
+        (str "__result = " (obj-encode 's 'n))))
+
+(def uu ((oe) "CNN" 5))
+
+(println "isit " uu)
+
+(defmacro od []
+  (list 'fn ['v]
+        (str "__result = " (obj-decode 'v))))
+
+(println "isthis5 " ((od) uu))
 
 (defn transform [macargs raw-types str-types args]
   (let [rs (when (not (= "nil" str-types)) (:rtm raw-types))]
