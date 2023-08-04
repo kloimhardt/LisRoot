@@ -16,10 +16,14 @@
             [:Print [:map
                      [:default [:cat :string]]]]]]
  [:TF1 [:map
+        [:Draw [:map
+                [:minimal [:cat]]
+                [:plot-style [:cat :string]]]]
         [:XRN [:cat :string ::plot-function :double :double :int]]
         [:XR2 [:cat [:enum "\"XR2\""] ::R1R2->R :double :double [:enum 2]]]
-        [:XR2-native [:cat [:enum "\"XR2\""] [:enum 1 :args] :double :double [:enum 2]]]
-        [:Draw [:map [:minimal [:cat]]]]
+        [:XR2-native [:cat
+                      [:enum "\"XR2\""]
+                      [:enum 1 :args] :double :double [:enum 2]]]
         [:SetParameters [:map
                          [:XRN [:cat :double :double]]
                          [:linear [:map

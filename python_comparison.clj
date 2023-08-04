@@ -31,13 +31,13 @@
 ;; native
 
 (native-declare "
-double linear(double* arr, double* par) {
-  return par[0] + arr[0]*par[1];
-} ")
+  double linear(double* arr, double* par) {
+    return par[0] + arr[0]*par[1];
+  } ")
 
 (def h (ROO/To ((new TF1 :XR2-native linear) -1. 1.)
-               (SetParameters 5. 2.)
-               Draw))
+               (SetParameters 5. -2.)
+               ((Draw :plot-style) "SAME")))
 
 ((cxx__ Print TCanvas) c "python_comparison_native.pdf")
 
@@ -52,12 +52,9 @@ double linear(double* arr, double* par) {
         :else
         (apply (ROO/T SetParameters TF1) args)))))
 
-(defn Draw [& args]
-  (let [strclass (first (first args))]
-    (when (= strclass "TF1")
-      (apply (ROO/T Draw TF1) args))))
-
-(doto h (SetParameters {:d 15 :k -3}) Draw)
+(doto h
+  (SetParameters {:d 15 :k -3})
+  ((ROO/T Draw TF1 :plot-style) "P"))
 
 (defn Print [& args]
   (let [strclass (first (first args))]
@@ -66,7 +63,9 @@ double linear(double* arr, double* par) {
 
 (Print c "python_comparison_multi_native.pdf")
 
-(doto g (SetParameters 5. 2.) Draw)
+(doto g
+  (SetParameters 5. 2.)
+  ((ROO/T Draw TF1 :plot-style) "P"))
 
 (Print c "python_comparison_multi_lisp.pdf")
 
