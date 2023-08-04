@@ -83,7 +83,7 @@
 
   (def obj-encode
     (fn [s p]
-      (str "rt::dense_list(obj<string>(" s "), obj<number>(" p "))")))
+      (str "__result = rt::dense_list(obj<string>(\"" s "\"), obj<pointer>(" p "))")))
 
   (def obj-decode
     (fn [dense-list]
@@ -186,7 +186,7 @@
             real-funargs (mapv second
                                (remove (fn [x] (given-value (first x) args))
                                        (map vector m-contypes m-funargs)))
-            m-funcode (list 'fn real-funargs (wrap-result :pointer m-codestr))
+            m-funcode (list 'fn real-funargs (obj-encode (name class) m-codestr))
             m-erg (vector (if (seq real-funargs) :fn :new-no-args)
                           m-funcode)]
         m-erg)))
@@ -207,7 +207,7 @@
             m-codestr (str "pointer::to_pointer<"
                            (name class)
                            ">("
-                           (first m-arg-symbols)
+                           (obj-decode (first m-arg-symbols))
                            ")->"
                            (name method)
                            (argslist (map (cvt-to-c args) m-arg-types (rest m-arg-symbols))))
@@ -326,20 +326,6 @@
   nil)
 
 (class-fns)
-
-(defmacro oe []
-  (list 'fn ['s 'n]
-        (str "__result = " (obj-encode 's 'n))))
-
-(def uu ((oe) "CNN" 5))
-
-(println "isit " uu)
-
-(defmacro od []
-  (list 'fn ['v]
-        (str "__result = " (obj-decode 'v))))
-
-(println "isthis5 " ((od) uu))
 
 (defn transform [macargs raw-types str-types args]
   (let [rs (when (not (= "nil" str-types)) (:rtm raw-types))]
