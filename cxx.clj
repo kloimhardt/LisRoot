@@ -232,7 +232,8 @@
           "nil"
           (map? x)
           (into (hash-map)
-                (map (comp vec rest (vector-to-list fun)) x))
+                (map (fn [a] (vector (str (second a)) (nth a 2)))
+                     (map (vector-to-list fun) x)))
           (coll? x)
           (cons 'list (map (vector-to-list fun) x))
           :else (fun x)))))
@@ -328,7 +329,9 @@
 (class-fns)
 
 (defn transform [macargs raw-types str-types args]
-  (let [rs (when (not (= "nil" str-types)) (:rtm raw-types))]
+  (let [rs (when (and (not (= "nil" str-types))
+                      (get str-types ":rtm"))
+             (get raw-types ":rtm"))]
     (if rs
       (cons (first args)
             (map (fn [t] (get (second args) (first t)))
@@ -353,8 +356,8 @@
     type v))
 
 (defn checkit [macargs raw-types str-types args]
-  (let [rs (when (not (= "nil" str-types)) (:rtm raw-types))
-        st (when (not (= "nil" str-types)) (get str-types ":rtm"))
+  (let [st (when (not (= "nil" str-types)) (get str-types ":rtm"))
+        rs (when st (get raw-types ":rtm"))
         erg (when rs
               (map (fn [r s] (check-value (second s)
                                         (get (second args) (first r))))
