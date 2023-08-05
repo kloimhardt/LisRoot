@@ -12,8 +12,8 @@
            :TF1 {:XRN ["FunctionName" plot-function -5.001 5. 2]
                  :XR2 ["\"XR2\"" R1R2->R -5.001 5. 2]
                  :XR2-native ["\"XR2\"" 1 -5.001 5. 2]
-                 :Draw {:minimal [] :plot-style ["SAME"]}
-                 :SetParameters {:XRN [0.2 2.0]
+                 :Draw {:no-args [] :plot-style ["SAME"]}
+                 :SetParameters {:two-doubles [0.2 2.0]
                                  :linear {:rtm {:d 5 :k 2.0}
                                           :cxx [5.0 2.0]}}}})
 

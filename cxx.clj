@@ -380,7 +380,7 @@
 (defmacro > [& args] (_doto args))
 (defmacro To [& args] (_doto args))
 
-(defmacro Ts [path rtm cxx]
+(defmacro Ts [path cxx rtm]
   (vswap! malli-types
           assoc-in
           (concat path (list :rtm))

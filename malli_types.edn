@@ -17,7 +17,7 @@
                      [:default [:cat :string]]]]]]
  [:TF1 [:map
         [:Draw [:map
-                [:minimal [:cat]]
+                [:no-args [:cat]]
                 [:plot-style [:cat :string]]]]
         [:XRN [:cat :string ::plot-function :double :double :int]]
         [:XR2 [:cat [:enum "\"XR2\""] ::R1R2->R :double :double [:enum 2]]]
@@ -25,7 +25,7 @@
                       [:enum "\"XR2\""]
                       [:enum 1 :args] :double :double [:enum 2]]]
         [:SetParameters [:map
-                         [:XRN [:cat :double :double]]
+                         [:two-doubles [:cat :double :double]]
                          [:linear [:map
                                    [:rtm [:map [:d ::pos-int] [:k ::pos]]]
                                    [:cxx [:cat :double :double]]]]]]]]]

@@ -34,22 +34,34 @@
 
 ((cxx__ Print TCanvas) c "python_comparison_2a.pdf")
 
-(defn Draw [& [[class _ :as o] style :as args]]
-  (cond
-    (and (= class "TF1") (= style "dotted"))
-    ((ROO/T Draw TF1 :plot-style) o "P")
-    :else
-    (apply (ROO/T SetParameters TF1) args)))
+(ROO/Ts [:TF1 :Draw :named]
+        [:string]
+        [[:style :string]])
 
-(Draw g "dotted")
+((ROO/T Draw TF1 :named) g {:style "P"})
+
+  (defn Draw [& [[class _ :as obj] style]]
+    (cond
+      (and (= class "TF1") (= style "dotted"))
+      ((ROO/T Draw TF1 :plot-style) obj "P")
+      :else
+      ((ROO/T Draw TF1) obj)))
+
+(comment
+  (Draw g "dotted")
+;;
+  )
 
 ((cxx__ Print TCanvas) c "python_comparison_2b.pdf")
+
+(Draw g)
+((cxx__ Print TCanvas) c "python_comparison_2c.pdf")
 
 ;; add type
 
 (ROO/Ts [:TF1 :SetParameters :line]
-        [[:d ::pos-int] [:k ::pos]]
-        [:double :double])
+        [:double :double]
+        [[:d ::pos-int] [:k ::pos]])
 
 (def params {:d 10 :k -2})
 
