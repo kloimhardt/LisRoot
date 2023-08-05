@@ -383,15 +383,13 @@
 (defmacro > [& args] (_doto args))
 (defmacro To [& args] (_doto args))
 
-(defmacro Ts [path cxx rtm]
-  (vswap! malli-types
-          assoc-in
-          (concat path (list :rtm))
-          (remove-kw-ns (vec (cons :map rtm))))
-  (vswap! malli-types
-          assoc-in
-          (concat path (list :cxx))
-          (remove-kw-ns (vec (cons :cat cxx))))
+(defmacro Ts [path cxx & [rtm]]
+  (if rtm
+    (vswap! malli-types assoc-in path
+            (hash-map :rtm (remove-kw-ns (vec (cons :map rtm)))
+                      :cxx (remove-kw-ns (vec (cons :cat cxx)))))
+    (vswap! malli-types assoc-in path
+            (remove-kw-ns (vec (cons :cat cxx)))))
   nil)
 
 (m-load-types "malli_types.edn" "root_defaults.edn")
