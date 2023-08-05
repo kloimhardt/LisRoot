@@ -17,7 +17,7 @@
 
 (def draw (ROO/T Draw TF1)) (draw f)
 
-((cxx__ Print TCanvas) c "python_comparison_1.pdf")
+((cxx__ Print TCanvas) c "python_comparison_1a.pdf")
 
 ;; Example 1b
 
@@ -28,48 +28,24 @@
 
 ((cxx__ Print TCanvas) c "python_comparison_1b.pdf")
 
-;; native
+;; draw
 
-(native-declare "
-  double linear(double* arr, double* par) {
-    return par[0] + arr[0]*par[1];
-  } ")
+((ROO/T Draw TF1 :plot-style) g "P")
 
-(def h (ROO/To ((new TF1 :XR2-native linear) -1. 1.)
-               (SetParameters 5. -2.)
-               ((Draw :plot-style) "SAME")))
+((cxx__ Print TCanvas) c "python_comparison_2a.pdf")
 
-((cxx__ Print TCanvas) c "python_comparison_native.pdf")
+(defn Draw [& [[class _ :as o] style :as args]]
+  (cond
+    (and (= class "TF1") (= style "dotted"))
+    ((ROO/T Draw TF1 :plot-style) o "P")
+    :else
+    (apply (ROO/T SetParameters TF1) args)))
 
-;; doto Example
+(Draw g "dotted")
 
-(defn SetParameters [& args]
-  (let [strclass (first (first args))]
-    (when (= strclass "TF1")
-      (cond
-        (= (count args) 2)
-        (apply (ROO/T SetParameters TF1 :linear) args)
-        :else
-        (apply (ROO/T SetParameters TF1) args)))))
+((cxx__ Print TCanvas) c "python_comparison_2b.pdf")
 
-(doto h
-  (SetParameters {:d 15 :k -3})
-  ((ROO/T Draw TF1 :plot-style) "P"))
-
-(defn Print [& args]
-  (let [strclass (first (first args))]
-    (when (= strclass "TCanvas")
-      (apply (ROO/T Print TCanvas) args))))
-
-(Print c "python_comparison_multi_native.pdf")
-
-(doto g
-  (SetParameters 5. 2.)
-  ((ROO/T Draw TF1 :plot-style) "P"))
-
-(Print c "python_comparison_multi_lisp.pdf")
-
-;; Example 1c
+;; add type
 
 (ROO/Ts [:TF1 :SetParameters :line]
         [[:d ::pos-int] [:k ::pos]]
@@ -77,39 +53,64 @@
 
 (def params {:d 10 :k -2})
 
-(ROO/To ((bless TF1) g)
-        ((SetParameters :line) params)
-        Draw)
+(doto g
+  ((ROO/T SetParameters TF1 :line) params)
+  (Draw "dotted"))
 
-(Print c "python_comparison_1c.pdf")
+((cxx__ Print TCanvas) c "python_comparison_3.pdf")
 
-;; Example 1d
-(defn LinearA [[x] [d k]]
-  (+ d (* x k)))
+;; native
+
+(native-declare "
+  double linear(double* arr, double* par) {
+    return par[0] + arr[0]*par[1];
+  } ")
 
 (ROO/Ts-default [:TF1 :SetParameters :line])
 
-(ROO/To ((new TF1 :XR2) LinearA -1. 1.)
+(ROO/To ((new TF1 :XR2-native linear) -1. 1.)
         (SetParameters {:d 10 :k 2})
-        Draw)
+        ((Draw :plot-style) "P"))
 
-(Print c "python_comparison_1d.pdf")
+((cxx__ Print TCanvas) c "python_comparison_4.pdf")
 
-;; Example 2
+;; functional
 
-(defn LinearB [k d]
+(defn LinearA [d k]
   (fn [[x]]
     (+ d (* k x))))
 
-((ROO/T Draw TF1)
- ((ROO/T new TF1 :XR2) (LinearB 2. 5.) -1. 1.))
+(doto ((ROO/T new TF1 :XR2) (LinearA 5 2) -1. 1.) (Draw "dotted"))
 
 (ROO/To ((bless TCanvas) c)
-        (Print "python_comparison_2.pdf"))
+        (Print "python_comparison_5.pdf"))
+
+;; simple function
+
+(defn LinearB [[x] [d k]]
+  (+ d (* x k)))
+
+(ROO/To ((new TF1 :XR2) LinearB -1. 1.)
+        (SetParameters {:d 10 :k 2})
+        Draw)
+
+((cxx__ Print TCanvas) c "python_comparison_6.pdf")
 
 ;; Calculation
 
-(println ((LinearB 2.0 5.0) (list 1.0))) ;;comment => 7.0
-(println ((LinearB 2.0 4.0) (list 1.0))) ;;comment => 6.0
+(println ((LinearA 2.0 5.0) (list 1.0))) ;;comment => 7.0
+(println ((LinearA 2.0 4.0) (list 1.0))) ;;comment => 6.0
 
 
+(comment
+
+  (defn SetParameters [& args]
+    (let [strclass (first (first args))]
+      (when (= strclass "TF1")
+        (cond
+          (= (count args) 2)
+          (apply (ROO/T SetParameters TF1 :linear) args)
+          :else
+          (apply (ROO/T SetParameters TF1) args)))))
+
+  #_end)
