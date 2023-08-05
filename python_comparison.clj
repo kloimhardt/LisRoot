@@ -53,14 +53,13 @@
 
 ((cxx__ Print TCanvas) c "python_comparison_2c.pdf")
 
-(defn Draw [& [[class _ :as obj] style]]
-  (cond
-    (and (= class "TF1") (string? style))
-    ((ROO/T Draw TF1 :plot-option) obj style)
-    (and (= class "TF1") (:label style))
-    ((ROO/T Draw TF1 :your-option) obj style)
-    (= class "TF1")
-    ((ROO/T Draw TF1) obj)))
+(defn Draw [& [[class] style :as args]]
+  (when (= class "TF1")
+    (apply (cond
+             (string? style) (ROO/T Draw TF1 :plot-option)
+             (:label style)  (ROO/T Draw TF1 :your-option)
+             :else           (ROO/T Draw TF1))
+           args)))
 
 (Draw g "P")
 ((cxx__ Print TCanvas) c "python_comparison_2d.pdf")
