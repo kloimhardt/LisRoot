@@ -34,7 +34,8 @@
 
 ((cxx__ Print TCanvas) c "python_comparison_2a.pdf")
 
-(ROO/Ts [:TF1 :Draw :my-option] [:string])
+(ROO/Ts [:TF1 :Draw :my-option]
+        [:string])
 
 ((ROO/T Draw TF1 :my-option) g "P")
 
@@ -42,10 +43,13 @@
 
 (ROO/Ts [:TF1 :Draw :your-option]
         [:string]
-        [[:mode ::one-letter]])
+        [[:label ::one-letter]])
+
+((ROO/T Draw TF1 :your-option) g {:label "P"})
 
 (def your-draw (ROO/T Draw TF1 :your-option))
-(your-draw g {:mode "P"})
+
+(your-draw g {:label "P"})
 
 ((cxx__ Print TCanvas) c "python_comparison_2c.pdf")
 
@@ -53,19 +57,34 @@
   (cond
     (and (= class "TF1") (string? style))
     ((ROO/T Draw TF1 :plot-option) obj style)
-    (and (= class "TF1") (:mode style))
+    (and (= class "TF1") (:label style))
     ((ROO/T Draw TF1 :your-option) obj style)
-    :else
+    (= class "TF1")
     ((ROO/T Draw TF1) obj)))
 
 (Draw g "P")
 ((cxx__ Print TCanvas) c "python_comparison_2d.pdf")
 
-(Draw g {:mode "P"})
+(Draw g {:label "P"})
 ((cxx__ Print TCanvas) c "python_comparison_2e.pdf")
 
 (Draw g)
 ((cxx__ Print TCanvas) c "python_comparison_2f.pdf")
+
+;; native
+
+(native-declare "
+  double linear(double* arr, double* par) {
+    return par[0] + arr[0]*par[1];
+  } ")
+
+(ROO/Ts-default [:TF1 :Draw :your-style])
+
+(ROO/To ((new TF1 :XR2-native linear) -1. 1.)
+        (SetParameters 5. 2.)
+        (Draw {:label "P"}))
+
+((cxx__ Print TCanvas) c "python_comparison_4.pdf")
 
 ;; add type
 
@@ -80,21 +99,6 @@
   (Draw "P"))
 
 ((cxx__ Print TCanvas) c "python_comparison_3.pdf")
-
-;; native
-
-(native-declare "
-  double linear(double* arr, double* par) {
-    return par[0] + arr[0]*par[1];
-  } ")
-
-(ROO/Ts-default [:TF1 :SetParameters :line])
-
-(ROO/To ((new TF1 :XR2-native linear) -1. 1.)
-        (SetParameters {:d 10 :k 2})
-        ((Draw :plot-style) "P"))
-
-((cxx__ Print TCanvas) c "python_comparison_4.pdf")
 
 ;; functional
 
@@ -113,8 +117,8 @@
   (+ d (* x k)))
 
 (ROO/To ((new TF1 :XR2) LinearB -1. 1.)
-        (SetParameters {:d 10 :k 2})
-        Draw)
+        (SetParameters 5. 2.)
+        (Draw {:label "P"}))
 
 ((cxx__ Print TCanvas) c "python_comparison_6.pdf")
 
