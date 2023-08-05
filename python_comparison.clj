@@ -30,32 +30,42 @@
 
 ;; draw
 
-((ROO/T Draw TF1 :plot-style) g "P")
+((ROO/T Draw TF1 :plot-option) g "P")
 
 ((cxx__ Print TCanvas) c "python_comparison_2a.pdf")
 
-(ROO/Ts [:TF1 :Draw :named]
-        [:string]
-        [[:style :string]])
+(ROO/Ts [:TF1 :Draw :my-option] [:string])
 
-((ROO/T Draw TF1 :named) g {:style "P"})
-
-  (defn Draw [& [[class _ :as obj] style]]
-    (cond
-      (and (= class "TF1") (= style "dotted"))
-      ((ROO/T Draw TF1 :plot-style) obj "P")
-      :else
-      ((ROO/T Draw TF1) obj)))
-
-(comment
-  (Draw g "dotted")
-;;
-  )
+((ROO/T Draw TF1 :my-option) g "P")
 
 ((cxx__ Print TCanvas) c "python_comparison_2b.pdf")
 
-(Draw g)
+(ROO/Ts [:TF1 :Draw :your-option]
+        [:string]
+        [[:mode ::one-letter]])
+
+(def your-draw (ROO/T Draw TF1 :your-option))
+(your-draw g {:mode "P"})
+
 ((cxx__ Print TCanvas) c "python_comparison_2c.pdf")
+
+(defn Draw [& [[class _ :as obj] style]]
+  (cond
+    (and (= class "TF1") (string? style))
+    ((ROO/T Draw TF1 :plot-option) obj style)
+    (and (= class "TF1") (:mode style))
+    ((ROO/T Draw TF1 :your-option) obj style)
+    :else
+    ((ROO/T Draw TF1) obj)))
+
+(Draw g "P")
+((cxx__ Print TCanvas) c "python_comparison_2d.pdf")
+
+(Draw g {:mode "P"})
+((cxx__ Print TCanvas) c "python_comparison_2e.pdf")
+
+(Draw g)
+((cxx__ Print TCanvas) c "python_comparison_2f.pdf")
 
 ;; add type
 
@@ -67,7 +77,7 @@
 
 (doto g
   ((ROO/T SetParameters TF1 :line) params)
-  (Draw "dotted"))
+  (Draw "P"))
 
 ((cxx__ Print TCanvas) c "python_comparison_3.pdf")
 
@@ -92,7 +102,7 @@
   (fn [[x]]
     (+ d (* k x))))
 
-(doto ((ROO/T new TF1 :XR2) (LinearA 5 2) -1. 1.) (Draw "dotted"))
+(doto ((ROO/T new TF1 :XR2) (LinearA 5 2) -1. 1.) (Draw "P"))
 
 (ROO/To ((bless TCanvas) c)
         (Print "python_comparison_5.pdf"))

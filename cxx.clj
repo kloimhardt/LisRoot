@@ -351,6 +351,7 @@
       (= type ":int") (if (not-int? v)  "-" "+")
       (= type ":lisc/pos-int") (if (or (not-int? v) (not (pos? v))) "-" "+")
       (= type ":lisc/pos") (if (not (pos? v))  "-" "+")
+      (= type ":lisc/one-letter") (if-not (and (string? v) (= 1 (count v)))  "-" "+")
       (= type ":string") (if-not (string? v) "-" "+")
       :else "?")
     type v))

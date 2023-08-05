@@ -9,7 +9,8 @@
               [:vector {:min 2 :max 2} :double]
               [:= :double]]
    ::pos :double
-   ::pos-int :int}}
+   ::pos-int :int
+   ::one-letter :string}}
  [:TCanvas [:map
             [:minimal [:cat]]
             [:B [:cat :string :string :int :int :int :int]]
@@ -18,7 +19,7 @@
  [:TF1 [:map
         [:Draw [:map
                 [:no-args [:cat]]
-                [:plot-style [:cat :string]]]]
+                [:plot-option [:cat :string]]]]
         [:XRN [:cat :string ::plot-function :double :double :int]]
         [:XR2 [:cat [:enum "\"XR2\""] ::R1R2->R :double :double [:enum 2]]]
         [:XR2-native [:cat
