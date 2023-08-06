@@ -53,16 +53,10 @@
 
 ((cxx__ Print TCanvas) c "python_comparison_2c.pdf")
 
-(defn Draw [& [[class] style :as args]]
-  (when (= class "TF1")
-    (apply (cond
-             (string? style) (ROO/T Draw TF1 :plot-option)
-             (:label style)  (ROO/T Draw TF1 :your-option)
-             :else           (ROO/T Draw TF1))
-           args)))
-
-(Draw g "P")
-((cxx__ Print TCanvas) c "python_comparison_2d.pdf")
+(defn Draw [& args]
+  (ROO/Try-all args
+               (ROO/T Draw TF1 :your-option)
+               (ROO/T Draw TF1)))
 
 (Draw g {:label "P"})
 ((cxx__ Print TCanvas) c "python_comparison_2e.pdf")
@@ -91,11 +85,11 @@
         [:double :double]
         [[:d ::pos-int] [:k ::pos]])
 
-(def params {:d 10 :k -2})
+(def params {:d 10 :k 2})
 
 (doto g
   ((ROO/T SetParameters TF1 :line) params)
-  (Draw "P"))
+  (Draw {:label "P"}))
 
 ((cxx__ Print TCanvas) c "python_comparison_3.pdf")
 
@@ -105,7 +99,7 @@
   (fn [[x]]
     (+ d (* k x))))
 
-(doto ((ROO/T new TF1 :XR2) (LinearA 5 2) -1. 1.) (Draw "P"))
+(doto ((ROO/T new TF1 :XR2) (LinearA 5 2) -1. 1.) (Draw {:label "P"}))
 
 (ROO/To ((bless TCanvas) c)
         (Print "python_comparison_5.pdf"))

@@ -363,14 +363,19 @@
 (defn checkit [macargs raw-types str-types args]
   (let [st (when (not (= "nil" str-types)) (get str-types ":rtm"))
         rs (when st (get raw-types ":rtm"))
+        dict (second args)
         erg (when rs
-              (map (fn [r s] (check-value (second s)
-                                        (get (second args) (first r))))
-                   (rest rs) (rest st)))]
+              (cond
+                (not dict)
+                (list "-" "no second arg")
+                :else
+                (map (fn [r s]
+                       (let [type (second s)
+                             kw (first r)]
+                         (check-value type (get dict kw))))
+                     (rest rs) (rest st))))]
     (when (pos? (count (filter (fn [x] (not= (first x) "+")) erg)))
-      (println erg)
-      ;; {:fail erg}
-      )))
+      {:failed erg})))
 
 (defmacro new [class & args]
   (let [fncode (new-raw class args)]
@@ -398,6 +403,11 @@
     (vswap! malli-types assoc-in path
             (remove-kw-ns (vec (cons :cat cxx)))))
   nil)
+
+(defn Try-all [args & failed-funs]
+  (reduce (fn [r f] (if (:failed r) (apply f args) r))
+          {:failed true}
+          failed-funs))
 
 (m-load-types "malli_types.edn" "root_defaults.edn")
 
