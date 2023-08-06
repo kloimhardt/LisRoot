@@ -45,13 +45,15 @@
         [:string]
         [[:label ::one-letter]])
 
-((ROO/T Draw TF1 :your-option) g {:label "P"})
+(def params {:label "P"})
 
-(defn Draw [obj opt]
+((ROO/T Draw TF1 :your-option) g params)
+
+(defn Draw [g params]
   ((fn [try]
      (when (:failed try)
-       ((ROO/T Draw TF1) obj)))
-   ((ROO/T Draw TF1 :your-option) obj opt)))
+       ((ROO/T Draw TF1) g)))
+   ((ROO/T Draw TF1 :your-option) g params)))
 
 (Draw g {:label "P"})
 ((cxx__ Print TCanvas) c "python_comparison_2c.pdf")
@@ -74,6 +76,18 @@
 
 ((cxx__ Print TCanvas) c "python_comparison_4.pdf")
 
+;; functional
+
+(defn LinearA [d k]
+  (fn [[x]]
+    (+ d (* k x))))
+
+(doto ((ROO/T new TF1 :XR2) (LinearA 5 2) -1. 1.)
+  (Draw {:label "P"}))
+
+(ROO/To ((bless TCanvas) c)
+        (Print "python_comparison_5.pdf"))
+
 ;; add type
 
 (ROO/Ts [:TF1 :SetParameters :line]
@@ -87,17 +101,6 @@
   (Draw {:label "P"}))
 
 ((cxx__ Print TCanvas) c "python_comparison_3.pdf")
-
-;; functional
-
-(defn LinearA [d k]
-  (fn [[x]]
-    (+ d (* k x))))
-
-(doto ((ROO/T new TF1 :XR2) (LinearA 5 2) -1. 1.) (Draw {:label "P"}))
-
-(ROO/To ((bless TCanvas) c)
-        (Print "python_comparison_5.pdf"))
 
 ;; simple function
 
