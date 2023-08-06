@@ -407,11 +407,6 @@
             (remove-kw-ns (vec (cons :cat cxx)))))
   nil)
 
-(defn Try-all [args & failed-funs]
-  (reduce (fn [r f] (if (:failed r) (apply f args) r))
-          {:failed true}
-          failed-funs))
-
 (m-load-types "malli_types.edn" "root_defaults.edn")
 
 (comment

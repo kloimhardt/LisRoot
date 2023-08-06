@@ -47,22 +47,17 @@
 
 ((ROO/T Draw TF1 :your-option) g {:label "P"})
 
-(def your-draw (ROO/T Draw TF1 :your-option))
-
-(your-draw g {:label "P"})
-
-((cxx__ Print TCanvas) c "python_comparison_2c.pdf")
-
-(defn Draw [& args]
-  (ROO/Try-all args
-               (ROO/T Draw TF1 :your-option)
-               (ROO/T Draw TF1)))
+(defn Draw [obj opt]
+  ((fn [try]
+     (when (:failed try)
+       ((ROO/T Draw TF1) obj)))
+   ((ROO/T Draw TF1 :your-option) obj opt)))
 
 (Draw g {:label "P"})
-((cxx__ Print TCanvas) c "python_comparison_2e.pdf")
+((cxx__ Print TCanvas) c "python_comparison_2c.pdf")
 
-(Draw g)
-((cxx__ Print TCanvas) c "python_comparison_2f.pdf")
+(Draw g {:mode "unknown"})
+((cxx__ Print TCanvas) c "python_comparison_2d.pdf")
 
 ;; native
 
