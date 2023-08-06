@@ -363,9 +363,12 @@
 (defn checkit [macargs raw-types str-types args]
   (let [st (when (not (= "nil" str-types)) (get str-types ":rtm"))
         rs (when st (get raw-types ":rtm"))
+        method (first macargs)
         dict (second args)
         erg (when rs
               (cond
+                (and (not= "new" method) (not= (second macargs) (first (first args))))
+                (list "-" "wrong class")
                 (not dict)
                 (list "-" "no second arg")
                 :else
