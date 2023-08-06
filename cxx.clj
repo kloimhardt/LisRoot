@@ -249,18 +249,22 @@
   (def interop-fn
     (fn [macargs c-function m-data]
       (list 'fn [(symbol "&") 'args]
-            (construct-call 'checkit 'args macargs c-function m-data)
-            (list 'apply (second c-function)
-                  (construct-call 'transform 'args macargs c-function m-data)))))
+            (list
+              (list 'fn ['x]
+                    (list 'if 'x 'x
+                          (list 'apply (second c-function)
+                                (construct-call 'transform 'args macargs c-function m-data))))
+              (construct-call 'checkit 'args macargs c-function m-data)))))
 
   (def interop-fn-direct
     (fn [macargs c-function m-data]
       (cond
         (= :new-no-args (first c-function))
-        (list 'do
-              (construct-call 'checkit (list 'list)
-                              macargs c-function m-data)
-              (list (second c-function)))
+        (list
+          (list 'fn ['x]
+                (list 'if 'x 'x (list (second c-function))))
+          (construct-call 'checkit (list 'list)
+                          macargs c-function m-data))
         :else
         (interop-fn macargs c-function m-data))))
 
@@ -364,7 +368,9 @@
                                         (get (second args) (first r))))
                    (rest rs) (rest st)))]
     (when (pos? (count (filter (fn [x] (not= (first x) "+")) erg)))
-      (println erg))))
+      (println erg)
+      ;; {:fail erg}
+      )))
 
 (defmacro new [class & args]
   (let [fncode (new-raw class args)]
