@@ -1,8 +1,6 @@
 (native-header "ROOT.h")
 (require '[cxx :as ROO])
 
-;; Example 1
-
 (defn Linear []
   (fn [[x] [d k]]
     (+ d (* x k))))
@@ -27,5 +25,29 @@
   (SetParameters 5. 2.)
   Draw)
 
-((cxx__ Print TCanvas) c "translation.pdf")
+((cxx__ Print TCanvas) c "translation_1.pdf")
 
+((ROO/T Draw TF1) f)
+
+(def simple-draw (ROO/T Draw TF1))
+(simple-draw f)
+
+(ROO/Ts [:TF1 :Draw :my-hint]
+        [:string])
+
+(def option-draw (ROO/T Draw TF1 :my-option))
+(option-draw f "P")
+
+(ROO/Ts [:TF1 :Draw :your-hint]
+        [:string]
+        [[:style ::one-letter]])
+
+(defn fallback-draw [h params]
+  (when (:mismatch ((ROO/T Draw TF1 :your-option) h params))
+    ((ROO/T Draw TF1) h)))
+
+(fallback-draw f {:style "P"})
+
+(fallback-draw f {:style "unknown"})
+
+((cxx__ Print TCanvas) c "translation_2.pdf")
