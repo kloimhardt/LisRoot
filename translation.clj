@@ -27,29 +27,26 @@
 
 ((cxx__ Print TCanvas) c "translation_1.pdf")
 
-((ROO/T Draw TF1) f)
-
-(def simple-draw (ROO/T Draw TF1))
-(simple-draw f)
-
 (ROO/Ts [:TF1 :Draw :my-hint]
         [:string])
 
-(def option-draw (ROO/T Draw TF1 :my-option))
-(option-draw f "P")
+(def optionDraw (ROO/T Draw TF1 :my-hint))
+(optionDraw f "P")
+
+((cxx__ Print TCanvas) c "translation_2.pdf")
 
 (ROO/Ts [:TF1 :Draw :your-hint]
         [:string]
         [[:style ::one-letter]])
 
-(defn fallback-draw [h params]
+(defn fallbackDraw [h params]
   (when (:mismatch ((ROO/T Draw TF1 :your-hint) h params))
     ((ROO/T Draw TF1) h)))
 
-(fallback-draw f {:style "P"})
-
-((cxx__ Print TCanvas) c "translation_2.pdf")
-
-(fallback-draw f {:style "unknown"})
+(fallbackDraw f {:style "P"})
 
 ((cxx__ Print TCanvas) c "translation_3.pdf")
+
+(fallbackDraw f {:style "unknown"})
+
+((cxx__ Print TCanvas) c "translation_4.pdf")
