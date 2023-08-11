@@ -378,7 +378,7 @@
                          (check-value type (get dict kw))))
                      (rest rs) (rest st))))]
     (when (pos? (count (filter (fn [x] (not= (first x) "+")) erg)))
-      {:failed erg})))
+      {:mismatch erg})))
 
 (defmacro new [class & args]
   (let [fncode (new-raw class args)]

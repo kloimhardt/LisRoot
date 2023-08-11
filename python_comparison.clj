@@ -50,8 +50,9 @@
 ((ROO/T Draw TF1 :your-option) g params)
 
 (defn Draw [g params]
-  ((fn [try]
-     (when (:failed try)
+  ((fn [result]
+     (if-not (:mismatch result)
+       result
        ((ROO/T Draw TF1) g)))
    ((ROO/T Draw TF1 :your-option) g params)))
 
