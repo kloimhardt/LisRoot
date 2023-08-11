@@ -43,11 +43,13 @@
         [[:style ::one-letter]])
 
 (defn fallback-draw [h params]
-  (when (:mismatch ((ROO/T Draw TF1 :your-option) h params))
+  (when (:mismatch ((ROO/T Draw TF1 :your-hint) h params))
     ((ROO/T Draw TF1) h)))
 
 (fallback-draw f {:style "P"})
 
+((cxx__ Print TCanvas) c "translation_2.pdf")
+
 (fallback-draw f {:style "unknown"})
 
-((cxx__ Print TCanvas) c "translation_2.pdf")
+((cxx__ Print TCanvas) c "translation_3.pdf")
