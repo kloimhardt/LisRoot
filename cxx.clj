@@ -31,24 +31,6 @@
 
 (malli-fns)
 
-(comment
-
-  (def u1 (read-string (slurp "malli_types.edn")))
-  (def u2
-    [:map
-     [:TF1 [:map [:SetParameters [:map [:default [:cat :double :double]
-                                        [:map [:d :double] [:k :double]]]
-                                  ]]]]]
-    )
-  (vector-to-maps (remove-kw-ns (maps-to-vector u1)))
-
-  (new-raw 'TF1 [:XR2])
-  (new-raw 'TCanvas [])
-  (new-raw 'TF1 [:native 'cpp_nslit])
-
-  ;;
-  )
-
 (defmacro type-fns []
   (def malli-types (volatile! (hash-map)))
 
@@ -72,12 +54,22 @@
                 (concat path (list sub-type))
                 malli-t))))
 
+  (def add-type-rtm-cxx
+    (fn [path]
+      (vswap! malli-types update-in (butlast path)
+              (fn [x] (assoc x :default (get x (last path)))))))
+
   nil)
 
 (type-fns)
 
-(defmacro m-load-types [filename]
-  (m-set-types-raw (read-string (slurp filename)))
+(defmacro Ts-default [path]
+  (add-type-rtm-cxx path)
+  nil)
+
+(defmacro m-load-types [str-types str-defaults]
+  (m-set-types-raw (read-string (slurp str-types)))
+  (run! add-type-rtm-cxx (read-string (slurp str-defaults)))
   nil)
 
 (defmacro m-add-type [path t]
@@ -88,6 +80,14 @@
   (def make-syms
     (fn [s n]
       (mapv #(symbol (str s "_" %)) (range n))))
+
+  (def obj-encode
+    (fn [s p]
+      (str "__result = rt::dense_list(obj<string>(\"" s "\"), obj<pointer>(" p "))")))
+
+  (def obj-decode
+    (fn [dense-list]
+      (str "sequence::to<std_vector>(" dense-list ")[1]")))
 
   (def cvt-from-c
     (fn [t v]
@@ -123,6 +123,7 @@
         (= t :string) (str "string::to<std::string>(" v ").c_str()")
         (= t :int) (str "number::to<std::int32_t>(" v ")")
         (= t :double) (str "number::to<double>(" v ")")
+        (= t :sequence) (str "sequence::to<std_vector>(" v ")")
         :else v)))
 
   (def c-lambdabody
@@ -185,7 +186,7 @@
             real-funargs (mapv second
                                (remove (fn [x] (given-value (first x) args))
                                        (map vector m-contypes m-funargs)))
-            m-funcode (list 'fn real-funargs (wrap-result :pointer m-codestr))
+            m-funcode (list 'fn real-funargs (obj-encode (name class) m-codestr))
             m-erg (vector (if (seq real-funargs) :fn :new-no-args)
                           m-funcode)]
         m-erg)))
@@ -206,7 +207,7 @@
             m-codestr (str "pointer::to_pointer<"
                            (name class)
                            ">("
-                           (first m-arg-symbols)
+                           (obj-decode (first m-arg-symbols))
                            ")->"
                            (name method)
                            (argslist (map (cvt-to-c args) m-arg-types (rest m-arg-symbols))))
@@ -231,7 +232,8 @@
           "nil"
           (map? x)
           (into (hash-map)
-                (map (comp vec rest (vector-to-list fun)) x))
+                (map (fn [a] (vector (str (second a)) (nth a 2)))
+                     (map (vector-to-list fun) x)))
           (coll? x)
           (cons 'list (map (vector-to-list fun) x))
           :else (fun x)))))
@@ -247,18 +249,22 @@
   (def interop-fn
     (fn [macargs c-function m-data]
       (list 'fn [(symbol "&") 'args]
-            (construct-call 'checkit 'args macargs c-function m-data)
-            (list 'apply (second c-function)
-                  (construct-call 'transform 'args macargs c-function m-data)))))
+            (list
+              (list 'fn ['x]
+                    (list 'if 'x 'x
+                          (list 'apply (second c-function)
+                                (construct-call 'transform 'args macargs c-function m-data))))
+              (construct-call 'checkit 'args macargs c-function m-data)))))
 
   (def interop-fn-direct
     (fn [macargs c-function m-data]
       (cond
         (= :new-no-args (first c-function))
-        (list 'do
-              (construct-call 'checkit (list 'list)
-                              macargs c-function m-data)
-              (list (second c-function)))
+        (list
+          (list 'fn ['x]
+                (list 'if 'x 'x (list (second c-function))))
+          (construct-call 'checkit (list 'list)
+                          macargs c-function m-data))
         :else
         (interop-fn macargs c-function m-data))))
 
@@ -301,10 +307,8 @@
     (fn [args]
       (let [frt (first args)
             frt1 (if (= (symbol "new") (first frt)) (list frt) frt)
-            hack-frt (if (and (= (symbol "TF1") (second (first frt1)))
-                              (= :XR2 (first (nnext (first frt1)))))
-                       (update (vec frt1) 2 (fn [x] (list 'identity x)))
-                       frt1)
+            hack-frt (cons (first frt1) (map (fn [x] (list 'identity x))
+                                             (rest frt1)))
             ;; hack for https://github.com/nakkaya/ferret/issues/52
             a (cons hack-frt (rest args))
 
@@ -328,39 +332,10 @@
 
 (class-fns)
 
-(comment
-
-  (m-load-types "malli_types.edn")
-
-  (new-raw 'TF1 [:XR2])
-  (new-raw 'TCanvas [])
-  (new-raw 'TF1 [:native 'cpp_nslit])
-  (def u1 (get-malli-types [:TF1 :SetParameters :default]))
-
-  (def vector-to-list
-    (fn [x]
-      (cond
-        (map? x)
-        (into (hash-map)
-              (map (comp vec rest vector-to-list) x))
-        (coll? x)
-        (cons 'list (map vector-to-list x))
-        :else
-        (str x))))
-
-  (vector-to-list u1)
-
-  (def u2 {:a 1 :b 2})
-
-  (def u3 (vector-to-list u2))
-
-  (into (hash-map) (map vec u3))
-
-  ;;
-  )
-
 (defn transform [macargs raw-types str-types args]
-  (let [rs (when (not (= "nil" str-types)) (:rtm raw-types))]
+  (let [rs (when (and (not (= "nil" str-types))
+                      (get str-types ":rtm"))
+             (get raw-types ":rtm"))]
     (if rs
       (cons (first args)
             (map (fn [t] (get (second args) (first t)))
@@ -380,19 +355,30 @@
       (= type ":int") (if (not-int? v)  "-" "+")
       (= type ":lisc/pos-int") (if (or (not-int? v) (not (pos? v))) "-" "+")
       (= type ":lisc/pos") (if (not (pos? v))  "-" "+")
+      (= type ":lisc/one-letter") (if-not (and (string? v) (= 1 (count v)))  "-" "+")
       (= type ":string") (if-not (string? v) "-" "+")
       :else "?")
     type v))
 
 (defn checkit [macargs raw-types str-types args]
-  (let [rs (when (not (= "nil" str-types)) (:rtm raw-types))
-        st (when (not (= "nil" str-types)) (get str-types ":rtm"))
+  (let [st (when (not (= "nil" str-types)) (get str-types ":rtm"))
+        rs (when st (get raw-types ":rtm"))
+        method (first macargs)
+        dict (second args)
         erg (when rs
-              (map (fn [r s] (check-value (second s)
-                                        (get (second args) (first r))))
-                   (rest rs) (rest st)))]
+              (cond
+                (and (not= "new" method) (not= (second macargs) (first (first args))))
+                (list "-" "wrong class")
+                (not dict)
+                (list "-" "no second arg")
+                :else
+                (map (fn [r s]
+                       (let [type (second s)
+                             kw (first r)]
+                         (check-value type (get dict kw))))
+                     (rest rs) (rest st))))]
     (when (pos? (count (filter (fn [x] (not= (first x) "+")) erg)))
-      (println erg))))
+      {:mismatch erg})))
 
 (defmacro new [class & args]
   (let [fncode (new-raw class args)]
@@ -407,20 +393,30 @@
   (list 'native-declare (str head "{return " (eval body) ";}")))
 
 (defmacro _ [& args] (interop args))
-(defmacro t [& args] (interop args))
+(defmacro T [& args] (interop args))
 
 (defmacro > [& args] (_doto args))
-(defmacro T [& args] (_doto args))
+(defmacro To [& args] (_doto args))
 
-(defmacro TS [path rtm cxx]
-  (vswap! malli-types
-          assoc-in
-          (concat path (list :rtm))
-          (remove-kw-ns (vec (cons :map rtm))))
-  (vswap! malli-types
-          assoc-in
-          (concat path (list :cxx))
-          (remove-kw-ns (vec (cons :cat cxx))))
+(defmacro Ts [path cxx & [rtm]]
+  (if rtm
+    (vswap! malli-types assoc-in path
+            (hash-map :rtm (remove-kw-ns (vec (cons :map rtm)))
+                      :cxx (remove-kw-ns (vec (cons :cat cxx)))))
+    (vswap! malli-types assoc-in path
+            (remove-kw-ns (vec (cons :cat cxx)))))
   nil)
 
-(m-load-types "malli_types.edn")
+(m-load-types "malli_types.edn" "root_defaults.edn")
+
+(comment
+
+  (m-load-types "malli_types.edn")
+
+  (new-raw 'TF1 [:XR2])
+  (new-raw 'TCanvas [])
+  (new-raw 'TF1 [:native 'cpp_nslit])
+  (def u1 (get-malli-types [:TF1 :SetParameters :default]))
+
+  ;;
+  )

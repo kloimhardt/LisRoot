@@ -1,6 +1,8 @@
 # LisRoot
 Calling into Root, CERN's C++ data analysis framework, from Lisp. The project uses Ferret, the Clojure-syntax to C++ transpiler.
 
+Status: alpha, not usable in production.
+
 ## Prerequisits
 
 Install Root https://root.cern.ch
