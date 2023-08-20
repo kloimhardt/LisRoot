@@ -1,5 +1,5 @@
 # LisRoot
-Calling into Root, CERN's C++ data analysis framework, from Lisp. The project uses Ferret, the Clojure-syntax to C++ transpiler.
+Calling into Root, CERN's C++ data analysis framework, from Lisp. The project uses Ferret, the Clojure-syntax to C++ compiler.
 
 Status: alpha, not usable in production.
 
@@ -10,6 +10,13 @@ Install Root https://root.cern.ch
 Install Java https://openjdk.org
 
 Download ferret.jar from https://github.com/nakkaya/ferret
+
+## Try it out
+
+Run all scripts with
+```
+./runall.sh
+```
 
 ## Types are valid Malli specs
 
@@ -23,9 +30,3 @@ clojure -Sdeps '{:deps {metosin/malli {:mvn/version "0.11.0"}}}' -M  mallitypes.
 
 You need to install https://clojure.org to run this command.
 
-## Try it out
-
-Run all scripts with
-```
-./runall.sh
-```
