@@ -39,7 +39,8 @@
         [[:style ::one-letter]])
 
 (defn fallbackDraw [f params]
-  (when (:mismatch ((ROO/T Draw TF1 :your-hint) f params))
+  (when (:mismatch
+         ((ROO/T Draw TF1 :your-hint) f params))
     ((ROO/T Draw TF1) f)))
 
 (fallbackDraw f {:style "P"})
