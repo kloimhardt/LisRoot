@@ -11,6 +11,10 @@
    ::pos :double
    ::pos-int :int
    ::one-letter :string}}
+ [:StdStr [:map
+           [:default [:cat :string]]
+           [:append [:map
+                     [:default [:cat :string [:= :string]]]]]]]
  [:TCanvas [:map
             [:minimal [:cat]]
             [:B [:cat :string :string :int :int :int :int]]

@@ -50,3 +50,8 @@
 (fallbackDraw f {:style "unknown"})
 
 ((cxx__ Print TCanvas) c "translation_4.pdf")
+
+(native-declare "typedef std::string StdStr;")
+(def s1 ((ROO/T new StdStr) "Hello "))
+(def s2 ((ROO/T append StdStr) s1 "World"))
+(println s2 "!")

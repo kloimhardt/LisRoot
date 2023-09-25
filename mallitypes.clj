@@ -6,7 +6,9 @@
 (def plot-function [[3.4 1.2] [5.6 7.8] :double])
 (def R1R2->R [[3.4] [5.6 7.8] :double])
 
-(def data {:TCanvas {:minimal []
+(def data {:StdStr {:default ["Hello "]
+                    :append {:default ["World" :string]}}
+           :TCanvas {:minimal []
                      :B ["c", "Something", 0, 0, 800, 600]
                      :Print {:default ["file.pdf"]}}
            :TF1 {:XRN ["FunctionName" plot-function -5.001 5. 2]
