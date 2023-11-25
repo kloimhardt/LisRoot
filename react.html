@@ -11,20 +11,19 @@
         <div id="mydiv"></div>
 
         <script type="text/babel">
+         class HelloC extends React.Component {
+             render() {
+                 return <h1>Hi, {this.props.name}</h1>;
+             }
+         }
 
-            class HelloClass extends React.Component {
-              render() {
-                return <h1>Hello, {this.props.name}!</h1>;
-              }
-            }
+         function HelloF(props) {
+             return <h1>Hi, {props.name}</h1>;
+         }
 
-            function HelloHook(props) {
-              return <h1>Hello, {props.name}!</h1>;
-            }
-
-            const container = document.getElementById('mydiv');
-            const root = ReactDOM.createRoot(container);
-            root.render(<div> <HelloHook name="Hook" /> <HelloClass name="Class" /> </div>)
+         const container = document.getElementById('mydiv');
+         const root = ReactDOM.createRoot(container);
+         root.render(<div> <HelloF name="Hook" /> <HelloC name="Class" /> </div>)
         </script>
 
     </body>
