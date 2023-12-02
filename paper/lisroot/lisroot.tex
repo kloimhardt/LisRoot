@@ -138,14 +138,17 @@ In our translated Lisp code, \texttt{\textcolor{blue}{Linear}} is such a named f
 
 The unnamed function which \texttt{\textcolor{blue}{Linear}} returns has the signature \texttt{\textcolor{blue}{[[x] [d k]]}}. This means that this function expects two arguments A and B, both being vectors, with A = [x] and B = [d k] denoting that the elements \texttt{\textcolor{blue}{x}} and \texttt{\textcolor{blue}{d,k}} are extracted out of the vectors already within the signature.
 
-The translation into Lisp opens a new perspective on the CERN tutorial: the given Python example can be seen as functional in disguise because the class in the tutorial effectively plays the role of a higher order function. We think that palpable function definitions are well suited for data scientists while sophisticated concepts like the definition of classes should be left to professional software engineers. Moreover, as shown in the Appendix for Facebook’s “React” framework, functional concepts are also on the rise in more general software engineering domains.\vspace*{-5pt}
+The translation into Lisp opens a new perspective on the CERN tutorial: the given Python example can be seen as functional in disguise because the class in the tutorial effectively plays the role of a higher order function. We think that palpable function definitions are well suited for physicists while sophisticated concepts like the definition of classes should be left to professional software engineers.
+
+We again mention the paper  “The role of programming in the formulation of ideas” which gave the impetus for this article and clarifies and elaborates further the immense advantages of using functional programming in Physics.$^{\cite{DD1}}$
+\vspace*{-5pt}
 
 \section{CALLING ROOT}
 Before generating plots, an instance of ROOT’s \texttt{\textcolor{magenta}{TCanvas}}  class is created to register a canvas object in the internal state of the ROOT system.
 {\color{magenta}\begin{verbatim}
 c = ROOT.TCanvas()
 \end{verbatim}}
-The observant reader may have noticed that this creation of the object named \texttt{\textcolor{magenta}{c}} appears earlier than in the original Python code. Thus computer memory – that other programs might have better use for – is allocated earlier than necessary. The chosen tradeoff will be justified later.\vspace*{-5pt}
+The observant reader may have noticed that this creation of the object named \texttt{\textcolor{magenta}{c}} appears earlier than in the original Python code. The reason for this will be discussed later.\vspace*{-5pt}
 
 \subsection{Translation} 
 The Lisp code for creating the canvas looks similar to the Python code:
@@ -201,7 +204,7 @@ To perform the combination we used the standard Clojure command \texttt{\textcol
 
 The combination just demonstrated represents the typical workflow in Lisp programming: at first lots of statements are created; they usually look ungainly but constitute working code. In a next step, facilitated by the fact that there are only functions on data, sub-expressions are extracted and statements are regrouped. Some of the resulting expressions are moved to separate files, others may span several lines (because of this multi-line spanning, Lisp code is not said to consist of statements but of “top level expressions”).
 
-The disadvantage of this combining process is that computer memory is in general not used as efficiently as possible because one loses the fine-tuning ability that comes with spreading individual statements around different code blocks. The advantage is that by merely following idiomatic coding guidelines, the code for one and the same logical idea tends to gather in one place.\vspace*{-5pt}
+Admittedly, the disadvantage of this combining process is that computer memory is in general not used as efficiently as possible because one loses the fine-tuning ability that comes with spreading individual statements around different code blocks. The advantage is that by merely following idiomatic coding guidelines, the code for one and the same logical idea tends to gather in one place. We think that the trade-off in favor of concise notation is justified as any heavy lifting code is supposed to reside in the C++ library and thus memory consumption is of secondary consideration in LISP code. \vspace*{-5pt}
 
 \section{RECAP THUS FAR}
 By now, we have covered the first two parts of the article. We took a publicly available Python tutorial and completed its translation to Lisp. We argued that scientific ideas are much more directly and meaningfully expressed in Lisp’s functional programming paradigm. We also explained our Lisp-C++ interoperation method.
@@ -323,6 +326,13 @@ S. Behnel,  R. Bradshaw, C. Citro, L. Dalcin, D. S. Seljebotn, and K. Smith, “
 
 \bibitem{MM1}
 Metosin, malli. [Online]. \url{https://github.com/metosin/malli}
+
+\bibitem{NN1}
+Meta and community, React. [Online]. \url{https://react.dev/learn}
+
+\bibitem{OO1}
+P. Graham, "Revenge of the Nerds". [Online]. \url{http://www.paulgraham.com/icad.html}
+
 \end{thebibliography}\vspace*{-8pt}
 
 \begin{IEEEbiography}{Markus Kloimwieder}{\,}is a freelancer based in Vienna, Austria. His research interests are functional programming, symbolic computing and visual learning tools. During his stay at CERN he obtained a masters degree in High Energy Physics from the Technical University of Graz. He also holds an MSc of Oxford University. Contact him at \url{markus.kloimwieder@mailbox.org}
@@ -331,8 +341,9 @@ Metosin, malli. [Online]. \url{https://github.com/metosin/malli}
 \begin{IEEEbiography}{Christoph Gadermaier}{\,} is Associate Professor at the Physics Department of the Politecnico di Milano, Italy. His research interests are ultrafast (fs and ps time scale) processes in low-dimensional materials for nanoelectronics, photonics, and light harvesting. He uses his own code for data analysis and is keenly looking for effective and intuitive ways to handle the ever increasing amounts of data generated even by tabletop experiments. Contact him at \url{christoph.gadermaier@polimi.it}\vspace*{8pt}
 \end{IEEEbiography}
 
-\section{APPENDIX}
-The replacement of the class-concept by pure functions is taking place in the wider software engineering domain. As an example we state React, the de-facto standard framework for Web development maintained by Facebook.
+\section{WIP: Further Material}
+\subsection{Functional Paradigm in Software Engineering}
+The replacement of the class-concept by pure functions is taking place in the wider software engineering domain. As an example we state React, the de-facto standard framework for Web development maintained by Facebook.$^{\cite{NN1}}$
 At React’s introduction in 2012, a Web component had to be defined in terms of a class:
 {\color{magenta}\begin{verbatim}
 class HelloC extends React.Component {
@@ -347,4 +358,8 @@ function HelloF(props) {
  return <h1>Hi, {props.name}</h1>;
 }
 \end{verbatim}}
+\subsection{Lisp for hard problems}
+In this article we showed how to glue Lisp onto a C++ library. We agree with YCombinator's founder Graham: "You can write little glue programs in Lisp too ..., but the biggest win for languages like Lisp is at the other end of the spectrum, where you need to write sophisticated programs to solve hard problems...".$^{\cite{OO1}}$
+
+Every Physicist has to do plumbing work but eventually will encounter some  hard problem. Using Lisp from the start as glue language makes sure to have this useful tool available when the hard problem arrives.
 \end{document}
