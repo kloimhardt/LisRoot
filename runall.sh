@@ -1,5 +1,7 @@
 #!/bin/bash
 
+python3.10 python_demo.py
+
 for file in root_plot python_comparison cpp_comparison cpp_native translation; do
 # for file in translation; do
     rm $file.cpp
