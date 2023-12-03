@@ -26,7 +26,7 @@
 \section{Introduction}
 Large amounts of code for applications in science and engineering are written using the object-oriented (OO) programming paradigm. A best practice example is the ROOT library developed by CERN.$^{\cite{AA1}}$ It was originally designed for particle physics data analysis, but it is also used in other applications such as astronomy and data mining. ROOT is written in C++ and includes an interpreter called Cling that allows the users to run their own C++ scripts. Yet, since C++ is a complicated language with a steep learning curve, CERN also provides ROOT bindings for Python, which is a very popular language and is much easier to learn. However, Python has been originally designed to replace shell scripts, used for day-to-day system administration. Python has not been designed to express scientific ideas.
 
-A very suitable way to express scientific ideas in computer programs is provided by the functional programming paradigm, as demonstrated in the books “Structure and Interpretation of Classical Mechanics”$^{\cite{BB1}}$ and “Functional Differential Geometry”$^{\cite{CC1}}$ as well as in the paper “The role of programming in the formulation of ideas”.$^{\cite{DD1}}$ These seminal works are coded in MIT Scheme, a dialect of Lisp. Unfortunately, MIT Scheme does not have a large ecosystem and is also hard to install on MS-Windows systems. A Lisp dialect with a larger ecosystem is Clojure.$^{\cite{EE1}}$ It runs on the Java virtual machine (JVM), which is a household name in the IT industry. However, the JVM has not gained traction in the natural sciences; the reason might be that the JVM is a very memory consuming runtime environment that is not well suited for running small scripts.
+A very suitable way to express scientific ideas in computer programs is provided by the functional programming paradigm, as demonstrated in the books “Structure and Interpretation of Classical Mechanics”$^{\cite{BB1}}$ and “Functional Differential Geometry”$^{\cite{CC1}}$ as well as in the paper “The role of programming in the formulation of ideas”$^{\cite{DD1}}$. These seminal works are coded in MIT Scheme, a dialect of Lisp. Unfortunately, MIT Scheme does not have a large ecosystem and is also hard to install on MS-Windows systems. A Lisp dialect with a larger ecosystem is Clojure.$^{\cite{EE1}}$ It runs on the Java virtual machine (JVM), which is a household name in the IT industry. However, the JVM has not gained traction in the natural sciences; the reason might be that the JVM is a very memory consuming runtime environment that is not well suited for running small scripts.
 
 A recent ongoing attempt to circumvent the JVM is jank,$^{\cite{FF1}}$ which aims at implementing the Clojure dialect on ROOT’s C++ interpreter Cling to open up the expressiveness of functional programming to ROOT users. To this aim, it is crucial to implement an idiomatic Lisp-C++ interoperation. In Clojure for JVM the respective Lisp-Java interoperation is done via so-called type hints directly written into the users’ Clojure code, obstructing the expressive syntax.
 
@@ -138,9 +138,6 @@ function HelloF(props) {
  return <h1>Hi, {props.name}</h1>;
 }
 \end{verbatim}}
-
-For the physics communiy, we again mention the paper  “The role of programming in the formulation of ideas” which gave the impetus for this article and clarifies and elaborates further the immense advantages of using functional programming in Physics.$^{\cite{DD1}}$
-
 \section{CALLING ROOT}
 Before generating plots, an instance of ROOT’s \texttt{\textcolor{magenta}{TCanvas}}  class is created to register a canvas object in the internal state of the ROOT system.
 {\color{magenta}\begin{verbatim}
@@ -279,7 +276,7 @@ The interop system presented here is a generic framework that, when provided wit
 
 In a broader context, we showed how to glue Lisp onto a C++ library. We agree with YCombinator's founder Graham: "You can write little glue programs in Lisp too ..., but the biggest win for languages like Lisp is at the other end of the spectrum, where you need to write sophisticated programs to solve hard problems...".$^{\cite{OO1}}$
 
-Every Physicist has to do plumbing work but eventually will encounter some  hard problem. Using Lisp from the start as glue language makes sure to have this useful tool available when the hard problem arrives.
+Every Physicist has to do plumbing work but eventually will encounter some  hard problem. Using Lisp from the start as glue language makes sure to have this useful tool available when, as described in “The role of programming in the formulation of ideas”$^{\cite{DD1}}$, hard problems arrive.
 
 \section{ACKNOWLEDGMENTS}
 We thank J. Wilkerson for fruitful discussions.
