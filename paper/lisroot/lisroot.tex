@@ -24,18 +24,18 @@
     \end{@twocolumnfalse}]
 
 \section{Introduction}
-Large amounts of code for applications in science and engineering are written using the object-oriented (OO) programming paradigm. A best practice example is the ROOT library developed by CERN.$^{\cite{AA1}}$$^{\cite{brun1997root}}$ It was originally designed for particle physics data analysis, but it is also used in other applications such as astronomy and data mining. ROOT is written in C++ and includes an interpreter called Cling that allows the users to run their own C++ scripts. Yet, since C++ is a complicated language with a steep learning curve, CERN also provides ROOT bindings for Python, which is a very popular \textbf{multi-purpose} language and is much easier to learn. However, Python has been originally designed to replace shell scripts, used for day-to-day system administration. Python has not been designed to express scientific ideas.
+Large amounts of code for applications in science and engineering are written using the object-oriented (OO) programming paradigm. A best practice example is the ROOT library developed by CERN.$^{\cite{brun1997root}}$ It was originally designed for particle physics data analysis, but it is also used in other applications such as astronomy and data mining. ROOT is written in C++ and includes an interpreter called Cling that allows the users to run their own C++ scripts. Yet, since C++ is a complicated language with a steep learning curve, CERN also provides ROOT bindings for Python, which is a very popular \textbf{multi-purpose} language and is much easier to learn. However, Python has been originally designed to replace shell scripts, used for day-to-day system administration. Python has not been designed to express scientific ideas.
 
-A very suitable way to express scientific ideas in computer programs is provided by the functional programming paradigm, as demonstrated in the books “Structure and Interpretation of Classical Mechanics”$^{\cite{BB1}}$$^{\cite{sussman2015structure}}$ and “Functional Differential Geometry”$^{\cite{CC1}}$$^{\cite{sussman2013functional}}$ as well as in the paper “The role of programming in the formulation of ideas”$^{\cite{DD1}}$$^{\cite{sussman2002role}}$. These seminal works are coded in MIT Scheme, a dialect of Lisp. Unfortunately, MIT Scheme does not have a large ecosystem and is also hard to install on MS-Windows systems. A Lisp dialect with a larger ecosystem is Clojure.$^{\cite{EE1}}$$^{\cite{hickey2008clojure}}$ It runs on the Java virtual machine (JVM), which is a household name in the IT industry. However, the JVM has not gained traction in the natural sciences; the reason might be that the JVM is a very memory consuming runtime environment that is not well suited for running small scripts.
+A very suitable way to express scientific ideas in computer programs is provided by the functional programming paradigm, as demonstrated in the books “Structure and Interpretation of Classical Mechanics”$^{\cite{sussman2015structure}}$ and “Functional Differential Geometry”$^{\cite{sussman2013functional}}$ as well as in the paper “The role of programming in the formulation of ideas”$^{\cite{sussman2002role}}$. These seminal works are coded in MIT Scheme, a dialect of Lisp. Unfortunately, MIT Scheme does not have a large ecosystem and is also hard to install on MS-Windows systems. A Lisp dialect with a larger ecosystem is Clojure.$^{\cite{hickey2008clojure}}$ It runs on the Java virtual machine (JVM), which is a household name in the IT industry. However, the JVM has not gained traction in the natural sciences; the reason might be that the JVM is a very memory consuming runtime environment that is not well suited for running small scripts.
 
-A recent ongoing attempt to circumvent the JVM is jank,$^{\cite{FF1}}$$^{\cite{wilkerson2022jank}}$ which aims at implementing the Clojure dialect on ROOT’s C++ interpreter Cling. \textbf{It has the potential to open up the uniformity, simplicity and expressiveness of functional programming to ROOT users. To this aim, it is crucial to implement an idiomatic Lisp-C++ interoperation which compiles to native binary code, effectively resulting in a purly functional C++ layer on top of ROOT. The major difficulty here is this: Lisp is dynamically typed whereas C++ is statically typed.}
+A recent ongoing attempt to circumvent the JVM is jank,$^{\cite{wilkerson2022jank}}$ which aims at implementing the Clojure dialect on ROOT’s C++ interpreter Cling. \textbf{It has the potential to open up the uniformity, simplicity and expressiveness of functional programming to ROOT users. To this aim, it is crucial to implement an idiomatic Lisp-C++ interoperation which compiles to native binary code, effectively resulting in a purly functional C++ layer on top of ROOT. The major difficulty here is this: Lisp is dynamically typed whereas C++ is statically typed.}
 
 \textbf{In the respective Lisp-Java interoperation of JVM-Clojure, this difficulty is overcome via so-called type hints directly written into the users’ Clojure code, obstructing the expressive syntax.} For our Lisp-C++ interop we also use type hints but contrary to the current Java approach, those hints are not visible in the syntax of the user code, which thus maintains its full expressiveness. We avoid obstructing our Lisp code by storing the type hints in a separate data file. Those are then checked at compile-time as well as at runtime within the small executable binary.
 
 The article is structured as follows: first we take a publicly available Python tutorial and translate it to Lisp. The first part of this nine-line script does not yet call into ROOT; its translation is merely meant to demonstrate the principles underlying the functional paradigm. The second part of the tutorial indeed involves ROOT and here we explain our Lisp-C++ interoperation method. After a short recap, in the third part of the article we describe our unique approach for calling into different ROOT subroutines by the same function name, thus addressing interoperation with C++ “runtime polymorphism”. Finally, we discuss the scope and limitations of the presented interop as a generic tool intended to access arbitrary C++ libraries, which are widely used in science, engineering, and quantitative finance.
 
 \section{THE TUTORIAL}
-This article frequently refers to a specific publicly available tutorial script,$^{\cite{GG1}}$$^{\cite{root2023python}}$ which CERN provides as an introduction to the ROOT library. The example reproduced here shows how to plot a simple graph – a straight line – with ROOT in nine lines of Python:
+This article frequently refers to a specific publicly available tutorial script,$^{\cite{root2023python}}$ which CERN provides as an introduction to the ROOT library. The example reproduced here shows how to plot a simple graph – a straight line – with ROOT in nine lines of Python:
 {\color{magenta}\begin{verbatim}
 import ROOT
 
@@ -52,11 +52,11 @@ f.SetParameters(5., 2.)
 c = ROOT.TCanvas()
 f.Draw()
 \end{verbatim}}
-An integral part of our discussion is the translation and comparison of this Python code to Clojure, a dialect of the Lisp family of languages currently used mainly for commercial web applications.$^{\cite{HH1}}$$^{\cite{clojure2023state}}$ Despite both being multi-paradigm languages, Python and Clojure nevertheless represent two different paradigms in software design: “OO” and “functional”, respectively. The purpose of our translation is to demonstrate and encourage the usage of functional programming in the natural sciences and beyond.
+An integral part of our discussion is the translation and comparison of this Python code to Clojure, a dialect of the Lisp family of languages currently used mainly for commercial web applications.$^{\cite{clojure2023state}}$ Despite both being multi-paradigm languages, Python and Clojure nevertheless represent two different paradigms in software design: “OO” and “functional”, respectively. The purpose of our translation is to demonstrate and encourage the usage of functional programming in the natural sciences and beyond.
 
 \section{THE HEADER}
 \subsection{Python interop via cppyy}
-While the CERN tutorial to plot the graph of a straight line is written in Python, the ROOT library is programmed in C++, the major systems programming language known for its compact executable binaries. \textbf{The necessary interoperation between the scripting language and the library is done via cppyy, whose runtime "automatic binding provision requires no direct support from library authors"}.$^{\cite{II1}}$$^{\cite{kundu2023efficient}}$ In order to make cppyy available within a users’ script, its main module needs to be imported, which accordingly is done in the first statement of the tutorial code:
+While the CERN tutorial to plot the graph of a straight line is written in Python, the ROOT library is programmed in C++, the major systems programming language known for its compact executable binaries. \textbf{The necessary interoperation between the scripting language and the library is done via cppyy, whose runtime "automatic binding provision requires no direct support from library authors"}.$^{\cite{kundu2023efficient}}$ In order to make cppyy available within a users’ script, its main module needs to be imported, which accordingly is done in the first statement of the tutorial code:
 {\color{magenta}\begin{verbatim}
 import ROOT
 \end{verbatim}}
@@ -65,7 +65,7 @@ cppyy operates behind the scenes as subsequent Python code is interpreted and ex
 \subsection{Translation to LISP}
 With Lisp, as opposed to Python, we do not use a runtime bridge or Cling to access ROOT, \textbf{which means that within this article we nowhere make use of the advanced "automatic binding" feature of cppyy.} Instead, Lisp code is compiled (or converted) to C++ code ahead of its execution time. Since Lisp is also a dynamically typed language, we will build a prototype for a mechanism to dispatch into pre-compiled C++ code according to runtime types, such a mechanism usually being termed “runtime polymorphism”.
 
-For compilation we use Ferret, a free Lisp implementation designed to be used in real time embedded control systems, supporting a subset of Clojure  to generate executable binaries for PC as well as microcontrollers with “as little as 2KB of RAM”.$^{\cite{JJ1}}$$^{\cite{akkaya2020ferret}}$
+For compilation we use Ferret, a free Lisp implementation designed to be used in real time embedded control systems, supporting a subset of Clojure  to generate executable binaries for PC as well as microcontrollers with “as little as 2KB of RAM”.$^{\cite{akkaya2020ferret}}$
 
 C++ libraries like ROOT provide standard header files for linking their functionality to other software. Using a basic Ferret command, such a header file is imported, providing access to ROOT:
 {\color{blue}\begin{verbatim}
@@ -75,7 +75,7 @@ The import statement sizes the executable binary to 500KB. Also, it already show
 {\color{blue}\begin{verbatim}
 (require '[cxx :as ROO])
 \end{verbatim}}
-Our code for the interop functionality, some 400 lines of self-contained Ferret code, is available free and open source.$^{\cite{KK1}}$$^{\cite{kloimw2023lisroot}}$
+Our code for the interop functionality, some 400 lines of self-contained Ferret code, is available free and open source.$^{\cite{kloimw2023lisroot}}$
 
 \section{THE FUNCTION}
 \subsection{Textbook notation}
@@ -134,7 +134,7 @@ class HelloC extends React.Component {
  }
 }
 \end{verbatim}}
-\textbf{Since the 2019 version the above OO version is only maintained for backward compatibility. In the beginner tutorial it is recommended to define the same component via the following simple function}:$^{\cite{NN1}}$$^{\cite{meta2023react}}$
+\textbf{Since the 2019 version the above OO version is only maintained for backward compatibility. In the beginner tutorial it is recommended to define the same component via the following simple function}:$^{\cite{meta2023react}}$
 {\color{magenta}\begin{verbatim}
 function HelloF(props) {
  return <h1>Hi, {props.name}</h1>;
@@ -267,7 +267,7 @@ So, while in all cases before, calling a specific function always resulted in th
 At first glance, the fallback function just presented looks very innocent, but in fact it represents the blueprint for a Lisp “multimethod” function that is able to provide access to all of ROOT’s \texttt{\textcolor{blue}{Draw}} capabilities without the need of user provided Schema hints. Instead of relying on user information, the function checks the users’ input data before dispatching to the according C++ code, the already mentioned mechanism called “runtime polymorphism”. To fully grasp its blueprint quality, it is important to realize that the number of Schemas and checks within a function, like that of optional arguments, is not fixed but the choice of a software engineer who ideally shares a set of generic multimethods with other users working in their specific domains.
 
 \section{SCHEMA IN A FILE}
-We just demonstrated how to declare a specific Schema within the user’s code, a method akin to the way access to external libraries is provided by the Python-to-C compiler Cython.$^{\cite{LL1}}$$^{\cite{behnel2010cython}}$ But while in Cython the code for declaring an external function resembles that of a normal function declaration, within \texttt{\textcolor{blue}{ROO/T}}, such a declaration is made via a data structure. More specifically, the Schemas \texttt{\textcolor{blue}{:my-hint}} and \texttt{\textcolor{blue}{:your-hint}} above, with their idiomatic abundance of colons, are representations of a Clojure- standard for data Schema definitions: Malli data structures.$^{\cite{MM1}}$$^{\cite{metosin2023malli}}$
+We just demonstrated how to declare a specific Schema within the user’s code, a method akin to the way access to external libraries is provided by the Python-to-C compiler Cython.$^{\cite{behnel2010cython}}$ But while in Cython the code for declaring an external function resembles that of a normal function declaration, within \texttt{\textcolor{blue}{ROO/T}}, such a declaration is made via a data structure. More specifically, the Schemas \texttt{\textcolor{blue}{:my-hint}} and \texttt{\textcolor{blue}{:your-hint}} above, with their idiomatic abundance of colons, are representations of a Clojure- standard for data Schema definitions: Malli data structures.$^{\cite{metosin2023malli}}$
 
 The Malli data structure for a Schema is used twice: once during compile time to generate C++ code and once during runtime to validate the data and possibly dispatch to different parts of the pre-compiled code (runtime polymorphism). Representing the type information as a data structure guarantees the necessary easy access to the Schemas during runtime.
 
@@ -281,69 +281,14 @@ The interop system presented here is not only aimed at Cern’s ROOT library, bu
 \section{CONCLUSION AND OUTLOOK}
 We used a simple example from CERN's ROOT library tutorial to directly compare Lisp Code based on the functional programming paradigm with Python code following the object-oriented approach. The example clearly shows that the functional code is more intuitive and expressive for scientists. Next, we showed how to put this claim into practice by developing a way to access ROOT via the Lisp dialect Clojure. For this, using the Ferret compiler, \textbf{Lisp was used to  compile a C++ layer providing a functional interface to ROOT.} The type hints necessary for C++ code generation were stored in a separate data file. For seamless interoperation without obstructing the Lisp syntax, the use of\textbf{ statically compiled} “multimethods” was demonstrated. Those perform runtime checks on the input data and automatically dispatch to the \textbf{respective C++ functionality} (runtime polymorphism). The type hints are stored as a Malli data structure to ensure compatibility with the larger Clojure ecosystem.
 
-The interop system presented here is a generic framework that, when provided with suitable type hints, facilitates access to methods of arbitrary C++ libraries, which are widely used in science, engineering, and quantitative finance. All necessary hint-information about classes and methods need to be written into a machine- readable Malli text file. \textbf{It is conceivable to in the future create the necessary type hints and multimethods automatically by tapping into the yet unused "automatic binding" features of ROOT's cppyy infrastructure. Also, it is conceivable to code and statically compile a kind of multimethod that is suited to be directly called from languages like e.g. Julia}$^{\cite{PP1}}$$^{\cite{eschle2023potential}}$.
+The interop system presented here is a generic framework that, when provided with suitable type hints, facilitates access to methods of arbitrary C++ libraries, which are widely used in science, engineering, and quantitative finance. All necessary hint-information about classes and methods need to be written into a machine- readable Malli text file. \textbf{It is conceivable to in the future create the necessary type hints and multimethods automatically by tapping into the yet unused "automatic binding" features of ROOT's cppyy infrastructure. Also, it is conceivable to code and statically compile a kind of multimethod that is suited to be directly called from languages like e.g. Julia}$^{\cite{eschle2023potential}}$.
 
-In a broader context, we showed how to glue Lisp onto a C++ library. We agree with YCombinator's founder Graham: "You can write little glue programs in Lisp too ..., but the biggest win for languages like Lisp is at the other end of the spectrum, where you need to write sophisticated programs to solve hard problems...".$^{\cite{OO1}}$$^{\cite{graham2002revenge}}$
+In a broader context, we showed how to glue Lisp onto a C++ library. We agree with YCombinator's founder Graham: "You can write little glue programs in Lisp too ..., but the biggest win for languages like Lisp is at the other end of the spectrum, where you need to write sophisticated programs to solve hard problems...".$^{\cite{graham2002revenge}}$
 
-Every Physicist has to do plumbing work but eventually will encounter some  hard problem. Using Lisp from the start as glue language makes sure to have this useful tool available when, as described in “The role of programming in the formulation of ideas”$^{\cite{DD1}}$$^{\cite{sussman2002role}}$, hard problems arrive.
+Every Physicist has to do plumbing work but eventually will encounter some  hard problem. Using Lisp from the start as glue language makes sure to have this useful tool available when, as described in “The role of programming in the formulation of ideas”$^{\cite{sussman2002role}}$, hard problems arrive.
 
 \section{ACKNOWLEDGMENTS}
 We thank J. Wilkerson for fruitful discussions.
-
-\begin{thebibliography}{1}
-\bibitem{AA1}
-R. Brun and F. Rademakers, “ROOT - An Object Oriented Data Analysis Framework”, \textit{Nucl. Instrum. Meth. in Phys. Res. A}, vol. 389, no. 1-2, pp. 81–86, 1997.
-
-\bibitem{BB1}
-G.J. Sussman, J. Wisdom, \textit{Structure and Interpretation of Classical Mechanics}, Cambridge, MA, USA: The MIT Press, 2015
-
-\bibitem{CC1}
-G.J. Sussman, J. Wisdom, \textit{Functional Differential Geometry}, Cambridge, MA, USA: The MIT Press, 2013
-
-\bibitem{DD1}
-G.J. Sussman, J. Wisdom, “The Role of Programming in the Formulation of Ideas,” AI Memo 2002-018, Artificial Intelligence Laboratory, MIT, \url{https://dspace.mit.edu/handle/1721.1/6707}
-
-\bibitem{EE1}
-R. Hickey, “The Clojure programming language”, \textit{Proc. Symp. Dyn. Languages}, 2008, p. 1.
-
-\bibitem{FF1}
-J. Wilkerson, “The jank programming language”. [Online]. \url{https://jank-lang.org/}
-
-\bibitem{GG1}
-CERN, ROOT Manual, “Passing Python callables to C++”. [Online]. \url{https://root.cern/manual/python/}
-
-\bibitem{HH1}
-Clojure.org, “State of Clojure 2023 Results”. [Online]. \url{https://clojure.org/news/2023/06/30/state-of-clojure-2023}
-
-\bibitem{II1}
-B. Kundu, V. Vassilev, W. Lavrijsen, “Efficient and Accurate Automatic Python Bindings with cppyy \& Cling”. [Online]. \url{https://arxiv.org/pdf/2304.02712.pdf}.
-
-\bibitem{JJ1}
-N. Akkaya, “Ferret Programmer's Manual”. [Online]. \url{https://ferret-lang.org/}
-
-\bibitem{KK1}
-\url{https://github.com/kloimhardt/LisRoot}
-
-\bibitem{LL1}
-S. Behnel,  R. Bradshaw, C. Citro, L. Dalcin, D. S. Seljebotn, and K. Smith, “Cython: The best of both worlds”, \textit{Comput. Sci. Eng.}, vol. 13, no. 2, pp. 31–39, 2010.
-
-\bibitem{MM1}
-Metosin, malli. [Online]. \url{https://github.com/metosin/malli}
-
-\bibitem{NN1}
-Meta and community, React. [Online]. \url{https://react.dev/learn}
-
-\bibitem{PP1}
-J.~Eschle, T.~G\'al, M.~Giordano, P.~Gras, B.~Hegner, L.~Heinrich, U.~Hernandez Acosta, S.~Kluth, J.~Ling and P.~Mato, \textit{et al.}
-``Potential of the Julia Programming Language for High Energy Physics Computing'', 
-\textit{Comput. Softw. Big Sci.}, vol. 7, no. 1, 2023
-doi:10.1007/s41781-023-00104-x
-[arXiv:2306.03675 [hep-ph]].
-
-\bibitem{OO1}
-P. Graham, "Revenge of the Nerds". [Online]. \url{http://www.paulgraham.com/icad.html}
-
-\end{thebibliography}
 
 \bibliographystyle{plain} % We choose the "plain" reference style
 
