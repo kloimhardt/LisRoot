@@ -3,7 +3,7 @@ Calling into Root, CERN's C++ data analysis framework, from Lisp. The project us
 
 Status: alpha, not usable in production.
 
-A thorough introduction can be found in [this blog post](https://kloimhardt.github.io/blog/software/2023/08/20/LisRoot-4.html).
+A thorough introduction can be found in [this Arxiv paper](https://arxiv.org/abs/2312.13295).
 
 ## TL;DR Description
 
