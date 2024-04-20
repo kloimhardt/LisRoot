@@ -1,4 +1,7 @@
+// This is taken from
 // https://root.cern/doc/master/listBox_8C.html
+// other interesting gui examples
+// buttonChangelabel.C calendar.C guilabels.C guitest.C guiWithCLING.C textEntries.C
 
 #include <TApplication.h>
 #include <TGClient.h>
@@ -118,7 +121,7 @@ void MyMainFrame::PrintSelected()
    }
 }
  
-void listBox()
+void GuiExample()
 {
    // Popup the GUI...
    new MyMainFrame(gClient->GetRoot(), 200, 200);

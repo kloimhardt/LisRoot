@@ -1,6 +1,7 @@
 #!/bin/bash
 
-python3.10 python_demo.py
+python3 python_demo.py
+# python3.10 python_demo.py
 
 for file in root_plot python_comparison cpp_comparison cpp_native translation; do
 # for file in translation; do
@@ -12,3 +13,5 @@ for file in root_plot python_comparison cpp_comparison cpp_native translation; d
 done
 
 clojure -Sdeps '{:deps {metosin/malli {:mvn/version "0.11.0"}}}' -M  mallitypes.clj
+
+root GuiExample.C
