@@ -72,7 +72,7 @@ Draw =:
   ROO/T Draw: TF1
 
 doto:
-  newTF1: identity('pyf2') l -1. 1. 2
+  newTF1: .'pyf2' l -1. 1. 2
   SetParameters: 5. 2.
   Draw:
 ```

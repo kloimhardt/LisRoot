@@ -15,7 +15,7 @@ c =:
   ROO/T new: TCanvas
 
 f =:
-  ROO/T(new TF1): identity('pyf2') l -1. 1. 2
+  ROO/T(new TF1): .'pyf2' l -1. 1. 2
 
 ROO/T(SetParameters TF1): f 5. 2.
 ROO/T(Draw TF1): f
@@ -30,7 +30,7 @@ Draw =:
   ROO/T Draw: TF1
 
 doto:
-  newTF1: identity('pyf2') l -1. 1. 2
+  newTF1: .'pyf2' l -1. 1. 2
   SetParameters: 5. 2.
   Draw:
 
