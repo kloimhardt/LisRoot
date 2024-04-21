@@ -52,7 +52,34 @@ Since `(ROO/T Draw TF1)` is a macro call that expands into a lambda-function tha
   Draw)
 ```
 
-Adding a Malli-style Schema,
+## YAMLScript
+I think the translation from Lisp syntax to YAMLScript looks pretty neat:
+
+```
+defn Linear():
+  fn([x] [d k]):
+    =>: (d + (k * x))
+
+l =: Linear()
+
+newTF1 =:
+  ROO/T new: TF1
+
+SetParameters =:
+  ROO/T SetParameters: TF1
+
+Draw =:
+  ROO/T Draw: TF1
+
+doto:
+  newTF1: identity('pyf2') l -1. 1. 2
+  SetParameters: 5. 2.
+  Draw:
+```
+
+## Handling Runtime Polymorphism in C++ Interop
+
+Adding a [Malli](https://github.com/metosin/malli)-style Schema,
 
 ```
 (ROO/Ts [:TF1 :Draw :your-hint]
@@ -87,6 +114,8 @@ Install Root https://root.cern.ch
 Install Java https://openjdk.org
 
 Download ferret.jar from https://github.com/nakkaya/ferret
+
+Optional: if you like to run the respective examples, also install Python or [YAMLScript](https://yamlscript.org)
 
 ## Try it out
 
