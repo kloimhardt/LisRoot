@@ -9,6 +9,7 @@
 (def data {:StdStr {:default ["Hello "]
                     :append {:default ["World" :string]}}
            :TCanvas {:minimal []
+                     :empty []
                      :B ["c", "Something", 0, 0, 800, 600]
                      :Print {:default ["file.pdf"]}}
            :TF1 {:XRN ["FunctionName" plot-function -5.001 5. 2]
