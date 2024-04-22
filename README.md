@@ -7,7 +7,8 @@ Abstract of the according ArXiv paper ["A functional scripting interface to an o
 
 A set of Macros for Lisp interop with Root, CERN's C++ data analysis framework. The project uses [Ferret](https://ferret-lang.org), the Clojure-syntax to C++ compiler.
 
-CERN's [Python tutorial](https://root.cern/manual/python/#passing-python-callables-to-c)
+### Python
+CERN provides splendid Python interop for its C++ framework. Here is the most basic [Python tutorial](https://root.cern/manual/python/#passing-python-callables-to-c)
 ```
 import ROOT
 
@@ -25,7 +26,8 @@ c = ROOT.TCanvas()
 f.Draw()
 ```
 
-translates to Ferret (see `translation.clj`)
+### Clojure
+Translation to Ferret (see `translation.clj`)
 
 ```
 (native-header "ROOT.h")
@@ -52,8 +54,8 @@ Since `(ROO/T Draw TF1)` is a macro call that expands into a lambda-function tha
   Draw)
 ```
 
-## YAMLScript
-I think the translation from Lisp syntax to YAMLScript looks pretty neat:
+### YAMLScript
+I think the translation from Lisp syntax to YAMLScript looks pretty neat. Notice that `ROO/T` is a Lisp-Macro and therefore left as an S-Expression. `Linear` is a higher order function and coded as Yes-Expression.
 
 ```
 defn Linear():
@@ -62,14 +64,9 @@ defn Linear():
 
 l =: Linear()
 
-newTF1 =:
-  ROO/T new: TF1
-
-SetParameters =:
-  ROO/T SetParameters: TF1
-
-Draw =:
-  ROO/T Draw: TF1
+newTF1 =: (ROO/T new TF1)
+SetParameters =: (ROO/T SetParameters TF1)
+Draw =: (ROO/T Draw TF1)
 
 doto:
   newTF1: .'pyf2' l -1. 1. 2

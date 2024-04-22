@@ -187,7 +187,8 @@
                                (remove (fn [x] (given-value (first x) args))
                                        (map vector m-contypes m-funargs)))
             m-funcode (list 'fn real-funargs (obj-encode (name class) m-codestr))
-            m-erg (vector (if (seq real-funargs) :fn :new-no-args)
+            m-erg (vector (if (seq real-funargs) :fn
+                              (if (= m-c-sub :default) :new-no-args :fn))
                           m-funcode)]
         m-erg)))
 

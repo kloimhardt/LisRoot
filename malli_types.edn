@@ -17,6 +17,7 @@
                      [:default [:cat :string [:= :string]]]]]]]
  [:TCanvas [:map
             [:minimal [:cat]]
+            [:empty [:cat]]
             [:B [:cat :string :string :int :int :int :int]]
             [:Print [:map
                      [:default [:cat :string]]]]]]
