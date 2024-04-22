@@ -17,8 +17,17 @@ c =:
 f =:
   ROO/T(new TF1): .'pyf2' l -1. 1. 2
 
+f =:
+  apply:
+    ROO/T new: TF1
+    list: .'pyf2' l -1. 1. 2
+
 ROO/T(SetParameters TF1): f 5. 2.
 ROO/T(Draw TF1): f
+
+apply:
+  ROO/T Print: TCanvas
+  list: c "ytranslation_1.pdf"
 
 newTF1 =:
   ROO/T new: TF1
@@ -34,6 +43,6 @@ doto:
   SetParameters: 5. 2.
   Draw:
 
-ROO/T(Print TCanvas): c "ytranslation_1.pdf"
+ROO/T(Print TCanvas): c "ytranslation_2.pdf"
 
 identity: "end"
