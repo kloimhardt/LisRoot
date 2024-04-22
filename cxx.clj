@@ -408,6 +408,12 @@
             (remove-kw-ns (vec (cons :cat cxx)))))
   nil)
 
+(defmacro def-ys-plus []
+  (list 'def '+_ '+))
+
+(defmacro def-ys-star []
+  (list 'def '*_ '*))
+
 (m-load-types "malli_types.edn" "root_defaults.edn")
 
 (comment

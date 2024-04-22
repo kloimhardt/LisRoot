@@ -2,12 +2,10 @@
 
 native-header: 'ROOT.h'
 
-require:
-  # cxx: => ROO
-  yslib::cxx: => ys
+require cxx: => ROO
 
-ys/def-ys-plus:
-ys/def-ys-star:
+ROO/def-ys-plus:
+ROO/def-ys-star:
 
 defn Linear():
   fn([x] [d k]):
