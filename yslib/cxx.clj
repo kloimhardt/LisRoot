@@ -1,10 +1,7 @@
-(require '[cxx :as ROO])
+(require '[cxx :as ROO]) ;; remove this line
 
 (defmacro def-ys-plus []
   (list 'def '+_ '+))
 
 (defmacro def-ys-star []
   (list 'def '*_ '*))
-
-(defmacro def-ys-tripleplus []
-  (list 'def '+++ 'identity))
