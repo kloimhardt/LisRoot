@@ -3,7 +3,7 @@
 python3 python_demo.py
 # python3.10 python_demo.py
 
-ys -c ytranslation.yaml | sed 's/blank.//g' | sed 's/+_/+/g' | sed 's/*_/*/g' | sed 's/+++/identity/g' >ytranslation.clj
+ys -c ytranslation.yaml >ytranslation.clj
 
 for file in root_plot python_comparison cpp_comparison cpp_native translation ytranslation; do
 # for file in translation; do

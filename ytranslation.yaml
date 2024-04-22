@@ -3,7 +3,11 @@
 native-header: 'ROOT.h'
 
 require:
-  blank::cxx: => ROO
+  yslib::cxx: => ys #Ferret implicitely requires namespace ROO
+
+ys/def-ys-plus:
+ys/def-ys-star:
+ys/def-ys-tripleplus:
 
 defn Linear():
   fn([x] [d k]):
