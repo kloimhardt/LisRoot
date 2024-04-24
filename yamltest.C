@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <string.h>
 #include "/usr/local/include/yaml.h"
 
 R__ADD_LIBRARY_PATH("/usr/local/lib")
@@ -8,6 +10,9 @@ int yamltest(void)
   FILE *fh = fopen("yamltest.yaml", "r");
   yaml_parser_t parser;
   yaml_event_t  event;   /* New variable */
+
+  int i = 0;
+  yaml_char_t *text[100];
 
   /* Initialize parser */
   if(!yaml_parser_initialize(&parser))
@@ -26,7 +31,7 @@ int yamltest(void)
     }
 
     switch(event.type)
-    { 
+    {
     case YAML_NO_EVENT: puts("No event!"); break;
     /* Stream start/end */
     case YAML_STREAM_START_EVENT: puts("STREAM START"); break;
@@ -40,10 +45,14 @@ int yamltest(void)
     case YAML_MAPPING_END_EVENT:    puts("<b>End Mapping</b>");    break;
     /* Data */
     case YAML_ALIAS_EVENT:  printf("Got alias (anchor %s)\n", event.data.alias.anchor); break;
-    case YAML_SCALAR_EVENT: printf("Got scalar (value %s)\n", event.data.scalar.value); break;
+    case YAML_SCALAR_EVENT: printf("Got scalar (value %s)\n", event.data.scalar.value);
+      text[i++] = event.data.scalar.value;
+      break;
     }
-    if(event.type != YAML_STREAM_END_EVENT)
-      yaml_event_delete(&event);
+
+//    if(event.type != YAML_STREAM_END_EVENT)
+//      yaml_event_delete(&event);
+
   } while(event.type != YAML_STREAM_END_EVENT);
   yaml_event_delete(&event);
   /* END new code */
@@ -51,5 +60,18 @@ int yamltest(void)
   /* Cleanup */
   yaml_parser_delete(&parser);
   fclose(fh);
+
+  char generated_code[50];
+  for(int j=0; j<i; j=j+2) {
+    strcpy(generated_code,"");
+    strcat(generated_code, (char*)text[j]);
+    strcat(generated_code, "(\"");
+    strcat(generated_code, (char*)text[j+1]);
+    strcat(generated_code, "\\n\");");
+
+    TExec *ex1 = new TExec("ex", generated_code);
+    ex1->Exec();
+  }
+
   return 0;
 }

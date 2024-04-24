@@ -1,2 +1,3 @@
-myKey: myData
+printf: Hello World!
+printf: second line
 
