@@ -16,4 +16,6 @@ done
 
 clojure -Sdeps '{:deps {metosin/malli {:mvn/version "0.11.0"}}}' -M  mallitypes.clj
 
+root yamltest.C -q
+
 root GuiExample.C
