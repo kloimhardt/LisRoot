@@ -5,9 +5,8 @@
 R__ADD_LIBRARY_PATH("/usr/local/lib")
 R__LOAD_LIBRARY(libyaml.dylib)
 
-int yamltest(void)
-{
-  FILE *fh = fopen("yamltest.yaml", "r");
+int readYAML(const char* filename, char* generated_code) {
+  FILE *fh = fopen(filename, "r");
   yaml_parser_t parser;
   yaml_event_t  event;   /* New variable */
 
@@ -61,17 +60,26 @@ int yamltest(void)
   yaml_parser_delete(&parser);
   fclose(fh);
 
-  char generated_code[50];
+  printf("\nExecuting YAML as C program: \n\n");
+
+  strcpy(generated_code,"");
+
   for(int j=0; j<i; j=j+2) {
-    strcpy(generated_code,"");
     strcat(generated_code, (char*)text[j]);
     strcat(generated_code, "(\"");
     strcat(generated_code, (char*)text[j+1]);
     strcat(generated_code, "\\n\");");
+   }
 
-    TExec *ex1 = new TExec("ex", generated_code);
-    ex1->Exec();
-  }
+  return 0;
+}
+
+int yamltoc(const char* filename) {
+  char generated_C_code[50];
+  readYAML(filename, generated_C_code);
+
+  TExec *ex1 = new TExec("ex", generated_C_code);
+  ex1->Exec();
 
   return 0;
 }
