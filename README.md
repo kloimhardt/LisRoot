@@ -74,6 +74,18 @@ doto:
   Draw:
 ```
 
+## Why YAMLScript
+- YAMLScript is a possible future of scientific computing
+- Python is statement based, YAMLScript is expression based
+- Nevertheless, YAMLScript looks similar to popular Python
+- Expression are like mathematical formulas, known to science since ages
+- Mathematica(TM) language very successfully shows the way of expressions
+- Time to base whole scientific computing on expressions
+- Python is good, but will be replaced eventually
+- C++ is fast and will still be there when Python is gone
+- To mix C++ with Python, knowledge beyond the average scientist's is needed
+- YAMLScript transpiles directly to C++ and can readily be mixed with C++ when speed is more important than succinct notation
+
 ## Handling Runtime Polymorphism in C++ Interop
 
 Adding a [Malli](https://github.com/metosin/malli)-style Schema,
