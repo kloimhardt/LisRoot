@@ -76,15 +76,16 @@ doto:
 
 ## Why YAMLScript
 - YAMLScript is a possible future of scientific computing
-- Python is statement based, YAMLScript is expression based
+- While Python is statement based, YAMLScript is expression based
+- Expressions are like mathematical formulas, known to science since ages
 - Nevertheless, YAMLScript looks similar to popular Python
-- Expression are like mathematical formulas, known to science since ages
 - Mathematica(TM) language very successfully shows the way of expressions
-- Time to base whole scientific computing on expressions
-- Python is good, but will be replaced eventually
+- It is time to base whole scientific computing on expressions
+- Python is good, but will be eventually replaced by something else
 - C++ is fast and will still be there when Python is gone
 - To mix C++ with Python, knowledge beyond the average scientist's is needed
-- YAMLScript transpiles directly to C++ and can readily be mixed with C++ when speed is more important than succinct notation
+- YAMLScript compiles to C++ and thus can readily be mixed with C++ when speed is more important than succinct notation
+- In principle C++ is, through Cling, also an interpreted language, however as a major roadblock Cling is as of 2024 not feature complete
 
 ## Handling Runtime Polymorphism in C++ Interop
 
