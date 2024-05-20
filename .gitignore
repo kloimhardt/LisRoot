@@ -3,3 +3,9 @@ ferret.jar
 *.pdf
 *.cpp
 basic_interop
+cpp_comparison
+cpp_native
+python_comparison
+root_plot
+translation
+ytranslation
