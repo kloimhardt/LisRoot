@@ -60,7 +60,7 @@ I think the translation from Lisp syntax to YAMLScript looks pretty neat. Notice
 ```
 defn Linear():
   fn([x] [d k]):
-    =>: (d + (k * x))
+    =>: d + (k * x)
 
 l =: Linear()
 
@@ -133,6 +133,35 @@ Run all scripts with
 ```
 ./runall.sh
 ```
+
+## Try it easier with Docker
+
+If you have Docker and GNU make installed you use these commands (without installing anything else):
+
+* `make docker-runall`
+
+  Run the `./runall.sh` script
+
+* `make docker-generate`
+
+  Generate all the test PDF files.
+
+* `OPENER=<some-opener-viewer-command> make open`
+
+  Open all the PDF files in some viewer.
+  Tested with the Chromium browser using `OPENER=chromium make open`.
+
+* `make docker-shell`
+
+  Start a Bash interactive shell in Docker inside this repo.
+  Environment is Ubuntu Linux 23.10 with all the repo deps pre-installed.
+  Do anything including running `make` commands from inside.
+  Bash history is saved between shell sessions.
+
+* `make clean` or `make docker-clean`
+
+  Delete all the generate files.
+  Use `docker-clean` if some files end up being owned by `root`.
 
 ## Types are valid Malli specs
 
