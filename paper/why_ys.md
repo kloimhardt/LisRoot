@@ -32,7 +32,7 @@ class Linear:
 l = Linear()
 ```
 
-In this example, already at the very beginning, we read the keyword `class` and look no further because classes stand for object oriented programming. While being very versatile, this paradigm should not occupy any scientist as they are already wrestling with gazillion other involved concepts. Also, Python code is not a data structure, a fact that is a great pity for a data scientist.
+In this example, already at the very beginning, we read the keyword `class` and look no further because classes stand for object oriented programming. While being very versatile, this paradigm should not occupy any scientist as they are already wrestling with gazillion other involved concepts. Also, Python code is not a data structure. While YAMLScript is expression based, Python is statement based, a fact that is a great pity for any data scientist.
 
 The same example reads in YAMLScript as follows:
 
@@ -43,21 +43,23 @@ defn Linear():
 l =: Linear()
 ```
 
-On the one hand this syntax looks familiar to Python. But on the other hand it is, we think, simpler because it only involves functions. The simplicity for scientists becomes especially clear when we compare the YAMLScript function with its age-old notation of mathematics on paper:
+On the one hand this syntax looks familiar to Python. But on the other hand it is, we think, simpler because it only involves functions. Indeed the Clojure S-Expression notation represents a paradigm commonly known as "functional programming" which basically means "functions first". Its simplicity for scientists becomes especially clear when we compare the YAMLScript function with its age-old notation of mathematics on paper:
 
 ```
 f: R1 x R2 -> R; ((x), (d,k)) -> d + kx
 ```
 
+To sum up: Python encourages the use of object oriented programming, but scientific ideas are much more directly and meaningfully expressed in the purely functional programming paradigm.
+
 ## Macros, the magic sauce for C++ interop
 
-To call into CERN's ROOT library, we need C++ interop which is a thorny subject. While many languages have a good way to interop with the ANSI-C language, when it comes to C++ it gets hairy.
+To call into CERN's ROOT and thus providing a functional layer for this library, we need a C++ interop strategy. While many languages have a good way to interop with the ANSI-C language, when it comes to C++ it gets hairy. To be sure, to mix C++ with Python, knowledge beyond the average scientist's is needed.
 
-Here the code-as-data property comes to the rescue. For our interop we use Macros which are just functions that take data and return data that then in turn is executed. In a way, Macros are used for what was above called "expression manipulation". In Macros, data is transformed from and to S-Expressions.
+The code-as-data property greatly helps to mix YAMLScript with any C++ library. For our interop we use functions that take data and return data that then in turn is executed. Such functions are usually called Macros which in a way represent what above was called "expression manipulations". In Macros, data is transformed from and to S-Expressions. They provide us with a decent way to segue into the speedy C++ algorithms so cherished in science.
 
 As a prerequisite for our interop, we took the ROOT library and manually encoded the signatures of relevant classes and functions into one single data structure. This allows us, via Macros, to generate the necessary interop functions at compile time.
 
 But the real speciality of our interop is that the C++ signature-data is not just used at compile time. The signature-data is also used at runtime to perform a trick called polymorphic dispatch which is mandatory when calling into C++, a feature many interop schemes grapple with.
 
-## Functional and Immutable
-In this post, the notions of "pure function" and "immutability" were left out deliberately. While we adhere to those concepts as well, here we focus on "code-as-data", which is completely distinct.
+## Functional and immutable
+In this post, we started with the concept of "code-as-data" and moved on to "expressions", the concept which is one of many ways leading to "functional programming". This paradigm, which we only briefly touched, in turn leads to notions like "pure function" or "immutability" which, however important and dearly missed by the reader, could not be covered.
