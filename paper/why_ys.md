@@ -1,12 +1,12 @@
-# YAMLScript as new Python for Data Science
-## YAML is a data format
+# YAMLScript as the new Python for Data Science
+## YAML is a Data Format
 YAML is a data format. It is used in math to store algorithms, it is used in software engineering to store program code, in meteorology to store weather forecasts. In math they call it formula, in computing they call it syntax, in meteorology they call it, well, data. To us, it is all the same: YAML.
 
 An example: a car driving at 20mph for 2 hours will drive 40 miles. This is because `40 = 20 * 2`, and for this calculation the official formula is `s = v * t`.
 
 This formula can be stored, if one wishes, in YAML as `defn s(v, t): v * t`. Believe it or not, this is valid YAML. As a proof, let YAMLScript, the YAML compiler, transform that formula into the JSON data format: `{"defn s(v, t)":"v * t"}`. Call it formula or syntax or data, up to this point it is all the same to us.
 
-## Execute the data
+## Executing the Data
 YAMLScript also delivers a data format called Clojure. There, our formula reads `(defn s [v t] (*_ v t))`. In Clojure lingo this is called an S-Expression. The cool thing is that Clojure can be executed. This means that the following YAML gives the number `40` as a result:
 
 ```
@@ -51,7 +51,7 @@ f: R1 x R2 -> R; ((x), (d,k)) -> d + kx
 
 To sum up: Python encourages the use of object oriented programming, but scientific ideas are much more directly and meaningfully expressed in the purely functional programming paradigm.
 
-## Macros, the magic sauce for C++ interop
+## Macros, the Magic Sauce for C++ Interop
 
 To call into CERN's ROOT and thus providing a functional layer for this library, we need a C++ interop strategy. While many languages have a good way to interop with the ANSI-C language, when it comes to C++ it gets hairy. To be sure, to mix C++ with Python, knowledge beyond the average scientist's is needed.
 
@@ -61,5 +61,7 @@ As a prerequisite for our interop, we took the ROOT library and manually encoded
 
 But the real speciality of our interop is that the C++ signature-data is not just used at compile time. The signature-data is also used at runtime to perform a trick called polymorphic dispatch which is mandatory when calling into C++, a feature many interop schemes grapple with.
 
-## Functional and immutable
-In this post, we started with the concept of "code-as-data" and moved on to "expressions", the concept which is one of many ways leading to "functional programming". This paradigm, which we only briefly touched, in turn leads to notions like "pure function" or "immutability" which, however important and dearly missed by the reader, could not be covered.
+## Functional and Immutable
+In this post, we started with the concept of "code-as-data" and moved on to "expressions", one of the many ways to "functional programming". This paradigm, which we only briefly touched, in turn leads to notions like "pure function" or "immutability" which, however important and dearly missed by the reader, could not be covered.
+
+Further information can be found in the arxiv.org paper "A functional scripting interface to an object oriented C++ library".
