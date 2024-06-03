@@ -3,6 +3,8 @@
 python3 python_demo.py
 # python3.10 python_demo.py
 
+python3 embed_yamlscript,py
+
 ys -c ytranslation.yaml >ytranslation.clj
 
 for file in root_plot python_comparison cpp_comparison cpp_native translation ytranslation; do
