@@ -2,6 +2,7 @@
 
 python3 python_demo.py
 # python3.10 python_demo.py
+python3 ptutorial.py
 
 ys -c ytranslation.yaml >ytranslation.clj
 
