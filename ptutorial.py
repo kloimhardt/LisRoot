@@ -14,8 +14,33 @@ c = ROOT.TCanvas()
 f.Draw()
 c.Print("ptutorial_1.pdf");
 
+def to_json(t):
+    return yamlscript.YAMLScript().load(t)
 
-yaml_text = """
+ys_header = "!yamlscript/v0\n"
+
+def to_clojure(code):
+    return yamlscript.YAMLScript().load(ys_header + "ys/compile(\"" + code + "\")").replace("+++", "identity")
+
+# the following YAMLScript code is correctly translated to Clojure
+# but it has lots of backspace in it
+
+not_minglable ="""
+doto:\\n
+  newTF1 'pyf2':\ l -1. 1. 2\n
+\ SetParameters:\ 5. 2.\n
+\ Draw:\
+"""
+
+print(to_clojure(ys_header+not_minglable))
+
+# mingle_text() inserts the backspaces for the "yaml_code" below
+# but is not sophisticated enough for the above "not_minglable" case
+
+def mingle_text(t):
+    return t.replace(": ", ":\\ ").replace(":\n", ":\\n").replace("\n", "\n\n")
+
+yaml_code = """
 native-header: 'ROOT.h'
 
 require cxx: => ROO
@@ -28,34 +53,21 @@ defn Linear():
 
 l =: Linear()
 
-c =:
-  ROO/T(new TCanvas :empty):
-
 f =:
   ROO/T(new TF1) 'pyf2': l -1. 1. 2
-
 ROO/T(SetParameters TF1) f: 5. 2.
+
+c =:
+  ROO/T(new TCanvas :empty):
 ROO/T(Draw TF1) f:
 ROO/T(Print TCanvas) c: 'ptutorial_2.pdf'
-
-newTF1 =: ROO/T(new TF1)
-SetParameters =: ROO/T(SetParameters TF1)
-Draw =: ROO/T(Draw TF1)
-
-doto:
-  newTF1 'pyf2': l -1. 1. 2
-  SetParameters: 5. 2.
-  Draw:
-
-ROO/T(Print TCanvas) c: 'ptutorial_3.pdf'
-
-=>: 'end'
 """
 
-data = yamlscript.YAMLScript().load(yaml_text)
-print(data)
+print(to_json(yaml_code))
 
-with open("temp.ys", "w") as text_file:
-    print("!yamlscript/v0\n" + yaml_text, file=text_file)
+clj_code = to_clojure(ys_header+mingle_text(yaml_code))
 
-os.system("ys -c temp.ys >temp.clj && java -jar ferret.jar -i temp.clj && clang++ temp.cpp $(root-config --glibs --cflags --libs) -o temp && ./temp")
+with open("temp.clj", "w") as text_file:
+    print(clj_code, file=text_file)
+
+os.system("java -jar ferret.jar -i temp.clj && clang++ temp.cpp $(root-config --glibs --cflags --libs) -o temp && ./temp")
