@@ -23,7 +23,7 @@ def to_clojure(code):
     return yamlscript.YAMLScript().load(ys_header + "ys/compile(\"" + code + "\")").replace("+++", "identity")
 
 # the following YAMLScript code is correctly translated to Clojure
-# but it has lots of backspace in it
+# but it has lots of backslashes in it
 
 not_minglable ="""
 doto:\\n
