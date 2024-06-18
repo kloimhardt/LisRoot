@@ -1,6 +1,9 @@
-import os, ROOT, yamlscript
+import os, ROOT
 
-# example taken from https://root.cern/manual/python
+# The following example is taken from https://root.cern/manual/python
+# it is translated to YAMLScript and executed using the ys command line tool
+# PRs are very welcome, also for the short text to be found in
+# https://github.com/kloimhardt/LisRoot/blob/main/paper/access_root_with_ys.md
 
 class Linear:
     def __call__(self, arr, par):
@@ -23,6 +26,9 @@ ys_code = """
 native-header: 'ROOT.h'
 
 require cxx: => ROO
+
+ROO/def-ys-plus:
+ROO/def-ys-star:
 
 defn Linear():
   fn([x] [d k]): d + (k * x)
@@ -54,26 +60,9 @@ ROO/T(Print TCanvas) c: 'ptutorial_3.pdf'
 =>: 'end'
 """
 
-def to_clojure(code):
-    code = code.replace(": ", ":\\ ").replace("\n", "\\n")
-    return yamlscript.YAMLScript().load("!yamlscript/v0\nys/compile(\"" + code + "\")")
+# the YAMLScript code is written to file and executed using ys, ferret and clang
 
-# Clojure code is generated out of YAMLScript-code
-clojure_code = to_clojure(ys_code)
+with open("temp.ys", "w") as text_file:
+    print(ys_code, file=text_file)
 
-# YAMLScript compiles to Clojure code that uses "+_" for arithmetic addition
-# Ferret, our Clojure-to-C++ compiler does not like that, it wants simple "+"
-# to make amends we add the following specific Clojure definition to the code
-ferret_code = "(def +_ +)" + clojure_code
-
-# to make amends for the "*_", we use a more dirty way, simply because we can
-ferret_code = ferret_code.replace("*_", "*")
-
-# The YAMLScript speciality "+++" is also unknown to Ferret
-# and we remove it via the golden path of Lisp: a Macro
-ferret_code = "(defmacro +++ [e] e)" + ferret_code
-
-# write Clojure code to file and shell out to Ferret and Clang compiler
-with open("temp.clj", "w") as text_file:
-    print(ferret_code, file=text_file)
-os.system("java -jar ferret.jar -i temp.clj && clang++ temp.cpp $(root-config --glibs --cflags --libs) -o temp && ./temp")
+os.system("ys -c temp.ys >temp.clj && java -jar ferret.jar -i temp.clj && clang++ temp.cpp $(root-config --glibs --cflags --libs) -o temp && ./temp")

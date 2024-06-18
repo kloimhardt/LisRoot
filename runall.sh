@@ -2,6 +2,8 @@
 
 python3 python_demo.py
 # python3.10 python_demo.py
+
+rm temp.ys temp.clj temp.cpp temp
 python3 ptutorial.py
 
 ys -c ytranslation.yaml >ytranslation.clj
