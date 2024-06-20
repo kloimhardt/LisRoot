@@ -1,0 +1,4 @@
+[[:TCanvas :minimal]
+ [:TF1 :XRN]
+ [:TF1 :Draw :no-args]
+ [:TF1 :SetParameters :two-doubles]]
