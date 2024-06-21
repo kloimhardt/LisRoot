@@ -69,7 +69,7 @@ def sym(s):
 def kw(s):
     return edn_format.edn_lex.Keyword(s)
 
-clojure_macros = wrap_clojure_file('ys_cxx.clj')
+clojure_macros = wrap_clojure_file('lisroot_clojure_functions.clj') +"\n" + wrap_clojure_file('lisroot_clojure_macros.clj')
 
 def replaceCode (x):
     if isinstance(x, tuple):
@@ -91,7 +91,7 @@ def replaceCode (x):
 # in the generated Clojure code, the functions +_, *_ and +++ need replacement
 modified_edn_code = replaceCode(edn_code)
 
-ferret_code = '(native-header "ROOT.h")' + readfile('ferret_cxx.clj') + edn_format.dumps(modified_edn_code)[1:-1]
+ferret_code = '(native-header "ROOT.h")' + readfile('lisroot_ferret_functions.clj') + edn_format.dumps(modified_edn_code)[1:-1]
 
 with open("temp.clj", "w") as text_file:
     print(ferret_code, file=text_file)

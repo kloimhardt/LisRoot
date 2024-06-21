@@ -4,6 +4,9 @@ python3 python_demo.py
 # python3.10 python_demo.py
 
 rm temp.ys temp.clj temp.cpp temp
+
+echo -e "(defmacro wrapper [] $(cat python_edn/lisroot_clojure_functions.clj) nil) (wrapper) $(cat python_edn/lisroot_clojure_macros.clj) $(cat python_edn/lisroot_ferret_functions.clj)" > cxx.clj
+
 python3 ptutorial.py
 
 ys -c ytranslation.yaml >ytranslation.clj
