@@ -37,6 +37,23 @@ def to_clojure(code):
     code = code.replace(": ", ":\\ ").replace("\n", "\\n")
     return yamlscript.YAMLScript().load("!yamlscript/v0\nys/compile(\"" + code + "\")")
 
+def wrap_clojure(code):
+    return "=>: !clj |\n " + code
+
+def compose2(f, g):
+    return lambda *a, **kw: f(g(*a, **kw))
+
+def wrap_clojure_file(filename):
+    with open(filename, 'r') as file:
+        str_code = file.read()
+    edn_code = edn_format.loads("(" + str_code + ")")
+    a = map(compose2(wrap_clojure, edn_format.dumps), edn_code)
+    return '\n'.join(a)
+
+def macroexpand_clojure(macro_code, code):
+    a = wrap_clojure("(pr-str (macroexpand-1 '" + code + "))")
+    return yamlscript.YAMLScript().load("!yamlscript/v0\n" + macro_code + "\n" + a)
+
 clojure_code = to_clojure(ys_code)
 
 edn_code = edn_format.loads("(" + clojure_code + ")")
@@ -70,4 +87,17 @@ ferret_code = edn_format.dumps(modified_edn_code)[1:-1]
 with open("temp.clj", "w") as text_file:
     print(ferret_code, file=text_file)
 
-os.system("java -jar ../ferret.jar -i temp.clj && clang++ temp.cpp $(root-config --glibs --cflags --libs) -o temp && ./temp")
+# os.system("java -jar ../ferret.jar -i temp.clj && clang++ temp.cpp $(root-config --glibs --cflags --libs) -o temp && ./temp")
+
+print(wrap_clojure("(+ 3 4)"))
+
+c = wrap_clojure_file('ys_cxx.clj')
+print(c)
+
+print("\n \n klm-macroexpand \n")
+
+d = macroexpand_clojure(c, "(uu [1 2 3])")
+print(d)
+
+e = macroexpand_clojure(c, "(T new TCanvas :empty)")
+print(e)
