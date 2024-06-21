@@ -34,11 +34,19 @@ def to_clojure(code):
     code = code.replace(": ", ":\\ ").replace("\n", "\\n")
     return yamlscript.YAMLScript().load("!yamlscript/v0\nys/compile(\"" + code + "\")")
 
-def wrap_clojure_exp(exp):
+def to_yaml_clojure_exp(exp):
     return "=>: !clj |\n " + exp
 
+def compose2(f, g):
+    return lambda *a, **kw: f(g(*a, **kw))
+
+def to_yaml_clojure(str_code):
+    edn_code = edn_format.loads("(" + str_code + ")")
+    a = map(compose2(to_yaml_clojure_exp, edn_format.dumps), edn_code)
+    return '\n'.join(a)
+
 def macroexpand_clojure_exp(macro_code, code):
-    a = wrap_clojure_exp("(pr-str (macroexpand-1 '" + code + "))")
+    a = to_yaml_clojure_exp("(pr-str (macroexpand-1 '" + code + "))")
     return yamlscript.YAMLScript().load("!yamlscript/v0\n" + macro_code + "\n" + a)
 
 def macroexpand_edn(macro_code_str, code_edn):
@@ -48,15 +56,6 @@ def readfile(filename):
     with open(filename, 'r') as file:
         str_code = file.read()
     return str_code
-
-def compose2(f, g):
-    return lambda *a, **kw: f(g(*a, **kw))
-
-def yaml_clojure_file(filename):
-    str_code = readfile(filename)
-    edn_code = edn_format.loads("(" + str_code + ")")
-    a = map(compose2(wrap_clojure_exp, edn_format.dumps), edn_code)
-    return '\n'.join(a)
 
 clojure_code = to_clojure(ys_code)
 
@@ -68,7 +67,7 @@ def sym(s):
 def kw(s):
     return edn_format.edn_lex.Keyword(s)
 
-clojure_macros = yaml_clojure_file('lisroot_clojure_functions.clj') +"\n" + yaml_clojure_file('lisroot_clojure_macros.clj')
+clojure_macros = to_yaml_clojure(readfile('lisroot_clojure_functions.clj') + readfile('lisroot_clojure_macros.clj') + '(m-load-types "malli_types.edn" "root_defaults.edn")')
 
 def replaceCode (x):
     if isinstance(x, tuple):

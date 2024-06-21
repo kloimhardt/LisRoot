@@ -44,5 +44,3 @@
 
 (defmacro def-ys-star []
   (list (quote def) (quote *_) (quote *)))
-
-(m-load-types "malli_types.edn" "root_defaults.edn")
