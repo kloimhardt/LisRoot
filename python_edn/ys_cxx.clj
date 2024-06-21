@@ -351,9 +351,3 @@
   (list (quote def) (quote *_) (quote *)))
 
 (m-load-types "malli_types.edn" "root_defaults.edn")
-
-(defmacro uu [e] (last e))
-
-(defn ww [e] (last e))
-
-(print 444)
